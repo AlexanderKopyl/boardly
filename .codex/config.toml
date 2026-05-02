@@ -12,9 +12,12 @@
 # - Sensitive files are denied by default.
 # - SQL/database dump files are denied by default; Codex must request permission before reading them.
 #
-# Custom subagents:
+# Custom subagents and skills:
 # - Project-specific subagents are defined in .codex/agents/*.toml.
-# - Their role instructions are defined in .codex/agents/instructions/*.md.
+# - Role instructions are defined in .codex/agents/instructions/*.md.
+# - Shared skill usage rules are defined in .codex/agents/instructions/_skill-usage.md.
+# - Reusable skills are defined in .codex/skills/*/SKILL.md.
+# - Subagents should use skills as execution playbooks instead of duplicating workflow logic.
 # - Do not assume existing Symfony files, Doctrine entities, controllers, or module structure until they are explicitly created.
 
 include_permissions_instructions = true
