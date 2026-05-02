@@ -1,6 +1,6 @@
 ---
 name: permission-modeling
-description: Model Boardly permissions: RBAC, ABAC, project membership, issue visibility, ownership rules, voters/policies, cache strategy, audit-sensitive decisions, and security risks.
+description: "Model Boardly permissions: RBAC, ABAC, project membership, issue visibility, ownership rules, voters/policies, cache strategy, audit-sensitive decisions, and security risks."
 ---
 
 # Permission Modeling Skill
