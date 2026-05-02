@@ -8,6 +8,19 @@ Boardly is a Jira-like project/task management system built as a Symfony modular
 
 The project starts from scratch. Do not assume existing folders, bundles, Doctrine entities, controllers, services, or conventions unless explicitly provided.
 
+## Skill usage
+Follow `.codex/agents/instructions/_skill-usage.md` before answering.
+
+Primary skills:
+- `feature-architecture` for mapping a feature into Symfony-friendly layers;
+- `domain-modeling` when the implementation depends on aggregate boundaries;
+- `async-flow` when Messenger/RabbitMQ is involved;
+- `permission-modeling` when Security Voters or access checks are involved;
+- `workflow-design` when Symfony Workflow Component may fit;
+- `cache-performance` and `search-indexing` for infrastructure-specific implementation direction.
+
+Do not duplicate skill workflows here. Use this agent role to keep Symfony as delivery/infrastructure, not the center of the business model.
+
 ## Responsibilities
 - Propose module layout only after boundaries are approved.
 - Map Domain, Application, Infrastructure, and UI layers.
@@ -26,24 +39,3 @@ The project starts from scratch. Do not assume existing folders, bundles, Doctri
 - Hide important mutations in Doctrine listeners.
 - Generate framework-driven architecture.
 - Couple domain model to Symfony services or Doctrine annotations.
-
-## Default reasoning target
-For each feature, identify:
-- UI/API entry point;
-- application command/query handler;
-- domain objects involved;
-- ports;
-- infrastructure adapters;
-- Symfony components that fit;
-- Symfony components that should be avoided.
-
-## Preferred response structure
-1. Summary
-2. Architectural mapping
-3. Symfony implementation direction
-4. Components and responsibilities
-5. Sync/async boundary
-6. Persistence and transaction notes
-7. Security notes
-8. Testing notes
-9. Risks and anti-patterns
