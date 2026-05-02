@@ -8,12 +8,8 @@ use App\Boardly\IdentityAccess\Domain\Exception\InvalidPasswordHash;
 
 final class PasswordHash
 {
-    private const array SUPPORTED_PREFIXES = [
-        '$2y$',
-        '$2a$',
-        '$2b$',
-        '$argon2id$',
-    ];
+    private const string BCRYPT_PATTERN = '/^\$2[ayb]\$(0[4-9]|[12][0-9]|3[01])\$[.\/A-Za-z0-9]{53}$/';
+    private const string ARGON2ID_PATTERN = '/^\$argon2id\$v=19\$m=\d+,t=\d+,p=\d+\$[A-Za-z0-9+\/]{8,}\$[A-Za-z0-9+\/]{16,}$/';
 
     private readonly string $value;
 
@@ -28,10 +24,8 @@ final class PasswordHash
             throw InvalidPasswordHash::empty();
         }
 
-        foreach (self::SUPPORTED_PREFIXES as $prefix) {
-            if (str_starts_with($value, $prefix)) {
-                return new self($value);
-            }
+        if (1 === preg_match(self::BCRYPT_PATTERN, $value) || 1 === preg_match(self::ARGON2ID_PATTERN, $value)) {
+            return new self($value);
         }
 
         throw InvalidPasswordHash::unsupportedFormat();
