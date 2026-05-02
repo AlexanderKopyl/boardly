@@ -44,7 +44,7 @@ If the task touches architecture, this is the primary source.
 
 ### Accepted ADRs
 
-Read accepted ADRs before making architecture, structure, module-boundary, event-delivery, or infrastructure decisions.
+Read accepted ADRs before making architecture, structure, module-boundary, event-delivery, API, authentication, or infrastructure decisions.
 
 #### ADR-0001: Modular Monolith, Hexagonal Architecture, and DDD
 
@@ -98,6 +98,41 @@ Use this ADR when working with:
 - event retry and idempotency;
 - avoiding direct message dispatch from domain services, entities, or command handlers as part of business mutation.
 
+#### ADR-0004: API-First Symfony Backend with Next.js Frontend
+
+```text
+docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md
+```
+
+Use this ADR when working with:
+
+- API-first product direction;
+- Symfony backend responsibilities;
+- Next.js frontend responsibilities;
+- controller/API adapter design;
+- avoiding Twig as the main product UI;
+- API response DTOs and read models;
+- frontend/backend repository structure decisions.
+
+#### ADR-0005: JWT Access Tokens and HttpOnly Refresh Cookies
+
+```text
+docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md
+```
+
+Use this ADR when working with:
+
+- authentication strategy;
+- JWT access tokens;
+- refresh token cookies;
+- token rotation;
+- refresh token reuse detection;
+- CORS and CSRF baseline;
+- IdentityAccess boundaries;
+- account lifecycle;
+- admin-approved accounts;
+- frontend token storage behavior.
+
 ### Design Documents
 
 #### ChangeIssueStatus
@@ -116,6 +151,26 @@ Use this document when working with:
 - `IssueStatusChanged` domain event shape;
 - async side effects after status change;
 - failure cases for issue status changes.
+
+#### Authentication API Strategy
+
+```text
+docs/design/authentication-api-strategy.md
+```
+
+Use this document when working with:
+
+- register/login/refresh/logout/me API contracts;
+- IdentityAccess application use cases;
+- Account lifecycle;
+- admin approval routes;
+- first system admin bootstrap;
+- authentication error responses;
+- password hashing boundary;
+- login rate limiting;
+- refresh token persistence;
+- frontend authentication behavior;
+- CORS/CSRF implementation details.
 
 ### Subagents Map
 
@@ -159,6 +214,8 @@ Create ADRs for decisions about:
 - aggregate ownership;
 - workflow architecture;
 - authorization model;
+- authentication strategy;
+- token/session strategy;
 - transaction boundaries;
 - event contracts;
 - Outbox usage;
@@ -184,6 +241,13 @@ Use the documentation like this:
 | Symfony structure proposal | `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md`, `docs/adr/0002-use-boardly-context-based-source-structure.md` |
 | Source code placement decision | `docs/adr/0002-use-boardly-context-based-source-structure.md` |
 | Creating a new Boardly module/context | `docs/adr/0002-use-boardly-context-based-source-structure.md`, then `docs/architecture/project-architecture-rules.md` |
+| API/backend/frontend boundary | `docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md` |
+| API response design | `docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md`, then relevant design document |
+| Authentication strategy | `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`, then `docs/design/authentication-api-strategy.md` |
+| IdentityAccess design or implementation | `docs/design/authentication-api-strategy.md`, then ADR-0001, ADR-0002, ADR-0004, and ADR-0005 |
+| Register/login/refresh/logout/me API | `docs/design/authentication-api-strategy.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
+| Admin account approval | `docs/design/authentication-api-strategy.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
+| Security-sensitive API work | `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`, `docs/design/authentication-api-strategy.md`, and `docs/agents/subagents-map.md` |
 | Domain modeling | `docs/architecture/project-architecture-rules.md`, `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md`, and `docs/agents/subagents-map.md` |
 | Workflow design | `docs/architecture/project-architecture-rules.md`, `docs/design/change-issue-status.md`, and `docs/agents/subagents-map.md` |
 | CQRS command/query design | `docs/architecture/project-architecture-rules.md` and `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md` |
@@ -228,6 +292,78 @@ src/Shared               -> technical abstractions that do not know about Boardl
 Do not create future modules just because they are listed as candidates.
 
 Create modules only when a real use case requires them.
+
+## API-First Rules for Agents
+
+For the backend/frontend boundary, follow:
+
+```text
+docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md
+```
+
+Default rule:
+
+```text
+Next.js frontend -> Symfony HTTP API -> Application layer -> Domain layer
+```
+
+Controllers are delivery adapters. They must stay thin.
+
+API responses must not expose Doctrine entities directly.
+
+Use explicit API DTOs or read models for responses.
+
+Do not use Twig as the main product UI unless a future ADR changes the product direction.
+
+## Authentication Rules for Agents
+
+For authentication, follow:
+
+```text
+docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md
+docs/design/authentication-api-strategy.md
+```
+
+Default authentication model:
+
+```text
+short-lived JWT access token
++
+opaque HttpOnly Secure refresh token cookie
+```
+
+IdentityAccess owns authentication and account lifecycle:
+
+```text
+src/Boardly/IdentityAccess/
+```
+
+Primary domain entity name:
+
+```text
+Account
+```
+
+Initial account statuses:
+
+```text
+pending_approval
+active
+rejected
+disabled
+```
+
+Only active accounts may receive access tokens or refresh cookies.
+
+Do not store access tokens in browser persistent storage.
+
+Do not return refresh tokens in JSON.
+
+Do not put dynamic project/workflow/issue permissions into JWT claims.
+
+Do not implement public self-service password reset in the first auth milestone.
+
+Password reset is admin-controlled future scope unless a later ADR/design document changes this.
 
 ## Event Delivery Rules for Agents
 
@@ -296,4 +432,34 @@ docs/design/change-issue-status.md
 docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md
 docs/adr/0002-use-boardly-context-based-source-structure.md
 docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md
+```
+
+## Authentication Design Scenario
+
+For authentication and IdentityAccess implementation, use:
+
+```text
+Authentication API Strategy
+```
+
+The scenario design is documented in:
+
+```text
+docs/design/authentication-api-strategy.md
+```
+
+The binding architecture decision is documented in:
+
+```text
+docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md
+```
+
+When implementing or changing this scenario, read:
+
+```text
+docs/design/authentication-api-strategy.md
+docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md
+docs/adr/0002-use-boardly-context-based-source-structure.md
+docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md
+docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md
 ```
