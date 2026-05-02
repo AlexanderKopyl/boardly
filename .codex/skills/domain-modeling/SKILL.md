@@ -1,6 +1,6 @@
 ---
 name: domain-modeling
-description: Model Boardly business behavior with DDD: bounded contexts, aggregates, entities, value objects, invariants, domain services, repositories, domain events, and transaction boundaries.
+description: "Model Boardly business behavior with DDD: bounded contexts, aggregates, entities, value objects, invariants, domain services, repositories, domain events, and transaction boundaries."
 ---
 
 # Domain Modeling Skill
