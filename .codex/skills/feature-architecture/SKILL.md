@@ -1,6 +1,6 @@
 ---
 name: feature-architecture
-description: Design an end-to-end Boardly feature architecture: business context, application flow, domain model, ports/adapters, sync/async boundaries, commands, queries, events, and MVP decision.
+description: "Design an end-to-end Boardly feature architecture: business context, application flow, domain model, ports/adapters, sync/async boundaries, commands, queries, events, and MVP decision."
 ---
 
 # Feature Architecture Skill
