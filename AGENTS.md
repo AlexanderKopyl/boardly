@@ -44,7 +44,7 @@ If the task touches architecture, this is the primary source.
 
 ### Accepted ADRs
 
-Read accepted ADRs before making architecture, structure, module-boundary, event-delivery, API, authentication, or infrastructure decisions.
+Read accepted ADRs before making architecture, structure, module-boundary, event-delivery, API, authentication, account-domain, or infrastructure decisions.
 
 #### ADR-0001: Modular Monolith, Hexagonal Architecture, and DDD
 
@@ -172,6 +172,27 @@ Use this document when working with:
 - frontend authentication behavior;
 - CORS/CSRF implementation details.
 
+#### Account Domain Model
+
+```text
+docs/design/account-domain-model.md
+```
+
+Use this document when working with:
+
+- `Account` aggregate boundary;
+- account value objects;
+- account lifecycle states and transitions;
+- system-admin capability and safety rules;
+- account persistence fields;
+- `AccountRepositoryInterface`;
+- `RefreshSession` model;
+- refresh token family/reuse detection;
+- login/refresh/logout application flows;
+- IdentityAccess domain events;
+- account-domain error model;
+- implementation checklist and anti-patterns.
+
 ### Subagents Map
 
 Read:
@@ -244,10 +265,12 @@ Use the documentation like this:
 | API/backend/frontend boundary | `docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md` |
 | API response design | `docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md`, then relevant design document |
 | Authentication strategy | `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`, then `docs/design/authentication-api-strategy.md` |
-| IdentityAccess design or implementation | `docs/design/authentication-api-strategy.md`, then ADR-0001, ADR-0002, ADR-0004, and ADR-0005 |
-| Register/login/refresh/logout/me API | `docs/design/authentication-api-strategy.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
-| Admin account approval | `docs/design/authentication-api-strategy.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
-| Security-sensitive API work | `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`, `docs/design/authentication-api-strategy.md`, and `docs/agents/subagents-map.md` |
+| IdentityAccess design or implementation | `docs/design/authentication-api-strategy.md`, `docs/design/account-domain-model.md`, then ADR-0001, ADR-0002, ADR-0004, and ADR-0005 |
+| Account domain model | `docs/design/account-domain-model.md`, then `docs/design/authentication-api-strategy.md` and `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
+| RefreshSession / refresh token rotation | `docs/design/account-domain-model.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
+| Register/login/refresh/logout/me API | `docs/design/authentication-api-strategy.md`, `docs/design/account-domain-model.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
+| Admin account approval | `docs/design/authentication-api-strategy.md`, `docs/design/account-domain-model.md`, then `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md` |
+| Security-sensitive API work | `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`, `docs/design/authentication-api-strategy.md`, `docs/design/account-domain-model.md`, and `docs/agents/subagents-map.md` |
 | Domain modeling | `docs/architecture/project-architecture-rules.md`, `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md`, and `docs/agents/subagents-map.md` |
 | Workflow design | `docs/architecture/project-architecture-rules.md`, `docs/design/change-issue-status.md`, and `docs/agents/subagents-map.md` |
 | CQRS command/query design | `docs/architecture/project-architecture-rules.md` and `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md` |
@@ -315,13 +338,14 @@ Use explicit API DTOs or read models for responses.
 
 Do not use Twig as the main product UI unless a future ADR changes the product direction.
 
-## Authentication Rules for Agents
+## Authentication and Account Rules for Agents
 
-For authentication, follow:
+For authentication and IdentityAccess, follow:
 
 ```text
 docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md
 docs/design/authentication-api-strategy.md
+docs/design/account-domain-model.md
 ```
 
 Default authentication model:
@@ -332,7 +356,7 @@ short-lived JWT access token
 opaque HttpOnly Secure refresh token cookie
 ```
 
-IdentityAccess owns authentication and account lifecycle:
+IdentityAccess owns authentication, account lifecycle, credentials, global system-admin capability, and refresh-session lifecycle:
 
 ```text
 src/Boardly/IdentityAccess/
@@ -353,11 +377,34 @@ rejected
 disabled
 ```
 
+Account owns only:
+
+```text
+identity + lifecycle + credentials + global system-admin capability
+```
+
+Account must not own:
+
+```text
+project permissions
+project memberships
+workflow permissions
+issue permissions
+refresh sessions
+frontend/session state
+```
+
+RefreshSession is separate from Account and owns refresh-token/session lifecycle.
+
 Only active accounts may receive access tokens or refresh cookies.
 
 Do not store access tokens in browser persistent storage.
 
 Do not return refresh tokens in JSON.
+
+Do not store raw refresh tokens.
+
+Persist only refresh token hashes.
 
 Do not put dynamic project/workflow/issue permissions into JWT claims.
 
@@ -434,18 +481,20 @@ docs/adr/0002-use-boardly-context-based-source-structure.md
 docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md
 ```
 
-## Authentication Design Scenario
+## Authentication and Account Design Scenario
 
 For authentication and IdentityAccess implementation, use:
 
 ```text
 Authentication API Strategy
+Account Domain Model
 ```
 
-The scenario design is documented in:
+The scenario designs are documented in:
 
 ```text
 docs/design/authentication-api-strategy.md
+docs/design/account-domain-model.md
 ```
 
 The binding architecture decision is documented in:
@@ -458,6 +507,7 @@ When implementing or changing this scenario, read:
 
 ```text
 docs/design/authentication-api-strategy.md
+docs/design/account-domain-model.md
 docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md
 docs/adr/0002-use-boardly-context-based-source-structure.md
 docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md
