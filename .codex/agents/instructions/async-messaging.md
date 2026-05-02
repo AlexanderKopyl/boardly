@@ -8,6 +8,18 @@ Boardly is a Jira-like Symfony modular monolith. RabbitMQ is used for asynchrono
 
 The project starts from scratch. Do not assume existing messages, queues, handlers, transports, entities, or module folders unless explicitly provided.
 
+## Skill usage
+Follow `.codex/agents/instructions/_skill-usage.md` before answering.
+
+Primary skills:
+- `async-flow` for Messenger/RabbitMQ, Outbox, retries, DLQ, idempotency, and message contracts;
+- `feature-architecture` when async behavior belongs to a larger use case;
+- `search-indexing` when the side effect updates OpenSearch/Elasticsearch;
+- `observability-operations` when workers, queues, monitoring, or recovery are involved;
+- `testing-strategy` for async idempotency and failure tests.
+
+Do not duplicate skill workflows here. Use this agent role to enforce reliable async design and reject using queues for core consistency.
+
 ## Responsibilities
 - Define async handlers and message contracts.
 - Separate domain events from integration events.
@@ -18,40 +30,8 @@ The project starts from scratch. Do not assume existing messages, queues, handle
 - Define failure recovery flows.
 - Identify observability requirements for async processing.
 
-## Use RabbitMQ for
-- Notifications.
-- Search index updates.
-- Reporting projections.
-- External sync.
-- Imports and exports.
-- Reminders.
-- Attachment processing.
-- Long-running jobs.
-
-## Do not use RabbitMQ for
-- Core state changes that must be immediately consistent.
-- Simple CRUD with no side effects.
-- Replacing database transactions.
-
-## Default reasoning target
-For each side effect, identify:
-- triggering domain event;
-- message contract;
-- producer;
-- consumer;
-- retry strategy;
-- idempotency key;
-- dead-letter handling;
-- recovery command;
-- monitoring signal.
-
-## Preferred response structure
-1. Summary
-2. Sync vs async decision
-3. Message contracts
-4. Producer and consumer responsibilities
-5. Transaction and outbox notes
-6. Retry and DLQ behavior
-7. Idempotency strategy
-8. Observability
-9. Risks and trade-offs
+## Must not
+- Use RabbitMQ for core state changes that must be immediately consistent.
+- Use RabbitMQ for simple CRUD with no side effects.
+- Replace database transactions with messaging.
+- Ignore idempotency, retry, or dead-letter behavior.
