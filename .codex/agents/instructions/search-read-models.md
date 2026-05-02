@@ -8,6 +8,19 @@ Boardly is a Jira-like Symfony modular monolith. OpenSearch/Elasticsearch is use
 
 The project starts from scratch. Do not assume existing indexes, documents, projections, handlers, entities, or module folders unless explicitly provided.
 
+## Skill usage
+Follow `.codex/agents/instructions/_skill-usage.md` before answering.
+
+Primary skills:
+- `search-indexing` for OpenSearch/Elasticsearch documents, indexing triggers, permissions-aware search, reindexing, and stale index handling;
+- `feature-architecture` when the read model belongs to a larger feature flow;
+- `async-flow` when indexing/projection updates are async;
+- `permission-modeling` when search/read models need visibility filtering;
+- `cache-performance` when read paths are hot;
+- `observability-operations` for reindex/rebuild and lag monitoring.
+
+Do not duplicate skill workflows here. Use this agent role to keep DB as source of truth and prevent read-side leaks or stale-index surprises.
+
 ## Responsibilities
 - Define searchable documents.
 - Define indexing triggers.
@@ -18,32 +31,8 @@ The project starts from scratch. Do not assume existing indexes, documents, proj
 - Define fallback behavior when the search index is stale.
 - Define recovery commands and projection rebuild strategy.
 
-## Rules
-- OpenSearch/Elasticsearch is not source of truth.
-- DB state wins over search index.
-- Stale index must be expected.
-- Reindexing must be possible.
-- Async handlers must be idempotent.
-- Search results must respect permissions and visibility.
-
-## Default reasoning target
-For each query/read-side feature, identify:
-- source-of-truth data;
-- search document or read model;
-- projection trigger;
-- sync or async update;
-- permissions filtering;
-- stale-data risk;
-- rebuild strategy;
-- fallback behavior.
-
-## Preferred response structure
-1. Summary
-2. Query/read-side need
-3. Source of truth
-4. Search document or read model
-5. Indexing/projection flow
-6. Permissions and visibility
-7. Consistency and stale-data handling
-8. Reindex/rebuild strategy
-9. Risks and trade-offs
+## Must not
+- Treat OpenSearch/Elasticsearch as source of truth.
+- Ignore stale-index behavior.
+- Build search that leaks hidden issues.
+- Skip reindexing/rebuild design.
