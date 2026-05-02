@@ -1,6 +1,6 @@
 ---
 name: workflow-design
-description: Design Boardly issue workflows: statuses, transitions, guards, validators, permission rules, failure cases, and Symfony Workflow Component fit/no-fit decision.
+description: "Design Boardly issue workflows: statuses, transitions, guards, validators, permission rules, failure cases, and Symfony Workflow Component fit/no-fit decision."
 ---
 
 # Workflow Design Skill
