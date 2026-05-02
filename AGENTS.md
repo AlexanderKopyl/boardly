@@ -40,6 +40,32 @@ Use this document when working with:
 
 If the task touches architecture, this is the primary source.
 
+### Subagents Map
+
+Read:
+
+```text
+docs/agents/subagents-map.md
+```
+
+Use this document when deciding which specialized subagent should handle the task.
+
+It defines routing for:
+
+- Product & Domain Analyst;
+- DDD / Domain Modeling;
+- Workflow & Permissions;
+- Symfony Architecture;
+- Async / Messaging;
+- Search & Read Models;
+- Cache & Performance;
+- Testing & QA;
+- Security;
+- DevOps / Observability;
+- ADR Writer.
+
+If a task crosses several responsibilities, use the multi-subagent routing rules from this document.
+
 ### ADR Template
 
 Read:
@@ -76,14 +102,15 @@ Use the documentation like this:
 
 | Task type | Read first |
 |---|---|
+| Choosing a specialized subagent | `docs/agents/subagents-map.md` |
 | Architecture proposal | `docs/architecture/project-architecture-rules.md` |
 | Symfony structure proposal | `docs/architecture/project-architecture-rules.md` |
-| Domain modeling | `docs/architecture/project-architecture-rules.md` |
-| Workflow design | `docs/architecture/project-architecture-rules.md` |
+| Domain modeling | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
+| Workflow design | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
 | CQRS command/query design | `docs/architecture/project-architecture-rules.md` |
-| RabbitMQ / async flow | `docs/architecture/project-architecture-rules.md` |
-| Redis cache design | `docs/architecture/project-architecture-rules.md` |
-| OpenSearch / Elasticsearch design | `docs/architecture/project-architecture-rules.md` |
+| RabbitMQ / async flow | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
+| Redis cache design | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
+| OpenSearch / Elasticsearch design | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
 | Important architecture decision | `docs/adr/0000-template.md` |
 | Writing an ADR | `docs/adr/0000-template.md` |
 
@@ -92,9 +119,10 @@ Use the documentation like this:
 Before creating or modifying code, check:
 
 1. Does the task require reading the architecture rules?
-2. Does the task require an ADR?
-3. Is the change consistent with the existing documentation?
-4. Is the requested change code, documentation, or architecture design?
+2. Does the task require choosing a specialized subagent?
+3. Does the task require an ADR?
+4. Is the change consistent with the existing documentation?
+5. Is the requested change code, documentation, or architecture design?
 
 If documentation and user request conflict, explain the conflict before changing code.
 
@@ -120,4 +148,10 @@ Details and constraints are documented in:
 
 ```text
 docs/architecture/project-architecture-rules.md
+```
+
+Subagent routing for this scenario is documented in:
+
+```text
+docs/agents/subagents-map.md
 ```
