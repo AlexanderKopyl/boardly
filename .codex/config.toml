@@ -6,8 +6,81 @@
 # - Relational DB is the source of truth.
 # - Redis and OpenSearch/Elasticsearch are infrastructure projections/cache only.
 #
-# Custom subagents are enabled via the [agents] section below.
-# Do not create .codex/agents/*.toml until explicit project-specific roles are defined.
+# Security posture:
+# - Use the restrictive `boardly-safe` permission profile by default.
+# - Network access is disabled by default and must be explicitly approved.
+# - Sensitive files are denied by default.
+# - SQL/database dump files are denied by default; Codex must request permission before reading them.
+# - Do not create .codex/agents/*.toml until explicit project-specific roles are defined.
+
+include_permissions_instructions = true
+approvals_reviewer = "user"
+approval_policy = { granular = { sandbox_approval = true, mcp_elicitations = true, rules = true, request_permissions = true, skill_approval = false } }
+default_permissions = "boardly-safe"
+
+[features]
+request_permissions = true
+request_permissions_tool = true
+
+[permissions.boardly-safe.filesystem]
+glob_scan_max_depth = 8
+":minimal" = "read"
+
+[permissions.boardly-safe.filesystem.":project_roots"]
+# Allow normal project work inside the repository, then deny sensitive reads below.
+"." = "write"
+
+# Environment and local credentials.
+".env*" = "none"
+"**/.env*" = "none"
+"auth.json" = "none"
+"**/auth.json" = "none"
+".npmrc" = "none"
+"**/.npmrc" = "none"
+".pypirc" = "none"
+"**/.pypirc" = "none"
+
+# Symfony/application secrets and private local state.
+"config/secrets/**" = "none"
+"var/private/**" = "none"
+"var/backups/**" = "none"
+"var/dumps/**" = "none"
+"storage/private/**" = "none"
+"storage/backups/**" = "none"
+"storage/dumps/**" = "none"
+
+# Database dumps, SQL exports, and local database files.
+"*.sql" = "none"
+"**/*.sql" = "none"
+"*.sql.gz" = "none"
+"**/*.sql.gz" = "none"
+"*.dump" = "none"
+"**/*.dump" = "none"
+"*.bak" = "none"
+"**/*.bak" = "none"
+"*.sqlite" = "none"
+"**/*.sqlite" = "none"
+"*.sqlite3" = "none"
+"**/*.sqlite3" = "none"
+"*.db" = "none"
+"**/*.db" = "none"
+
+# Private keys, certificates, and token material.
+"*.pem" = "none"
+"**/*.pem" = "none"
+"*.key" = "none"
+"**/*.key" = "none"
+"*.p12" = "none"
+"**/*.p12" = "none"
+"*.pfx" = "none"
+"**/*.pfx" = "none"
+"id_rsa" = "none"
+"**/id_rsa" = "none"
+"id_ed25519" = "none"
+"**/id_ed25519" = "none"
+
+[permissions.boardly-safe.network]
+enabled = false
 
 [agents]
 max_threads = 6
@@ -19,6 +92,7 @@ command = "docker"
 args = ["run", "--rm", "-i", "mcp/sequentialthinking"]
 startup_timeout_sec = 20
 tool_timeout_sec = 120
+default_tools_approval_mode = "prompt"
 enabled = true
 
 [mcp_servers.context7]
@@ -26,4 +100,5 @@ command = "npx"
 args = ["-y", "@upstash/context7-mcp"]
 startup_timeout_sec = 60
 tool_timeout_sec = 120
+default_tools_approval_mode = "prompt"
 enabled = true
