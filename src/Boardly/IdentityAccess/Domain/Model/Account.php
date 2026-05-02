@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Domain\Model;
 
+use App\Boardly\IdentityAccess\Domain\Event\AccountApproved;
 use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
+use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyActive;
+use App\Boardly\IdentityAccess\Domain\Exception\AccountNotPendingApproval;
+use App\Boardly\IdentityAccess\Domain\Result\AccountApprovalResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountRegistrationResult;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountStatus;
@@ -80,6 +84,25 @@ final class Account
         return new AccountRegistrationResult(
             $account,
             new AccountRegistered($id, $email, true, $createdAt),
+        );
+    }
+
+    public function approve(\DateTimeImmutable $approvedAt): AccountApprovalResult
+    {
+        if ($this->status->isActive()) {
+            throw AccountAlreadyActive::create();
+        }
+
+        if (!$this->status->isPendingApproval()) {
+            throw AccountNotPendingApproval::create();
+        }
+
+        $this->status = AccountStatus::active();
+        $this->updatedAt = $approvedAt;
+        $this->approvedAt = $approvedAt;
+
+        return new AccountApprovalResult(
+            new AccountApproved($this->id, $approvedAt),
         );
     }
 
