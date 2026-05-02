@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Boardly\IdentityAccess\Domain\Model;
 
 use App\Boardly\IdentityAccess\Domain\Event\AccountApproved;
+use App\Boardly\IdentityAccess\Domain\Event\AccountDisabled;
 use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
 use App\Boardly\IdentityAccess\Domain\Event\AccountRejected;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyActive;
+use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyDisabled;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyRejected;
+use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountStatusTransition;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountNotPendingApproval;
 use App\Boardly\IdentityAccess\Domain\Result\AccountApprovalResult;
+use App\Boardly\IdentityAccess\Domain\Result\AccountDisableResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountRegistrationResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountRejectionResult;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
@@ -125,6 +129,25 @@ final class Account
 
         return new AccountRejectionResult(
             new AccountRejected($this->id, $rejectedAt),
+        );
+    }
+
+    public function disable(\DateTimeImmutable $disabledAt): AccountDisableResult
+    {
+        if ($this->status->isDisabled()) {
+            throw AccountAlreadyDisabled::create();
+        }
+
+        if (!$this->status->isActive()) {
+            throw InvalidAccountStatusTransition::create();
+        }
+
+        $this->status = AccountStatus::disabled();
+        $this->updatedAt = $disabledAt;
+        $this->disabledAt = $disabledAt;
+
+        return new AccountDisableResult(
+            new AccountDisabled($this->id, $disabledAt),
         );
     }
 
