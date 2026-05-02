@@ -11,7 +11,11 @@
 # - Network access is disabled by default and must be explicitly approved.
 # - Sensitive files are denied by default.
 # - SQL/database dump files are denied by default; Codex must request permission before reading them.
-# - Do not create .codex/agents/*.toml until explicit project-specific roles are defined.
+#
+# Custom subagents:
+# - Project-specific subagents are defined in .codex/agents/*.toml.
+# - Their role instructions are defined in .codex/agents/instructions/*.md.
+# - Do not assume existing Symfony files, Doctrine entities, controllers, or module structure until they are explicitly created.
 
 include_permissions_instructions = true
 approvals_reviewer = "user"
