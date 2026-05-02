@@ -26,9 +26,11 @@ approvals_reviewer = "user"
 approval_policy = { granular = { sandbox_approval = true, mcp_elicitations = true, rules = true, request_permissions = true, skill_approval = false } }
 default_permissions = "boardly-safe"
 
+# Suppress warnings for explicitly enabled experimental Codex features used by this project.
+suppress_unstable_features_warning = true
+
 [features]
-request_permissions = true
-request_permissions_tool = true
+exec_permission_approvals = true
 multi_agent = true
 multi_agent_v2 = true
 
