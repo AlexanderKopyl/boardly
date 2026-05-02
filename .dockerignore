@@ -1,0 +1,11 @@
+.git
+.github
+var
+vendor
+node_modules
+.idea
+.vscode
+.env.local
+.env.*.local
+composer.lock
+.phpunit.result.cache
