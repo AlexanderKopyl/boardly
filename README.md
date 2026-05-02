@@ -30,27 +30,67 @@ AGENTS.md
 
 ## Requirements
 
+Preferred local setup:
+
+- PHP 8.3+
+- Composer 2+
 - Docker
 - Docker Compose
 - Make
 
-Local PHP and Composer are optional if you work through Docker.
+Symfony/PHP runs locally.
+Infrastructure runs in Docker.
 
-## First Install
+## First Install — Preferred Hybrid Mode
+
+Copy local environment example:
 
 ```bash
-make install
+cp .env.local.example .env.local
 ```
 
-This builds the PHP container and runs:
+Install PHP dependencies locally:
 
 ```bash
 composer install
 ```
 
-## Start Development Stack
+Start infrastructure only:
 
 ```bash
+make infra-up
+```
+
+Start Symfony locally:
+
+```bash
+make serve
+```
+
+Application:
+
+```text
+http://127.0.0.1:8080
+```
+
+Health check:
+
+```text
+GET http://127.0.0.1:8080/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+## Alternative — Full Docker Mode
+
+Use this only if local PHP/Composer/extensions are problematic:
+
+```bash
+make install
 make up
 ```
 
@@ -60,11 +100,7 @@ Application:
 http://localhost:8080
 ```
 
-Health check:
-
-```text
-GET http://localhost:8080/health
-```
+## Infrastructure Services
 
 RabbitMQ management UI:
 
@@ -98,21 +134,58 @@ User: boardly
 Password: boardly
 ```
 
+Redis:
+
+```text
+localhost:6379
+```
+
 ## Useful Commands
 
+Hybrid/local commands:
+
 ```bash
-make up       # Start services
-make down     # Stop services
-make restart  # Restart services
+make infra-up       # Start PostgreSQL, Redis, RabbitMQ, OpenSearch
+make infra-down     # Stop infrastructure services
+make infra-restart  # Restart infrastructure services
+make serve          # Run Symfony locally on 127.0.0.1:8080
+make local-install  # Run composer install locally
+make local-console  # Run Symfony console locally
+make local-test     # Run PHPUnit locally
+make local-phpstan  # Run PHPStan locally
+make local-cs-fix   # Run PHP CS Fixer locally
+make local-rector   # Run Rector locally
+make local-qa       # Run local tests and static analysis
+```
+
+Full Docker commands:
+
+```bash
+make install  # Build app container and run composer install inside Docker
+make up       # Start all services including app container
+make down     # Stop all services
+make restart  # Restart all services
 make shell    # Open shell in app container
-make console  # Run Symfony console
-make test     # Run PHPUnit
-make phpstan  # Run PHPStan
-make cs-fix   # Run PHP CS Fixer
-make rector   # Run Rector
-make qa       # Run tests and static analysis
+make console  # Run Symfony console inside Docker
+make test     # Run PHPUnit inside Docker
+make phpstan  # Run PHPStan inside Docker
+make cs-fix   # Run PHP CS Fixer inside Docker
+make rector   # Run Rector inside Docker
+make qa       # Run tests and static analysis inside Docker
 make logs     # Follow Docker logs
 ```
+
+## Composer Lock
+
+This is an application repository, not a reusable library.
+
+After the first successful install, commit:
+
+```text
+composer.lock
+```
+
+This keeps dependency versions reproducible for all developers and CI.
 
 ## Current Scope
 
