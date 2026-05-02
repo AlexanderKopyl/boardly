@@ -8,11 +8,14 @@ use App\Boardly\IdentityAccess\Domain\Event\AccountApproved;
 use App\Boardly\IdentityAccess\Domain\Event\AccountDisabled;
 use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
 use App\Boardly\IdentityAccess\Domain\Event\AccountRejected;
+use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\Result\AccountApprovalResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountDisableResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountRegistrationResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountRejectionResult;
+use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
+use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -29,8 +32,17 @@ final class AccountResultTest extends TestCase
             new \DateTimeImmutable('2026-05-02T12:00:00+00:00'),
         );
 
-        $result = new AccountRegistrationResult($event);
+        $account = Account::register(
+            $event->accountId(),
+            $event->email(),
+            $this->passwordHash(),
+            AccountName::fromString('Registered Account'),
+            $event->registeredAt(),
+        )->account();
 
+        $result = new AccountRegistrationResult($account, $event);
+
+        self::assertSame($account, $result->account());
         self::assertSame($event, $result->event());
     }
 
@@ -84,7 +96,11 @@ final class AccountResultTest extends TestCase
 
         sort($publicMethodNames);
 
-        self::assertSame(['__construct', 'event'], $publicMethodNames);
+        $expectedPublicMethodNames = [AccountRegistrationResult::class === $resultClass ? 'account' : null, '__construct', 'event'];
+        $expectedPublicMethodNames = array_values(array_filter($expectedPublicMethodNames));
+        sort($expectedPublicMethodNames);
+
+        self::assertSame($expectedPublicMethodNames, $publicMethodNames);
     }
 
     /**
@@ -161,5 +177,10 @@ final class AccountResultTest extends TestCase
     private function accountId(): AccountId
     {
         return AccountId::fromString('018f3f7a-9e4c-7b2d-9c52-3f8f9b8b4c2d');
+    }
+
+    private function passwordHash(): PasswordHash
+    {
+        return PasswordHash::fromString('$2y$13$zYxwVuTsRqPoNmLkJiHgFe.DcBa9876543210abcdefABCDEFghij');
     }
 }
