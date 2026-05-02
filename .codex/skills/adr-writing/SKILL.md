@@ -1,6 +1,6 @@
 ---
 name: adr-writing
-description: Write Boardly architecture decision records: context, decision, alternatives, consequences, risks, follow-up actions, and explicit trade-offs.
+description: "Write Boardly architecture decision records: context, decision, alternatives, consequences, risks, follow-up actions, and explicit trade-offs."
 ---
 
 # ADR Writing Skill
