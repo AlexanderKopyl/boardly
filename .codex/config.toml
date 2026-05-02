@@ -13,10 +13,11 @@
 # - SQL/database dump files are denied by default; Codex must request permission before reading them.
 #
 # Custom subagents and skills:
-# - Project-specific subagents are defined in .codex/agents/*.toml.
+# - Project-specific subagents are registered explicitly in [agents.<role>] below.
+# - Role-specific config layers live in .codex/agents/*.toml.
 # - Role instructions are defined in .codex/agents/instructions/*.md.
 # - Shared skill usage rules are defined in .codex/agents/instructions/_skill-usage.md.
-# - Reusable skills are defined in .codex/skills/*/SKILL.md.
+# - Reusable skills are registered explicitly in [[skills.config]] below.
 # - Subagents should use skills as execution playbooks instead of duplicating workflow logic.
 # - Do not assume existing Symfony files, Doctrine entities, controllers, or module structure until they are explicitly created.
 
@@ -28,6 +29,51 @@ default_permissions = "boardly-safe"
 [features]
 request_permissions = true
 request_permissions_tool = true
+multi_agent = true
+multi_agent_v2 = true
+
+[skills]
+include_instructions = true
+
+[[skills.config]]
+path = "skills/domain-modeling/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/feature-architecture/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/workflow-design/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/async-flow/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/search-indexing/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/permission-modeling/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/testing-strategy/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/cache-performance/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/observability-operations/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/adr-writing/SKILL.md"
+enabled = true
 
 [permissions.boardly-safe.filesystem]
 glob_scan_max_depth = 8
@@ -93,6 +139,51 @@ enabled = false
 max_threads = 6
 max_depth = 1
 job_max_runtime_seconds = 1800
+
+[agents.product-domain-analyst]
+description = "Clarifies Boardly product behavior, actors, MVP scope, use cases, acceptance criteria, and business risks before implementation."
+config_file = "agents/product-domain-analyst.toml"
+nickname_candidates = ["DomainAnalyst", "ProductAnalyst"]
+
+[agents.ddd-modeling]
+description = "Models Boardly domain boundaries, aggregates, invariants, value objects, domain services, repositories, domain events, and transaction boundaries."
+config_file = "agents/ddd-modeling.toml"
+nickname_candidates = ["DomainModeler", "DDDReviewer"]
+
+[agents.workflow-permissions]
+description = "Designs issue workflows, statuses, transitions, guards, validators, permissions, project membership, issue visibility, and audit-sensitive access decisions."
+config_file = "agents/workflow-permissions.toml"
+nickname_candidates = ["WorkflowGuard", "AccessArchitect"]
+
+[agents.symfony-architecture]
+description = "Translates Boardly architecture into Symfony-friendly Domain/Application/Infrastructure/UI implementation without making Symfony the center of the design."
+config_file = "agents/symfony-architecture.toml"
+nickname_candidates = ["SymfonyArchitect", "FrameworkMapper"]
+
+[agents.async-messaging]
+description = "Designs RabbitMQ and Symfony Messenger flows, Outbox, retries, dead-letter behavior, idempotent consumers, and async observability."
+config_file = "agents/async-messaging.toml"
+nickname_candidates = ["AsyncDesigner", "QueueArchitect"]
+
+[agents.search-read-models]
+description = "Designs OpenSearch/Elasticsearch usage, searchable documents, read models, projections, reindexing, stale-index handling, and permissions-aware search."
+config_file = "agents/search-read-models.toml"
+nickname_candidates = ["SearchDesigner", "ReadModelArchitect"]
+
+[agents.cache-performance]
+description = "Designs Redis usage, TTL, invalidation, hot read paths, database query risks, locks, rate limiting, and performance trade-offs."
+config_file = "agents/cache-performance.toml"
+nickname_candidates = ["PerformanceReviewer", "CacheArchitect"]
+
+[agents.testing-security-reviewer]
+description = "Reviews Boardly features for test coverage, permission correctness, visibility rules, abuse cases, auditability, and regression risks."
+config_file = "agents/testing-security-reviewer.toml"
+nickname_candidates = ["SecurityReviewer", "QAArchitect"]
+
+[agents.devops-adr-documentation]
+description = "Designs operational readiness and ADR documentation: workers, health checks, logs, metrics, traces, recovery commands, and architecture trade-offs."
+config_file = "agents/devops-adr-documentation.toml"
+nickname_candidates = ["OpsArchitect", "ADRWriter"]
 
 [mcp_servers.sequentialthinking]
 command = "docker"
