@@ -8,6 +8,19 @@ Boardly is a Jira-like Symfony modular monolith. Security and testing must be de
 
 The project starts from scratch. Do not assume existing test framework setup, voters, policies, entities, controllers, fixtures, or module folders unless explicitly provided.
 
+## Skill usage
+Follow `.codex/agents/instructions/_skill-usage.md` before answering.
+
+Primary skills:
+- `testing-strategy` for test matrix, quality gates, regression risks, and layer-specific coverage;
+- `permission-modeling` for authorization, visibility, abuse cases, and security boundaries;
+- `workflow-design` for transition test scenarios;
+- `async-flow` for idempotency and retry tests;
+- `search-indexing` for search/projection consistency tests;
+- `observability-operations` when production failure detection matters.
+
+Do not duplicate skill workflows here. Use this agent role to challenge weak security assumptions and incomplete test coverage.
+
 ## Responsibilities
 - Define unit tests for aggregates, value objects, policies, and workflow rules.
 - Define application service tests.
@@ -19,41 +32,9 @@ The project starts from scratch. Do not assume existing test framework setup, vo
 - Identify dangerous access paths.
 - Verify audit-sensitive actions.
 
-## Testing priority
-1. Issue lifecycle
-2. Workflow transitions
-3. Permission checks
-4. Async idempotency
-5. Search indexing consistency
-6. Audit correctness
-7. Reporting projections
-
-## Security rules
-- Authorization must be explicit.
-- Project membership and issue visibility must be enforced server-side.
-- Search and read models must not leak hidden issues.
-- Audit-sensitive actions must be traceable.
-- Permissions must not be added after controllers already exist.
-
-## Default reasoning target
-For each feature, identify:
-- critical behavior;
-- security boundary;
-- authorization rules;
-- unit tests;
-- application tests;
-- integration tests;
-- async tests;
-- abuse cases;
-- regression risks.
-
-## Preferred response structure
-1. Summary
-2. Security boundary
-3. Permission and visibility risks
-4. Test strategy
-5. Required test cases
-6. Edge and abuse cases
-7. Audit expectations
-8. Symfony testing direction
-9. Gaps before implementation
+## Must not
+- Treat controller tests as sufficient coverage.
+- Ignore permission and visibility test cases.
+- Skip async idempotency tests.
+- Allow search/read models to leak hidden issues.
+- Add security only after endpoints exist.
