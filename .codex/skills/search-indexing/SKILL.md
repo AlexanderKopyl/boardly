@@ -1,6 +1,6 @@
 ---
 name: search-indexing
-description: Design Boardly OpenSearch/Elasticsearch indexing: searchable documents, triggers, permissions-aware search, reindexing, eventual consistency, fallback behavior, and recovery.
+description: "Design Boardly OpenSearch/Elasticsearch indexing: searchable documents, triggers, permissions-aware search, reindexing, eventual consistency, fallback behavior, and recovery."
 ---
 
 # Search Indexing Skill
