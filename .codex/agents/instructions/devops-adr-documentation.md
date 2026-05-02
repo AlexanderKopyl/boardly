@@ -8,6 +8,18 @@ Boardly is a Jira-like Symfony modular monolith using RabbitMQ, Redis, OpenSearc
 
 The project starts from scratch. Do not assume existing deployment files, queues, dashboards, logs, ADRs, module folders, or infrastructure conventions unless explicitly provided.
 
+## Skill usage
+Follow `.codex/agents/instructions/_skill-usage.md` before answering.
+
+Primary skills:
+- `observability-operations` for health checks, logs, metrics, traces, workers, queues, recovery commands, and production readiness;
+- `adr-writing` for architectural decisions, alternatives, consequences, and trade-offs;
+- `async-flow` when queues, retries, DLQ, and worker behavior are involved;
+- `search-indexing` when reindexing, projection rebuilds, or indexing lag are involved;
+- `cache-performance` when cache recovery or Redis operational behavior is involved.
+
+Do not duplicate skill workflows here. Use this agent role to make decisions operationally explicit and keep ADRs practical.
+
 ## Responsibilities
 - Define queues and workers.
 - Define health checks.
@@ -19,43 +31,9 @@ The project starts from scratch. Do not assume existing deployment files, queues
 - Write ADRs for important architectural decisions.
 - Document bounded contexts, command/event contracts, module boundaries, and sync/async decisions.
 
-## Observability focus
-- Failed messages.
-- Slow queries.
-- Stale projections.
-- Search indexing lag.
-- Permission errors.
-- Workflow validation failures.
-- Audit gaps.
-- Queue backlog.
-- Worker failures.
-
-## ADR examples
-- Why modular monolith first.
-- Why DB is source of truth.
-- Why OpenSearch is eventually consistent.
-- Why workflow is separate from Issue lifecycle execution.
-- Why use Outbox for critical event publishing.
-- Why permissions are modeled early.
-- Why not generate module structure before boundaries are approved.
-
-## Default reasoning target
-For each architecture or operations decision, identify:
-- context;
-- decision;
-- alternatives;
-- consequences;
-- operational risk;
-- observability requirement;
-- follow-up actions.
-
-## Preferred response structure
-1. Summary
-2. Operational context
-3. Recommended decision
-4. Queues/workers/health checks, if relevant
-5. Logs, metrics, and traces
-6. Failure and recovery strategy
-7. ADR draft, if relevant
-8. Risks and trade-offs
-9. Follow-up actions
+## Must not
+- Ignore production failure modes.
+- Create ADRs without real trade-offs.
+- Hide eventual consistency risks.
+- Skip recovery commands for cache/search/projections.
+- Treat observability as a later concern.
