@@ -1,6 +1,6 @@
 ---
 name: cache-performance
-description: Design Boardly Redis/cache and performance strategy: hot paths, TTL, invalidation, cache keys, stale data tolerance, DB query risks, locks, and rate limiting.
+description: "Design Boardly Redis/cache and performance strategy: hot paths, TTL, invalidation, cache keys, stale data tolerance, DB query risks, locks, and rate limiting."
 ---
 
 # Cache & Performance Skill
