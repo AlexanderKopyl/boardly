@@ -1,0 +1,29 @@
+# Boardly project-scoped Codex configuration.
+#
+# Project context:
+# - Jira-like Symfony project from scratch.
+# - PHP 8.2+, DDD, Hexagonal Architecture, EDA, modular monolith.
+# - Relational DB is the source of truth.
+# - Redis and OpenSearch/Elasticsearch are infrastructure projections/cache only.
+#
+# Custom subagents are enabled via the [agents] section below.
+# Do not create .codex/agents/*.toml until explicit project-specific roles are defined.
+
+[agents]
+max_threads = 6
+max_depth = 1
+job_max_runtime_seconds = 1800
+
+[mcp_servers.sequentialthinking]
+command = "docker"
+args = ["run", "--rm", "-i", "mcp/sequentialthinking"]
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+enabled = true
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+startup_timeout_sec = 60
+tool_timeout_sec = 120
+enabled = true
