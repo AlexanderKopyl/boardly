@@ -6,10 +6,13 @@ namespace App\Boardly\IdentityAccess\Domain\Model;
 
 use App\Boardly\IdentityAccess\Domain\Event\AccountApproved;
 use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
+use App\Boardly\IdentityAccess\Domain\Event\AccountRejected;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyActive;
+use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyRejected;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountNotPendingApproval;
 use App\Boardly\IdentityAccess\Domain\Result\AccountApprovalResult;
 use App\Boardly\IdentityAccess\Domain\Result\AccountRegistrationResult;
+use App\Boardly\IdentityAccess\Domain\Result\AccountRejectionResult;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountStatus;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
@@ -103,6 +106,25 @@ final class Account
 
         return new AccountApprovalResult(
             new AccountApproved($this->id, $approvedAt),
+        );
+    }
+
+    public function reject(\DateTimeImmutable $rejectedAt): AccountRejectionResult
+    {
+        if ($this->status->isRejected()) {
+            throw AccountAlreadyRejected::create();
+        }
+
+        if (!$this->status->isPendingApproval()) {
+            throw AccountNotPendingApproval::create();
+        }
+
+        $this->status = AccountStatus::rejected();
+        $this->updatedAt = $rejectedAt;
+        $this->rejectedAt = $rejectedAt;
+
+        return new AccountRejectionResult(
+            new AccountRejected($this->id, $rejectedAt),
         );
     }
 
