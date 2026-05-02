@@ -44,7 +44,7 @@ If the task touches architecture, this is the primary source.
 
 ### Accepted ADRs
 
-Read accepted ADRs before making architecture, structure, or module-boundary decisions.
+Read accepted ADRs before making architecture, structure, module-boundary, event-delivery, or infrastructure decisions.
 
 #### ADR-0001: Modular Monolith, Hexagonal Architecture, and DDD
 
@@ -78,6 +78,44 @@ Use this ADR when working with:
 - bounded context folders;
 - deciding where new classes should live;
 - avoiding empty/decorative modules.
+
+#### ADR-0003: Transactional Outbox for Domain Event Delivery
+
+```text
+docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md
+```
+
+Use this ADR when working with:
+
+- domain event delivery;
+- outbox persistence;
+- Messenger/RabbitMQ publication;
+- async side effects;
+- search indexing events;
+- audit/activity projections;
+- notification events;
+- reporting projections;
+- event retry and idempotency;
+- avoiding direct message dispatch from domain services, entities, or command handlers as part of business mutation.
+
+### Design Documents
+
+#### ChangeIssueStatus
+
+```text
+docs/design/change-issue-status.md
+```
+
+Use this document when working with:
+
+- the `ChangeIssueStatus` use case;
+- Issue status ownership;
+- Workflow transition validation boundary;
+- permission check boundary;
+- transaction boundary for status changes;
+- `IssueStatusChanged` domain event shape;
+- async side effects after status change;
+- failure cases for issue status changes.
 
 ### Subagents Map
 
@@ -147,11 +185,13 @@ Use the documentation like this:
 | Source code placement decision | `docs/adr/0002-use-boardly-context-based-source-structure.md` |
 | Creating a new Boardly module/context | `docs/adr/0002-use-boardly-context-based-source-structure.md`, then `docs/architecture/project-architecture-rules.md` |
 | Domain modeling | `docs/architecture/project-architecture-rules.md`, `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md`, and `docs/agents/subagents-map.md` |
-| Workflow design | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
+| Workflow design | `docs/architecture/project-architecture-rules.md`, `docs/design/change-issue-status.md`, and `docs/agents/subagents-map.md` |
 | CQRS command/query design | `docs/architecture/project-architecture-rules.md` and `docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md` |
-| RabbitMQ / async flow | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
+| RabbitMQ / async flow | `docs/architecture/project-architecture-rules.md`, `docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md`, and `docs/agents/subagents-map.md` |
+| Domain event delivery / Outbox | `docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md`, then `docs/architecture/project-architecture-rules.md` |
 | Redis cache design | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
-| OpenSearch / Elasticsearch design | `docs/architecture/project-architecture-rules.md` and `docs/agents/subagents-map.md` |
+| OpenSearch / Elasticsearch design | `docs/architecture/project-architecture-rules.md`, `docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md`, and `docs/agents/subagents-map.md` |
+| ChangeIssueStatus design or implementation | `docs/design/change-issue-status.md`, then ADR-0001, ADR-0002, and ADR-0003 |
 | Important architecture decision | Existing accepted ADRs, then `docs/adr/0000-template.md` |
 | Writing an ADR | Existing accepted ADRs, then `docs/adr/0000-template.md` |
 
@@ -161,10 +201,11 @@ Before creating or modifying code, check:
 
 1. Does the task require reading the architecture rules?
 2. Does the task require reading accepted ADRs?
-3. Does the task require choosing a specialized subagent?
-4. Does the task require a new ADR?
-5. Is the change consistent with the existing documentation?
-6. Is the requested change code, documentation, or architecture design?
+3. Does the task require reading a scenario design document?
+4. Does the task require choosing a specialized subagent?
+5. Does the task require a new ADR?
+6. Is the change consistent with the existing documentation?
+7. Is the requested change code, documentation, or architecture design?
 
 If documentation and user request conflict, explain the conflict before changing code.
 
@@ -179,14 +220,38 @@ docs/adr/0002-use-boardly-context-based-source-structure.md
 Default classification:
 
 ```text
-src/Boardly             -> product-specific Boardly code
+src/Boardly              -> product-specific Boardly code
 src/Boardly/SharedKernel -> small shared Boardly domain concepts
-src/Shared              -> technical abstractions that do not know about Boardly
+src/Shared               -> technical abstractions that do not know about Boardly
 ```
 
 Do not create future modules just because they are listed as candidates.
 
 Create modules only when a real use case requires them.
+
+## Event Delivery Rules for Agents
+
+For reliable domain event delivery, follow:
+
+```text
+docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md
+```
+
+Default rule:
+
+```text
+Business state change + outbox event record must be committed in the same DB transaction.
+```
+
+Do not dispatch Messenger/RabbitMQ messages directly from:
+
+- domain entities;
+- domain services;
+- command handlers as part of the business mutation.
+
+Use the outbox for durable domain event delivery when async side effects must reliably follow committed business state.
+
+Async consumers must be idempotent.
 
 ## Default Architecture Response Format
 
@@ -206,7 +271,13 @@ For initial architecture validation, use:
 ChangeIssueStatus
 ```
 
-Details and constraints are documented in:
+The scenario design is documented in:
+
+```text
+docs/design/change-issue-status.md
+```
+
+Details and constraints are also documented in:
 
 ```text
 docs/architecture/project-architecture-rules.md
@@ -218,9 +289,11 @@ Subagent routing for this scenario is documented in:
 docs/agents/subagents-map.md
 ```
 
-When implementing or designing this scenario, also read:
+When implementing or changing this scenario, read:
 
 ```text
+docs/design/change-issue-status.md
 docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md
 docs/adr/0002-use-boardly-context-based-source-structure.md
+docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md
 ```
