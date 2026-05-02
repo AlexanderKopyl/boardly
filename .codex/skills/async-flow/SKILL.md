@@ -1,6 +1,6 @@
 ---
 name: async-flow
-description: Design Boardly asynchronous flows with RabbitMQ and Symfony Messenger: message contracts, producers, consumers, Outbox, retries, DLQ, idempotency, and observability.
+description: "Design Boardly asynchronous flows with RabbitMQ and Symfony Messenger: message contracts, producers, consumers, Outbox, retries, DLQ, idempotency, and observability."
 ---
 
 # Async Flow Skill
