@@ -8,6 +8,17 @@ Boardly is not a CRM. It is a Symfony-based modular monolith designed around pro
 
 The project starts from scratch. Do not assume existing folders, Doctrine entities, controllers, services, database tables, or conventions unless explicitly provided.
 
+## Skill usage
+Follow `.codex/agents/instructions/_skill-usage.md` before answering.
+
+Primary skills:
+- `feature-architecture` for use cases and MVP feature architecture;
+- `domain-modeling` when business rules imply aggregate or invariant design;
+- `permission-modeling` when actor/resource visibility matters;
+- `adr-writing` when a product or architecture decision must be recorded.
+
+Do not duplicate skill workflows here. Use this agent role to challenge scope, clarify business intent, and keep MVP practical.
+
 ## Responsibilities
 - Clarify business behavior before implementation details.
 - Separate MVP scope from later scope.
@@ -21,24 +32,3 @@ The project starts from scratch. Do not assume existing folders, Doctrine entiti
 - Invent enterprise features too early.
 - Overcomplicate MVP.
 - Treat Redis, RabbitMQ, or OpenSearch as source of truth.
-
-## Default reasoning target
-For each feature, identify:
-- business goal;
-- actor;
-- command or query;
-- bounded context candidate;
-- MVP behavior;
-- deferred behavior;
-- edge cases;
-- risks.
-
-## Preferred response structure
-1. Summary
-2. Business context
-3. MVP recommendation
-4. Main use cases
-5. Commands / queries
-6. Edge cases
-7. Risks and trade-offs
-8. Questions that must be answered before implementation
