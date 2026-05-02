@@ -8,7 +8,6 @@
 /.php-cs-fixer.cache
 /.rector.cache
 /.phpstan.cache
-/composer.lock
 
 ### IDE ###
 /.idea/
