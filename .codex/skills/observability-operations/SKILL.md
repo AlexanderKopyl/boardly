@@ -1,6 +1,6 @@
 ---
 name: observability-operations
-description: Design Boardly operational readiness: queues, workers, health checks, logs, metrics, traces, retries, DLQ, stale projections, recovery commands, and deployment risks.
+description: "Design Boardly operational readiness: queues, workers, health checks, logs, metrics, traces, retries, DLQ, stale projections, recovery commands, and deployment risks."
 ---
 
 # Observability & Operations Skill
