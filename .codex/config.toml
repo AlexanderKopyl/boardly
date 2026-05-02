@@ -135,10 +135,9 @@ glob_scan_max_depth = 8
 [permissions.boardly-safe.network]
 enabled = false
 
-[agents]
-max_threads = 6
-max_depth = 1
-job_max_runtime_seconds = 1800
+# Do not set [agents].max_threads, [agents].max_depth, or
+# [agents].job_max_runtime_seconds while multi_agent_v2 is enabled.
+# multi_agent_v2 accepts role registrations below, but rejects those v1 limits.
 
 [agents.product-domain-analyst]
 description = "Clarifies Boardly product behavior, actors, MVP scope, use cases, acceptance criteria, and business risks before implementation."
