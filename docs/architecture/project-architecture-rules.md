@@ -22,6 +22,12 @@ The architecture must support:
 
 The goal is a practical modular system, not framework-driven code generation.
 
+Detailed HTTP controller and transport-layer rules are defined in:
+
+```text
+docs/architecture/http-controller-rules.md
+```
+
 ---
 
 ## 2. Core Architecture
@@ -163,6 +169,12 @@ Controller responsibilities:
 4. return response.
 
 Controllers must not contain workflow rules, permission logic, or aggregate mutation logic.
+
+Detailed HTTP controller rules, including request DTO mapping, Symfony Validator usage, centralized exception mapping, and HTTP status code policy, are defined in:
+
+```text
+docs/architecture/http-controller-rules.md
+```
 
 ---
 
@@ -393,6 +405,12 @@ Rules:
 - Security must not be only route-level.
 - Serializer must not expose domain objects blindly.
 - Symfony Workflow Component must not force an anemic domain model.
+
+HTTP controller details are governed by:
+
+```text
+docs/architecture/http-controller-rules.md
+```
 
 ---
 
