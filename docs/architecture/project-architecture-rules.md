@@ -62,6 +62,58 @@ Hard rules:
 - RabbitMQ must not be required for core state changes to be valid.
 - Symfony is an implementation framework, not the architecture center.
 
+### SOLID / Design Principle Rules
+
+Agents and contributors must treat SOLID as practical production rules, not as decorative theory.
+
+Single Responsibility Principle:
+
+```text
+A class should have one clear reason to change.
+```
+
+Rules:
+
+- Do not create classes that coordinate unrelated responsibilities.
+- Do not mix transport mapping, use-case orchestration, persistence, serialization, authorization, and publishing in one class.
+- Split code when a class starts changing for unrelated reasons.
+- Prefer small explicit collaborators over generic `Manager`, `Helper`, `Utils`, or God-service classes.
+
+Open/Closed Principle:
+
+```text
+Code should be open for extension and closed for repeated modification.
+```
+
+Rules:
+
+- Do not build central `match`, `switch`, or `if instanceof` registries that must be edited for every new domain type.
+- Prefer extension points such as interfaces, strategy classes, registries, tagged services, factories, or explicit mappers when new cases are expected to grow.
+- Shared technical mechanisms must expose extension points; bounded contexts must provide their own implementations.
+- `src/Shared` must not become a place that knows every event, command, aggregate, or module in the product.
+- A one-off conditional is acceptable only when the variation is genuinely limited and not expected to grow.
+
+Example:
+
+```text
+Bad:
+Shared OutboxEventSerializer matches every concrete domain event class.
+
+Good:
+Shared OutboxEventSerializerRegistry uses tagged OutboxEventSerializerInterface implementations.
+Each bounded context owns serializers for its own events.
+```
+
+Review checklist:
+
+```text
+- Does this class have one clear responsibility?
+- Will adding the next similar case require editing this same class again?
+- Is a shared class starting to know concrete bounded-context types?
+- Would a strategy/registry/tagged service remove repeated modifications?
+- Is the abstraction useful now, or is it speculative ceremony?
+```
+
 ---
 
 ## 3. Hexagonal Architecture Rules
