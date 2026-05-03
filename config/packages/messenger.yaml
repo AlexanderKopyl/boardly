@@ -1,6 +1,14 @@
 framework:
     messenger:
+        default_bus: command.bus
         failure_transport: failed
+
+        buses:
+            command.bus: ~
+            query.bus: ~
+            event.bus:
+                default_middleware:
+                    allow_no_handlers: true
 
         transports:
             async:

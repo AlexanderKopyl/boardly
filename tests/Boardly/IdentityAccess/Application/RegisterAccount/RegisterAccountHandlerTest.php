@@ -18,6 +18,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\IdGeneratorInterface;
+use App\Shared\Application\Transaction\TransactionalInterface;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -212,13 +213,33 @@ final class RegisterAccountHandlerTest extends TestCase
         }
     }
 
+    public function testRegistrationRunsInsideTransaction(): void
+    {
+        $transactional = new FakeTransactional();
+
+        $this->handler(
+            new FakeAccountRepository(),
+            new FakePasswordHasher(self::VALID_HASH),
+            new FakeClock(new DateTimeImmutable('2026-05-03T10:15:30+00:00')),
+            new FakeIdGenerator(self::GENERATED_ACCOUNT_ID),
+            $transactional,
+        )->__invoke(new RegisterAccountCommand(
+            'registered@example.com',
+            'plain-password',
+            'Registered Account',
+        ));
+
+        self::assertSame(1, $transactional->transactionCallCount);
+    }
+
     private function handler(
         FakeAccountRepository $repository,
         FakePasswordHasher $hasher,
         FakeClock $clock,
         FakeIdGenerator $idGenerator,
+        ?FakeTransactional $transactional = null,
     ): RegisterAccountHandler {
-        return new RegisterAccountHandler($repository, $hasher, $clock, $idGenerator);
+        return new RegisterAccountHandler($repository, $hasher, $clock, $idGenerator, $transactional ?? new FakeTransactional());
     }
 }
 
@@ -315,5 +336,17 @@ final class FakeIdGenerator implements IdGeneratorInterface
         ++$this->generateCallCount;
 
         return $this->id;
+    }
+}
+
+final class FakeTransactional implements TransactionalInterface
+{
+    public int $transactionCallCount = 0;
+
+    public function transactional(callable $operation): mixed
+    {
+        ++$this->transactionCallCount;
+
+        return $operation();
     }
 }
