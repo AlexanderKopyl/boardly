@@ -21,6 +21,9 @@ use App\Shared\Application\Port\IdGeneratorInterface;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
 
 final class RegisterAccountHandlerTest extends TestCase
 {
@@ -173,8 +176,22 @@ final class RegisterAccountHandlerTest extends TestCase
 
     public function testResultDoesNotExposeUnsafeData(): void
     {
-        self::assertTrue(method_exists(RegisterAccountResult::class, 'accountId'));
-        self::assertTrue(method_exists(RegisterAccountResult::class, 'status'));
+        $reflection = new ReflectionClass(RegisterAccountResult::class);
+        $constructor = $reflection->getConstructor();
+
+        self::assertNotNull($constructor);
+        self::assertSame(['accountId', 'status'], array_map(
+            static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+            $constructor->getParameters(),
+        ));
+
+        $publicMethodNames = array_map(
+            static fn (ReflectionMethod $method): string => $method->getName(),
+            $reflection->getMethods(ReflectionMethod::IS_PUBLIC),
+        );
+
+        sort($publicMethodNames);
+        self::assertSame(['__construct', 'accountId', 'status'], $publicMethodNames);
 
         foreach (
             [
@@ -188,10 +205,10 @@ final class RegisterAccountHandlerTest extends TestCase
                 'entity',
             ] as $unsafeMethod
         ) {
-            self::assertFalse(
-                method_exists(RegisterAccountResult::class, $unsafeMethod),
-                sprintf('RegisterAccountResult must not expose %s().', $unsafeMethod),
-            );
+            self::assertNotContains($unsafeMethod, $publicMethodNames, sprintf(
+                'RegisterAccountResult must not expose %s().',
+                $unsafeMethod,
+            ));
         }
     }
 
