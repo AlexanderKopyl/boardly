@@ -11,6 +11,7 @@ use App\Boardly\IdentityAccess\Domain\Event\AccountRejected;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyActive;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyDisabled;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountAlreadyRejected;
+use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountLifecycleState;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountStatusTransition;
 use App\Boardly\IdentityAccess\Domain\Exception\AccountNotPendingApproval;
 use App\Boardly\IdentityAccess\Domain\Result\AccountApprovalResult;
@@ -91,6 +92,36 @@ final class Account
         return new AccountRegistrationResult(
             $account,
             new AccountRegistered($id, $email, true, $createdAt),
+        );
+    }
+
+    public static function reconstitute(
+        AccountId $id,
+        Email $email,
+        PasswordHash $passwordHash,
+        AccountName $name,
+        AccountStatus $status,
+        bool $isSystemAdmin,
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $updatedAt,
+        ?\DateTimeImmutable $approvedAt,
+        ?\DateTimeImmutable $rejectedAt,
+        ?\DateTimeImmutable $disabledAt,
+    ): self {
+        self::assertValidLifecycleState($status, $approvedAt, $rejectedAt, $disabledAt);
+
+        return new self(
+            $id,
+            $email,
+            $passwordHash,
+            $name,
+            $status,
+            $isSystemAdmin,
+            $createdAt,
+            $updatedAt,
+            $approvedAt,
+            $rejectedAt,
+            $disabledAt,
         );
     }
 
@@ -204,5 +235,31 @@ final class Account
     public function disabledAt(): ?\DateTimeImmutable
     {
         return $this->disabledAt;
+    }
+
+    private static function assertValidLifecycleState(
+        AccountStatus $status,
+        ?\DateTimeImmutable $approvedAt,
+        ?\DateTimeImmutable $rejectedAt,
+        ?\DateTimeImmutable $disabledAt,
+    ): void {
+        if (
+            $status->isPendingApproval()
+            && (null !== $approvedAt || null !== $rejectedAt || null !== $disabledAt)
+        ) {
+            throw InvalidAccountLifecycleState::create();
+        }
+
+        if ($status->isActive() && (null === $approvedAt || null !== $rejectedAt || null !== $disabledAt)) {
+            throw InvalidAccountLifecycleState::create();
+        }
+
+        if ($status->isRejected() && (null !== $approvedAt || null === $rejectedAt || null !== $disabledAt)) {
+            throw InvalidAccountLifecycleState::create();
+        }
+
+        if ($status->isDisabled() && (null === $approvedAt || null !== $rejectedAt || null === $disabledAt)) {
+            throw InvalidAccountLifecycleState::create();
+        }
     }
 }
