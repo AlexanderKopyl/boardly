@@ -9,11 +9,13 @@ use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
+use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity\AccountEntity;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Mapper\AccountMapper;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Repository\DoctrineAccountRepository;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DoctrineAccountRepositoryIntegrationTest extends KernelTestCase
@@ -242,6 +244,55 @@ final class DoctrineAccountRepositoryIntegrationTest extends KernelTestCase
         $this->expectException(UniqueConstraintViolationException::class);
 
         $this->entityManager->flush();
+    }
+
+    public function testStaleAccountEntityWriteFailsWithDoctrineOptimisticLockExceptionAndDoesNotOverwriteCurrentData(): void
+    {
+        $accountId = $this->accountId('00000015');
+        $account = $this->pendingAccount(
+            id: $accountId,
+            email: 'stale-write@example.com',
+            name: 'Original Account',
+            createdAt: new \DateTimeImmutable('2026-05-03T08:30:00+00:00'),
+        );
+
+        $this->repository->save($account);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $staleEntity = $this->entityManager->find(AccountEntity::class, $accountId->value());
+
+        self::assertInstanceOf(AccountEntity::class, $staleEntity);
+        self::assertSame(1, $staleEntity->getVersion());
+
+        $staleAccount = $this->repository->get($accountId);
+
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE accounts SET name = :name, updated_at = :updatedAt, version = version + 1 WHERE id = :id',
+            [
+                'id' => $accountId->value(),
+                'name' => 'Concurrent Account',
+                'updatedAt' => '2026-05-03 08:31:00',
+            ],
+        );
+
+        $staleAccount->approve(new \DateTimeImmutable('2026-05-03T08:32:00+00:00'));
+        $this->repository->save($staleAccount);
+
+        try {
+            $this->entityManager->flush();
+            self::fail('Doctrine did not reject the stale AccountEntity write.');
+        } catch (OptimisticLockException) {
+            $stored = $this->entityManager->getConnection()->fetchAssociative(
+                'SELECT name, status, version FROM accounts WHERE id = :id',
+                ['id' => $accountId->value()],
+            );
+
+            self::assertIsArray($stored);
+            self::assertSame('Concurrent Account', $stored['name']);
+            self::assertSame('pending_approval', $stored['status']);
+            self::assertSame(2, (int) $stored['version']);
+        }
     }
 
     private function pendingAccount(
