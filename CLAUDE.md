@@ -1,148 +1,221 @@
 # CLAUDE.md
 
-Boardly project instructions for Claude Code.
+## Purpose
 
-## Project summary
+This file is the Claude Code entrypoint for Boardly.
 
-Boardly is a Jira-like project, task, board, and workflow management system. It is not a CRM.
+Do not duplicate architecture rules, ADR content, or design documents here.
 
-Target stack:
-- Backend: Symfony 7, PHP 8.3+
-- Architecture: Modular Monolith, DDD + Hexagonal Architecture
-- DB: relational database as source of truth
-- Async: RabbitMQ via Symfony Messenger
-- Cache / fast storage: Redis
-- Search / read-side: OpenSearch or Elasticsearch
-- Frontend direction: API-first Symfony backend with Next.js frontend
+Use this file only as a navigation map for:
 
-## Core architecture rules
+- which project documents to read;
+- which Claude command to use;
+- which subagent to delegate to;
+- which skill/playbook should guide the answer;
+- when to verify external documentation.
 
-- Symfony is the delivery/framework layer, not the domain model.
-- Controllers stay thin.
-- Domain owns business rules and invariants.
-- Application coordinates commands, queries, handlers, transactions, and ports.
-- Infrastructure implements Doctrine, Messenger, Redis, OpenSearch, filesystem, and external adapters.
-- DB is source of truth; Redis, OpenSearch, and RabbitMQ are supporting infrastructure.
-- Do not introduce microservices by default.
-- Avoid Manager, Helper, BaseService, and CommonService without a concrete business reason.
-- Do not invent files, classes, modules, routes, entities, or tables without inspecting the repo first.
+Boardly is a Jira-like project/task/workflow management system. It is not a CRM.
 
-## Before coding
+## Operating Rule
 
-1. Inspect repository structure.
-2. Identify whether the project is empty, partial, or already structured.
-3. Split affected code by Domain, Application, Infrastructure, and Interfaces/UI.
-4. Identify permission/security impact.
-5. Identify tests to add or run.
-6. Explain the minimal plan.
-7. Ask before destructive commands, dependency changes, migrations, Docker/deploy changes, secrets, or network access.
+Before proposing architecture, generating code, or changing structure:
 
-## Layer map
+1. Read the relevant project documentation.
+2. Use accepted ADRs as binding decisions.
+3. Use the relevant Claude command, subagent, and skill.
+4. Inspect existing repository structure before naming files/classes.
+5. Explain conflicts if the user request contradicts project docs.
 
-| Concern | Place |
+If a rule already exists in project docs, reference that source instead of restating it here.
+
+## Project Documentation Map
+
+### Primary Architecture Rules
+
+Read first for architecture work:
+
+```text
+docs/architecture/project-architecture-rules.md
+```
+
+Use for Hexagonal Architecture, DDD, EDA, CQRS, Symfony boundaries, Redis, RabbitMQ, OpenSearch/Elasticsearch, transactions, source-of-truth, module design, and bounded contexts.
+
+### Accepted ADRs
+
+Read accepted ADRs before structural or infrastructure decisions:
+
+```text
+docs/adr/0001-use-modular-monolith-hexagonal-architecture-and-ddd.md
+docs/adr/0002-use-boardly-context-based-source-structure.md
+docs/adr/0003-use-transactional-outbox-for-domain-event-delivery.md
+docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md
+docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md
+```
+
+Use ADRs as the source of truth for accepted architecture decisions.
+
+### ADR Template
+
+Use when creating a new ADR:
+
+```text
+docs/adr/0000-template.md
+```
+
+### Design Documents
+
+Read scenario design documents before implementing related behavior:
+
+```text
+docs/design/change-issue-status.md
+docs/design/authentication-api-strategy.md
+docs/design/account-domain-model.md
+```
+
+Use these for issue status changes, authentication API behavior, IdentityAccess, account lifecycle, and refresh-session design.
+
+### Subagents Map
+
+Read before choosing specialized agents:
+
+```text
+docs/agents/subagents-map.md
+```
+
+## Claude Commands Map
+
+| Task | Command |
 | --- | --- |
-| Business rules, invariants, domain events | Domain |
-| Use cases, commands, queries, transactions, ports | Application |
-| Doctrine, Messenger, Redis, OpenSearch, filesystem, APIs | Infrastructure |
-| HTTP controllers, API DTOs, request/response mapping | Interfaces/UI |
-| CLI commands | Interfaces/UI or Infrastructure |
-| Pure business-rule tests | Domain tests |
-| Handler/use-case tests | Application tests |
-| Adapter/persistence tests | Infrastructure/integration tests |
+| Analyze feature scope and behavior | `/analyze-feature` |
+| Design aggregate/domain model | `/design-domain` |
+| Design issue workflow/status transitions | `/design-workflow` |
+| Design roles, permissions, visibility | `/design-permissions` |
+| Design Messenger/RabbitMQ async flow | `/design-async-flow` |
+| Design search/read model/indexing | `/design-search-indexing` |
+| Review security/authorization risk | `/review-security` |
+| Review test coverage | `/review-tests` |
+| Write architecture decision record | `/write-adr` |
+| Produce implementation plan | `/implementation-plan` |
 
-## What to use when
+Commands live in:
 
-| Situation | Command | Agent | Skill |
-| --- | --- | --- | --- |
-| New feature / unclear product behavior | /analyze-feature | product-domain-analyst | feature-architecture |
-| Domain model / aggregate / invariant | /design-domain | ddd-modeling | domain-modeling |
-| Statuses / transitions / guards | /design-workflow | workflow-permissions | workflow-design |
-| Roles / membership / visibility / voters | /design-permissions | workflow-permissions | permission-modeling |
-| Messenger / RabbitMQ / Outbox / retries | /design-async-flow | async-messaging | async-flow |
-| OpenSearch / projections / read models | /design-search-indexing | search-read-models | search-indexing |
-| Redis / TTL / invalidation / hot paths | /analyze-feature | cache-performance | cache-performance |
-| Security review | /review-security | testing-security-reviewer | permission-modeling |
-| Test coverage review | /review-tests | testing-security-reviewer | testing-strategy |
-| ADR / trade-off documentation | /write-adr | devops-adr-documentation | adr-writing |
-| Implementation steps | /implementation-plan | symfony-architecture | feature-architecture |
+```text
+.claude/commands/
+```
 
-## Commands
+## Claude Subagents Map
 
-/analyze-feature, /design-domain, /design-workflow, /design-permissions, /design-async-flow, /design-search-indexing, /review-security, /review-tests, /write-adr, /implementation-plan.
+Use subagents for specialized reasoning. Do not overload the main context with every concern.
 
-## Agents
+| Task | Subagent |
+| --- | --- |
+| Product behavior, MVP scope, acceptance criteria | `product-domain-analyst` |
+| Symfony placement, services, framework integration | `symfony-architecture` |
+| Aggregates, invariants, value objects, events | `ddd-modeling` |
+| Workflow, transitions, guards, permissions | `workflow-permissions` |
+| Messenger, RabbitMQ, Outbox, retries, DLQ | `async-messaging` |
+| OpenSearch/Elasticsearch, projections, search | `search-read-models` |
+| Redis, cache, TTL, invalidation, hot paths | `cache-performance` |
+| Security, permissions, tests, regression risks | `testing-security-reviewer` |
+| Observability, recovery, ADR documentation | `devops-adr-documentation` |
 
-- product-domain-analyst: product behavior, MVP scope, actors, acceptance criteria.
-- symfony-architecture: Symfony implementation direction while preserving boundaries.
-- ddd-modeling: aggregates, entities, value objects, invariants, domain events.
-- workflow-permissions: issue workflow, transitions, guards, roles, visibility.
-- async-messaging: Messenger/RabbitMQ, Outbox, retries, DLQ, idempotency.
-- search-read-models: search documents, projections, stale index behavior.
-- cache-performance: Redis usage, TTL, invalidation, hot paths, query risks.
-- testing-security-reviewer: permission, workflow, audit, and regression review.
-- devops-adr-documentation: operations, recovery, observability, ADRs.
+Subagents live in:
 
-## Skills
+```text
+.claude/agents/
+```
 
-feature-architecture, domain-modeling, workflow-design, permission-modeling, async-flow, search-indexing, cache-performance, testing-strategy, observability-operations, adr-writing.
+## Claude Skills Map
 
-## Documentation to check
+Use skills as repeatable playbooks. Agents decide; skills structure the work.
 
-Check official/current docs before relying on framework behavior, config syntax, or integration details.
+| Concern | Skill |
+| --- | --- |
+| Feature architecture | `feature-architecture` |
+| Domain modeling | `domain-modeling` |
+| Workflow design | `workflow-design` |
+| Permission modeling | `permission-modeling` |
+| Async flow | `async-flow` |
+| Search indexing | `search-indexing` |
+| Cache/performance | `cache-performance` |
+| Testing strategy | `testing-strategy` |
+| Observability/operations | `observability-operations` |
+| ADR writing | `adr-writing` |
 
-- Symfony: Service Container, Autowiring, Autoconfiguration, Routing, HttpKernel, Security, Voters, Workflow, Messenger, Serializer, Validator, Forms, Cache, Console, Testing.
-- Doctrine: ORM, DBAL, Migrations, transactions, locking, associations, query performance.
-- Infrastructure: RabbitMQ, Symfony Messenger transports, Redis, Symfony Cache Redis adapter, OpenSearch or Elasticsearch, Docker Compose.
-- Quality: PHPUnit, PHPStan, Rector, PHP-CS-Fixer, Composer scripts.
-- Claude Code: settings, slash commands, subagents, skills, MCP configuration.
+Skills live in:
 
-## Security and permissions
+```text
+.claude/skills/
+```
 
-- Authorization must be server-side and explicit.
-- Always check actor, action, resource, and context.
-- Project membership and issue visibility are core security concerns.
-- Search/read models must not leak hidden issues.
-- Audit-sensitive mutations must be logged.
-- Permission cache is allowed only with TTL and safe invalidation.
-- Do not read or expose secrets, credentials, private keys, dumps, or local env files.
+## Routing Guide
 
-## Source-of-truth rules
+| Situation | Read first | Use |
+| --- | --- | --- |
+| Architecture proposal | architecture rules + accepted ADRs | `/analyze-feature`, `symfony-architecture` |
+| Source placement | ADR-0002 | `/implementation-plan`, `symfony-architecture` |
+| Domain model | architecture rules + ADR-0001 | `/design-domain`, `ddd-modeling` |
+| Issue status change | change-issue-status design + ADR-0003 | `/design-workflow`, `workflow-permissions` |
+| Auth/account work | auth design + account model + ADR-0005 | `/design-domain`, `testing-security-reviewer` |
+| API boundary | ADR-0004 | `/implementation-plan`, `symfony-architecture` |
+| Domain event delivery | ADR-0003 | `/design-async-flow`, `async-messaging` |
+| Search/read models | architecture rules + ADR-0003 | `/design-search-indexing`, `search-read-models` |
+| Redis/cache | architecture rules | `/analyze-feature`, `cache-performance` |
+| Security review | relevant ADR/design doc + subagents map | `/review-security`, `testing-security-reviewer` |
+| Testing review | relevant design doc | `/review-tests`, `testing-security-reviewer` |
+| New ADR | existing ADRs + template | `/write-adr`, `devops-adr-documentation` |
 
-- DB owns persistent project, issue, workflow, permission, and audit state.
-- Redis may cache derived data, counters, sessions, locks, and rate limits.
-- OpenSearch/Elasticsearch may denormalize searchable/read-side data.
-- RabbitMQ may process side effects after core state is committed.
-- If DB and search/cache disagree, DB wins.
+## External Documentation Checks
 
-## Async rules
+Use Context7 or official docs when syntax, framework behavior, or package details may be version-sensitive.
 
-- Core state changes must happen synchronously in a DB transaction.
-- Use Messenger/RabbitMQ for notifications, indexing, projections, integrations, and other side effects.
-- Use Outbox when reliable publishing matters.
-- Consumers must be idempotent.
-- Failed messages must be observable and recoverable.
+Check official/current docs for:
 
-## Testing expectations
+- Symfony components: Service Container, Routing, Security, Workflow, Messenger, Serializer, Validator, Cache, Console, Testing;
+- Doctrine ORM/DBAL/Migrations;
+- RabbitMQ and Symfony Messenger transports;
+- Redis and Symfony Cache Redis integration;
+- OpenSearch or Elasticsearch client/indexing behavior;
+- PHPUnit, PHPStan, Rector, PHP-CS-Fixer, Composer;
+- Claude Code settings, commands, subagents, skills, and MCP.
 
-- Domain rules need fast unit tests.
-- Application handlers need orchestration and transaction tests.
-- Infrastructure adapters need integration tests when behavior matters.
-- Permissions and visibility need explicit tests.
-- Workflow transitions need allowed/forbidden transition tests.
-- Async handlers need duplicate, retry, and failure tests.
-- Search/projections need consistency and reindex tests.
-- Audit behavior needs tests for sensitive mutations.
+Do not use external docs to override accepted Boardly ADRs unless the user asks for a new decision.
 
-## MVP focus
+## MCP Usage
 
-Start with users, teams, project roles, projects, issues/tasks, workflow statuses, assignee, reporter, priority, due date, comments, mentions, attachments, labels/tags, Kanban board, notifications, audit log, search, and basic reports.
+Project MCP config lives in:
 
-Postpone unless requested: Scrum, advanced sprints, automation builder, custom fields engine, plugin marketplace, complex workflow designer, BI, time tracking, AI prioritization, and cross-organization multitenancy.
+```text
+.mcp.json
+```
 
-## Default response shape
+Use:
 
-Design: short answer, explanation, proposed architecture, layer responsibilities, Symfony direction, permissions, async/search/cache, tests, risks, next step, common mistakes.
+- `context7` for current documentation lookup;
+- `sequential-thinking` for complex multi-step architecture, workflow, permission, and trade-off analysis.
 
-Implementation: implementation plan, files to inspect, files to change, step-by-step changes, tests, verification, risks/TODOs.
+Do not add secrets or local-only credentials to MCP config.
 
-Review: summary, critical issues, architecture issues, security/permission issues, testing gaps, performance risks, recommended fixes, acceptable as-is.
+## Safety Boundaries
+
+Ask before:
+
+- destructive file commands;
+- dependency installation/removal/update;
+- migrations or database destructive operations;
+- Docker/deploy/CI changes;
+- network access;
+- reading or touching secrets/local env files.
+
+Do not read or expose `.env`, credentials, private keys, dumps, backups, auth files, or local machine secrets.
+
+## Response Rule
+
+For project work, prefer this structure:
+
+1. Short answer
+2. Sources read / should be read
+3. Command, subagent, and skill used
+4. Decision or plan
+5. Risks / conflicts
+6. Next action
