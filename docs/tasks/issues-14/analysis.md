@@ -166,19 +166,86 @@ The HTTP controller test for issue #14 will extend `WebTestCase`. It will boot t
 
 ---
 
-## 9. Current Persistence/Flush/Transaction Boundary
+## 9. Transaction Boundary Decision
 
 `DoctrineAccountRepository::save(Account $account): void` calls `$this->entityManager->persist(...)` only. **It does not call `flush()`.**
 
 All integration tests call `$this->entityManager->flush()` explicitly after `$this->repository->save(...)`. This is confirmed in `DoctrineAccountRepositoryIntegrationTest`.
 
-This means: **the HTTP controller or a surrounding mechanism must flush the entity manager after a successful handler call.** The controller must not inject `EntityManagerInterface` directly (violates the "must not use Doctrine directly" constraint).
+This means: **the HTTP controller or a surrounding mechanism must flush the entity manager after a successful handler call.** The controller must not inject `EntityManagerInterface` directly.
 
-**Recommended solution**: Add a Symfony event subscriber in `src/Shared/Infrastructure/Symfony/EventSubscriber/DoctrineFlushListener.php` that listens on `kernel.response` (at a negative priority such as `-10`) and calls `$entityManager->flush()`. This is transparent to the controller and keeps the controller Doctrine-free.
+### Rejected Approach: kernel.response Flush Listener
 
-This is a small focused file with one responsibility. It does not change repository semantics or require migration changes.
+A `DoctrineFlushListener` subscribing to `kernel.response` was initially proposed. **This approach is rejected** for the following reasons:
 
-**Risk**: If a future transaction rolls back, the flush listener could flush a partial state. For issue #14, there is only one write (single account persist), so the risk is minimal. A more complete transactional story can be added later.
+- **Hidden transaction boundary**: flush timing is implicit and determined by the HTTP lifecycle, not the use case boundary.
+- **Wrong granularity**: a single subscriber flushes all pending changes for all use cases, making it impossible to rollback only a specific use case's writes.
+- **Incompatible with Transactional Outbox**: the Outbox pattern requires business state + outbox record to be committed in one atomic transaction. A kernel.response listener cannot coordinate this — by the time it fires, there is no transaction open.
+- **Rollback semantics break down**: if the handler raises an exception after persist, the subscriber may never fire (exception path), but if it does fire (e.g., on an error response), it would flush partial state.
+- **Business write consistency should be use-case scoped**: the transaction boundary must open before the first write and commit after the last write of a single use case. HTTP request lifecycle is not the correct scope.
+
+### Accepted Approach: Application-Level Transaction Port
+
+The correct model is an application-level port that wraps the mutation in an explicit transaction:
+
+**Port (application layer):**
+```text
+src/Shared/Application/Transaction/TransactionalInterface.php
+```
+
+```php
+interface TransactionalInterface
+{
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    public function transactional(callable $operation): mixed;
+}
+```
+
+The application layer (handlers) depends only on `TransactionalInterface`. It has no knowledge of Doctrine, DBAL, EntityManager, flush, commit, or rollback.
+
+**Adapter (infrastructure layer):**
+```text
+src/Shared/Infrastructure/Doctrine/DoctrineTransactional.php
+```
+
+Implemented using `EntityManagerInterface::wrapInTransaction()`:
+
+```text
+DoctrineTransactional::transactional(callable $operation)
+  -> EntityManagerInterface::wrapInTransaction($operation)
+     -> begin transaction
+     -> execute callback (handler mutation body)
+     -> flush UnitOfWork
+     -> commit
+     -> rollback on exception
+```
+
+`EntityManagerInterface::wrapInTransaction()` is preferred over `DBAL\Connection::transactional()` because it knows about the Doctrine ORM UnitOfWork and calls `flush()` internally before committing. DBAL does not know about ORM-tracked changes.
+
+**Handler usage:**
+
+`RegisterAccountHandler` is updated to inject `TransactionalInterface` and wrap its mutation body:
+
+```text
+RegisterAccountHandler::__invoke(RegisterAccountCommand $command)
+  -> TransactionalInterface::transactional(function() {
+       // $accounts->existsByEmail(...)
+       // $passwordHasher->hash(...)
+       // Account::register(...)
+       // $accounts->save($account)  <-- persist only, no flush
+       // return RegisterAccountResult(...)
+     })
+```
+
+Repositories continue to persist/remove only and must not flush.
+
+**Future Outbox rule (not in issue #14):**
+
+Business state + Outbox record = one DB transaction. RabbitMQ/Messenger publishing fires after commit from a separate publisher. Do not dispatch Messenger directly inside handlers. Do not store outbox records after commit.
 
 ---
 
@@ -186,7 +253,10 @@ This is a small focused file with one responsibility. It does not change reposit
 
 | Item | Severity | Detail |
 |------|----------|--------|
-| No HTTP flush boundary | Medium | `save()` does not flush. Requires a flush mechanism that keeps the controller Doctrine-free. The event subscriber approach is recommended. |
+| `TransactionalInterface` placement conflict | Medium | If `src/Shared/Application/Transaction/` already contains conflicting abstractions, the new port must be reconciled before adding it. Verify by inspecting the existing `Shared` structure. |
+| `DoctrineTransactional` autowiring | Medium | Symfony must bind `TransactionalInterface` to `DoctrineTransactional` in `services.yaml` or via an interface alias, since autowiring by interface requires an explicit binding when there is no unique implementation registered. Check that `services.yaml` auto-binding covers `TransactionalInterface`. |
+| `RegisterAccountHandler` test rewrites | Low | Wrapping handler mutation in `transactional(...)` requires injecting `TransactionalInterface` into the handler. Existing unit tests must pass a test double for `TransactionalInterface`. If tests use `InMemoryAccountRepository`, the transaction double can execute the callback directly. No large rewrite expected. |
+| Transaction wrapping changes public behavior | Low | If `wrapInTransaction()` changes how exceptions propagate (e.g., wraps them), the existing `EmailAlreadyRegistered`, `InvalidEmail`, `InvalidAccountName` exception types must still surface correctly through the boundary. Verify this during implementation. |
 | Response shape discrepancy | Low | The design doc specifies `{ "id", "email", "name", "status" }`. The issue spec and `RegisterAccountResult` use `{ "accountId", "status" }`. Issue #14 follows the issue spec. |
 | Validation error code discrepancy | Low | The design doc specifies `422 Unprocessable Entity` with `validation_failed` for input errors. The issue spec requires `400 Bad Request`. Issue #14 follows the issue spec. Document the divergence. |
 | Request `password` vs `plainPassword` | Low | The design doc uses `"password"` as the JSON key. The issue spec uses `"plainPassword"`. The controller parses the request body, so the JSON key is a controller concern. Issue #14 uses `"plainPassword"` per the task spec. |

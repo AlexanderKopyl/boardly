@@ -4,7 +4,7 @@
 
 **Goal:** Add the public `POST /api/auth/register` HTTP endpoint that wraps the existing `RegisterAccountHandler` use case, returns `201 Created` with `{ "accountId", "status": "pending_approval" }`, and maps domain/application exceptions to correct HTTP error responses.
 
-**Architecture:** Thin controller in the IdentityAccess `Interfaces` layer; request JSON parsing is manual (no Symfony Serializer or form); a Symfony event subscriber handles entity-manager flush so the controller stays Doctrine-free; all business rules remain in the existing application/domain layer.
+**Architecture:** Thin controller in the IdentityAccess `Interfaces` layer; request JSON parsing is manual (no Symfony Serializer or form); an application-level `TransactionalInterface` port wraps handler mutations so the controller and handler stay Doctrine-free; the `DoctrineTransactional` adapter uses `EntityManagerInterface::wrapInTransaction()` to flush and commit in one atomic boundary; all business rules remain in the existing application/domain layer.
 
 **Tech Stack:** Symfony 7, PHP 8.3, `JsonResponse`, `WebTestCase`, `RegisterAccountHandler` (already wired via autowire).
 
@@ -14,12 +14,14 @@
 
 | Action | Path | Responsibility |
 |--------|------|----------------|
+| Create | `src/Shared/Application/Transaction/TransactionalInterface.php` | Application port: wraps mutation callbacks in an atomic transaction boundary |
+| Create | `src/Shared/Infrastructure/Doctrine/DoctrineTransactional.php` | Infrastructure adapter: implements `TransactionalInterface` via `EntityManagerInterface::wrapInTransaction()` |
+| Modify | `src/Boardly/IdentityAccess/Application/RegisterAccount/RegisterAccountHandler.php` | Inject `TransactionalInterface`; wrap mutation body in `transactional(...)` |
 | Create | `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Parse JSON, build command, call handler, return 201 / 400 / 409 |
-| Modify | `config/routes.yaml` | Add `src/Boardly/*/Interfaces/Http/Controller/` routing resource |
-| Create | `src/Shared/Infrastructure/Symfony/EventSubscriber/DoctrineFlushListener.php` | Flush EntityManager on `kernel.response` so controller stays Doctrine-free |
+| Modify | `config/routes.yaml` | Add `src/Boardly/*/Interfaces/Http/Controller/` routing resource (already planned) |
 | Create | `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountControllerTest.php` | HTTP integration tests for all success and error cases |
 
-No other files need to change.
+No other files need to change. `DoctrineFlushListener` must not be created.
 
 ---
 
@@ -214,25 +216,89 @@ Do not catch `InvalidPasswordHash` and return 400 — it means `SymfonyPasswordH
 
 ---
 
-## 9. Flush/Transaction Boundary
+## 9. Transaction Boundary
 
-`DoctrineAccountRepository::save()` calls `persist()` only — no flush. The EntityManager must be flushed after a successful handler call.
+`DoctrineAccountRepository::save()` calls `persist()` only — no flush. The EntityManager must be flushed inside an explicit transaction after all writes for the use case are complete.
 
-To keep the controller Doctrine-free, add:
+**Do not** use a `kernel.response` subscriber — that approach is rejected (see `analysis.md` section 9 for the full rationale).
+
+### Implementation sequence
+
+**Step 1 — Add application port:**
 
 ```text
-src/Shared/Infrastructure/Symfony/EventSubscriber/DoctrineFlushListener.php
+src/Shared/Application/Transaction/TransactionalInterface.php
 ```
-
-This subscriber listens on `KernelEvents::RESPONSE` at priority `-10` and calls:
 
 ```php
-$this->entityManager->flush();
+namespace App\Shared\Application\Transaction;
+
+interface TransactionalInterface
+{
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    public function transactional(callable $operation): mixed;
+}
 ```
 
-Symfony autowires `EntityManagerInterface` into the subscriber. The listener runs after the controller builds the response, but before Symfony sends it. The controller has no knowledge of flush.
+Application layer rules: no Doctrine, no EntityManager, no flush, no commit, no rollback in this interface or in any handler that uses it.
 
-**Risk**: if a later use case needs explicit rollback on response error, this listener must be made smarter. For issue #14 (single write, no rollback scenario), the simple flush-on-response listener is sufficient.
+**Step 2 — Add infrastructure adapter:**
+
+```text
+src/Shared/Infrastructure/Doctrine/DoctrineTransactional.php
+```
+
+Implement using `EntityManagerInterface::wrapInTransaction()`:
+
+```text
+DoctrineTransactional::transactional($operation)
+  -> $entityManager->wrapInTransaction($operation)
+     -> begin transaction
+     -> execute $operation callback
+     -> flush UnitOfWork
+     -> commit
+     -> rollback + rethrow on exception
+```
+
+Use `EntityManagerInterface::wrapInTransaction()`, not `DBAL\Connection::transactional()`. DBAL does not know about ORM-tracked entities; it would commit the DB transaction without flushing pending Doctrine changes.
+
+**Step 3 — Wire the binding:**
+
+Check whether Symfony auto-wiring resolves `TransactionalInterface` to `DoctrineTransactional` automatically (it will if there is exactly one implementation). If not, add an explicit binding in `config/services.yaml`:
+
+```yaml
+App\Shared\Application\Transaction\TransactionalInterface: '@App\Shared\Infrastructure\Doctrine\DoctrineTransactional'
+```
+
+**Step 4 — Update `RegisterAccountHandler`:**
+
+Inject `TransactionalInterface` and wrap the mutation body:
+
+```text
+public function __invoke(RegisterAccountCommand $command): RegisterAccountResult
+{
+    return $this->transactional->transactional(function() use ($command): RegisterAccountResult {
+        // existsByEmail, hash, Account::register, $accounts->save
+        return new RegisterAccountResult(...);
+    });
+}
+```
+
+Handler rules that must remain true after this change:
+
+- Handler does not inject `EntityManagerInterface`
+- Handler does not call `flush()`, `commit()`, or `rollback()`
+- Handler does not know about Doctrine
+- `$accounts->save()` calls `persist()` only — no change
+- All existing exception types (`EmailAlreadyRegistered`, `InvalidEmail`, `InvalidAccountName`) continue to propagate through the transaction boundary unchanged
+
+**Step 5 — Add controller (after handler is wired):**
+
+See sections 1–8 of this plan. Controller behavior does not change. Controller must not inject `TransactionalInterface`, `EntityManagerInterface`, or any Doctrine type.
 
 ---
 
@@ -314,31 +380,45 @@ private function postRegister(string $body): void
 
 | File | Action | Notes |
 |------|--------|-------|
-| `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Create | New file |
+| `src/Shared/Application/Transaction/TransactionalInterface.php` | Create | Application port — no Doctrine dependencies |
+| `src/Shared/Infrastructure/Doctrine/DoctrineTransactional.php` | Create | Infrastructure adapter using `wrapInTransaction()` |
+| `src/Boardly/IdentityAccess/Application/RegisterAccount/RegisterAccountHandler.php` | Modify | Inject `TransactionalInterface`, wrap mutation in `transactional(...)` |
 | `config/routes.yaml` | Modify | Add IdentityAccess controller routing resource |
-| `src/Shared/Infrastructure/Symfony/EventSubscriber/DoctrineFlushListener.php` | Create | Flush EntityManager on `kernel.response` |
+| `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Create | New file |
 | `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountControllerTest.php` | Create | HTTP integration tests |
 
 **Must not change:**
-- `RegisterAccountCommand`, `RegisterAccountHandler`, `RegisterAccountResult`
+- `RegisterAccountCommand`, `RegisterAccountResult`
 - `Account`, `Email`, `AccountName`, `PasswordHash`
 - `AccountRepositoryInterface`, `DoctrineAccountRepository`
 - `config/packages/security.yaml`
 - Any migration
-- Any existing test
+
+**Must not create:**
+- `src/Shared/Infrastructure/Symfony/EventSubscriber/DoctrineFlushListener.php` — this approach is rejected
 
 ---
 
 ## 12. Verification Commands
 
+Verify `TransactionalInterface` is registered in the container:
+```bash
+php bin/console debug:container App\\Shared\\Application\\Transaction\\TransactionalInterface --env=test
+```
+
+Verify `DoctrineTransactional` is wired as the implementation:
+```bash
+php bin/console debug:container App\\Shared\\Infrastructure\\Doctrine\\DoctrineTransactional --env=test
+```
+
+Run existing `RegisterAccountHandler` unit tests after handler modification (regression check):
+```bash
+vendor/bin/phpunit tests/Boardly/IdentityAccess/Application/RegisterAccount
+```
+
 Run focused HTTP controller tests:
 ```bash
 vendor/bin/phpunit tests/Boardly/IdentityAccess/Interfaces/Http/Controller
-```
-
-Run existing application use case tests (regression check):
-```bash
-vendor/bin/phpunit tests/Boardly/IdentityAccess/Application/RegisterAccount
 ```
 
 Run existing domain and infrastructure tests (regression check):
@@ -384,4 +464,11 @@ Stop and reassess if any of the following are true:
 - The `SymfonyPasswordHasher` is not wired to `PasswordHasherInterface` (check with `debug:container PasswordHasherInterface`)
 - Any existing test in `tests/Boardly/IdentityAccess` fails before changes are made
 
-All of these indicate a pre-existing environment issue that must be fixed before adding issue #14 code.
+Stop and reassess at specific implementation steps if:
+
+- `src/Shared/Application/Transaction/` already exists with conflicting abstractions — reconcile before adding `TransactionalInterface`
+- `DoctrineTransactional` cannot be autowired to `TransactionalInterface` — add explicit binding in `services.yaml` before proceeding
+- `RegisterAccountHandler` unit tests require structural rewrites (beyond adding a `TransactionalInterface` test double that executes the callback) — reassess the handler modification strategy
+- Exception types (`EmailAlreadyRegistered`, `InvalidEmail`, `InvalidAccountName`) do not propagate through `wrapInTransaction()` correctly — verify before wiring the controller
+
+All of these indicate a structural conflict that must be resolved before continuing.
