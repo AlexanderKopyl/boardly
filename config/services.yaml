@@ -9,3 +9,21 @@ services:
         resource: '../src/'
         exclude:
             - '../src/Kernel.php'
+
+    App\Shared\Application\Bus\CommandBusInterface:
+        alias: App\Shared\Infrastructure\Symfony\Messenger\MessengerCommandBus
+
+    App\Shared\Application\Bus\QueryBusInterface:
+        alias: App\Shared\Infrastructure\Symfony\Messenger\MessengerQueryBus
+
+    App\Shared\Infrastructure\Symfony\Messenger\MessengerCommandBus:
+        arguments:
+            $commandBus: '@command.bus'
+
+    App\Shared\Infrastructure\Symfony\Messenger\MessengerQueryBus:
+        arguments:
+            $queryBus: '@query.bus'
+
+    App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
