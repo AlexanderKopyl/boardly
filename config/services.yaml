@@ -24,6 +24,10 @@ services:
         arguments:
             $queryBus: '@query.bus'
 
+    App\Shared\Infrastructure\Outbox\OutboxPublisher:
+        arguments:
+            $messageBus: '@event.bus'
+
     App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
