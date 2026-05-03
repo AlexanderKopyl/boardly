@@ -10,6 +10,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\AccountStatus;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity\AccountEntity;
+use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Exception\AccountMappingFailed;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 
 final class AccountMapper
@@ -33,6 +34,10 @@ final class AccountMapper
 
     public function updateEntity(Account $account, AccountEntity $entity): void
     {
+        if ($account->id()->value() !== $entity->getId()) {
+            throw AccountMappingFailed::forMismatchedAccountId($account->id()->value(), $entity->getId());
+        }
+
         $entity->updateMutableFields(
             $account->email()->value(),
             $account->passwordHash()->value(),

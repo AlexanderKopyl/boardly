@@ -12,6 +12,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\AccountStatus;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity\AccountEntity;
+use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Exception\AccountMappingFailed;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Mapper\AccountMapper;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use PHPUnit\Framework\TestCase;
@@ -77,6 +78,8 @@ final class AccountMapperTest extends TestCase
     public function testUpdateEntityUpdatesMutableScalarFieldsButKeepsIdAndCreatedAtUnchanged(): void
     {
         $originalCreatedAt = new \DateTimeImmutable('2026-05-02T12:00:00+00:00');
+        $updatedAt = new \DateTimeImmutable('2026-05-02T12:05:00+00:00');
+        $approvedAt = new \DateTimeImmutable('2026-05-02T12:06:00+00:00');
         $entity = $this->entity(
             id: self::ACCOUNT_ID,
             email: 'old@example.com',
@@ -87,16 +90,15 @@ final class AccountMapperTest extends TestCase
             createdAt: $originalCreatedAt,
             updatedAt: new \DateTimeImmutable('2026-05-02T12:01:00+00:00'),
         );
-        $approvedAt = new \DateTimeImmutable('2026-05-02T12:05:00+00:00');
         $account = Account::reconstitute(
-            AccountId::fromString(self::OTHER_ACCOUNT_ID),
+            AccountId::fromString(self::ACCOUNT_ID),
             Email::fromString('new@example.com'),
             PasswordHash::fromString(self::PASSWORD_HASH),
             AccountName::fromString('New Account'),
             AccountStatus::active(),
             true,
             new \DateTimeImmutable('2026-05-02T13:00:00+00:00'),
-            $approvedAt,
+            $updatedAt,
             $approvedAt,
             null,
             null,
@@ -111,10 +113,65 @@ final class AccountMapperTest extends TestCase
         self::assertSame('New Account', $entity->getName());
         self::assertSame('active', $entity->getStatus());
         self::assertTrue($entity->isSystemAdmin());
-        self::assertSame($approvedAt, $entity->getUpdatedAt());
+        self::assertSame($updatedAt, $entity->getUpdatedAt());
         self::assertSame($approvedAt, $entity->getApprovedAt());
         self::assertNull($entity->getRejectedAt());
         self::assertNull($entity->getDisabledAt());
+    }
+
+    public function testUpdateEntityRejectsMismatchedIdsAndLeavesEntityUnchanged(): void
+    {
+        $createdAt = new \DateTimeImmutable('2026-05-02T12:00:00+00:00');
+        $updatedAt = new \DateTimeImmutable('2026-05-02T12:01:00+00:00');
+        $approvedAt = new \DateTimeImmutable('2026-05-02T12:02:00+00:00');
+        $rejectedAt = new \DateTimeImmutable('2026-05-02T12:03:00+00:00');
+        $disabledAt = new \DateTimeImmutable('2026-05-02T12:04:00+00:00');
+        $entity = $this->entity(
+            id: self::ACCOUNT_ID,
+            email: 'old@example.com',
+            passwordHash: self::PASSWORD_HASH,
+            name: 'Old Account',
+            status: 'disabled',
+            isSystemAdmin: false,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            approvedAt: $approvedAt,
+            rejectedAt: $rejectedAt,
+            disabledAt: $disabledAt,
+        );
+        $account = Account::reconstitute(
+            AccountId::fromString(self::OTHER_ACCOUNT_ID),
+            Email::fromString('new@example.com'),
+            PasswordHash::fromString('$2y$13$AbCdEfGhIjKlMnOpQrStUu.DcBa9876543210abcdefABCDEFghij'),
+            AccountName::fromString('New Account'),
+            AccountStatus::active(),
+            true,
+            new \DateTimeImmutable('2026-05-02T13:00:00+00:00'),
+            new \DateTimeImmutable('2026-05-02T13:01:00+00:00'),
+            new \DateTimeImmutable('2026-05-02T13:02:00+00:00'),
+            null,
+            null,
+        );
+
+        try {
+            $this->mapper()->updateEntity($account, $entity);
+            self::fail('Expected account mapping failure for mismatched account ids.');
+        } catch (AccountMappingFailed $exception) {
+            self::assertStringContainsString(self::OTHER_ACCOUNT_ID, $exception->getMessage());
+            self::assertStringContainsString(self::ACCOUNT_ID, $exception->getMessage());
+        }
+
+        self::assertSame(self::ACCOUNT_ID, $entity->getId());
+        self::assertSame('old@example.com', $entity->getEmail());
+        self::assertSame(self::PASSWORD_HASH, $entity->getPasswordHash());
+        self::assertSame('Old Account', $entity->getName());
+        self::assertSame('disabled', $entity->getStatus());
+        self::assertFalse($entity->isSystemAdmin());
+        self::assertSame($createdAt, $entity->getCreatedAt());
+        self::assertSame($updatedAt, $entity->getUpdatedAt());
+        self::assertSame($approvedAt, $entity->getApprovedAt());
+        self::assertSame($rejectedAt, $entity->getRejectedAt());
+        self::assertSame($disabledAt, $entity->getDisabledAt());
     }
 
     public function testMapsAccountEntityBackToPendingAccount(): void
