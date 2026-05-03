@@ -19,14 +19,6 @@ final class AccountRegisteredOutboxEventSerializer implements OutboxEventSeriali
 
     public function serialize(DomainEvent $event, ?\DateTimeImmutable $now = null): SerializedOutboxEvent
     {
-        if (!$event instanceof AccountRegistered) {
-            throw new \InvalidArgumentException(sprintf(
-                'Expected domain event "%s", got "%s".',
-                AccountRegistered::class,
-                $event::class,
-            ));
-        }
-
         $accountId = $event->accountId()->value();
         $registeredAt = $event->registeredAt();
 
