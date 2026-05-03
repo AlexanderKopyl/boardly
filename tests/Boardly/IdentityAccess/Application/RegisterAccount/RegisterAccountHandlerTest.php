@@ -10,12 +10,15 @@ use App\Boardly\IdentityAccess\Application\Port\PasswordHasherInterface;
 use App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountCommand;
 use App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler;
 use App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountResult;
+use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountName;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidEmail;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidPasswordHash;
 use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
+use App\Boardly\SharedKernel\Domain\Event\DomainEvent;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
+use App\Shared\Application\Outbox\OutboxInterface;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\IdGeneratorInterface;
 use App\Shared\Application\Transaction\TransactionalInterface;
@@ -34,6 +37,7 @@ final class RegisterAccountHandlerTest extends TestCase
     public function testSuccessfulRegistrationSavesPendingNonSystemAdminAccount(): void
     {
         $repository = new FakeAccountRepository();
+        $outbox = new FakeOutbox();
         $clockTime = new DateTimeImmutable('2026-05-03T10:15:30+00:00');
 
         $result = $this->handler(
@@ -41,6 +45,7 @@ final class RegisterAccountHandlerTest extends TestCase
             new FakePasswordHasher(self::VALID_HASH),
             new FakeClock($clockTime),
             new FakeIdGenerator(self::GENERATED_ACCOUNT_ID),
+            outbox: $outbox,
         )->__invoke(new RegisterAccountCommand(
             '  Registered.Account@Example.COM  ',
             'correct horse battery staple',
@@ -59,6 +64,13 @@ final class RegisterAccountHandlerTest extends TestCase
         self::assertSame('Registered Account', $account->name()->value());
         self::assertSame($clockTime, $account->createdAt());
         self::assertSame($clockTime, $account->updatedAt());
+
+        self::assertCount(1, $outbox->storedEvents);
+        self::assertInstanceOf(AccountRegistered::class, $outbox->storedEvents[0]);
+        self::assertSame(self::GENERATED_ACCOUNT_ID, $outbox->storedEvents[0]->accountId()->value());
+        self::assertSame('registered.account@example.com', $outbox->storedEvents[0]->email()->value());
+        self::assertFalse($outbox->storedEvents[0]->isSystemAdmin());
+        self::assertSame($clockTime, $outbox->storedEvents[0]->registeredAt());
     }
 
     public function testPasswordIsHashedBeforeCreatingAccount(): void
@@ -88,6 +100,7 @@ final class RegisterAccountHandlerTest extends TestCase
         $repository = new FakeAccountRepository(['registered@example.com']);
         $hasher = new FakePasswordHasher(self::VALID_HASH);
         $idGenerator = new FakeIdGenerator(self::GENERATED_ACCOUNT_ID);
+        $outbox = new FakeOutbox();
 
         $this->expectException(EmailAlreadyRegistered::class);
 
@@ -97,6 +110,7 @@ final class RegisterAccountHandlerTest extends TestCase
                 $hasher,
                 new FakeClock(new DateTimeImmutable('2026-05-03T10:15:30+00:00')),
                 $idGenerator,
+                outbox: $outbox,
             )->__invoke(new RegisterAccountCommand(
                 '  Registered@Example.COM ',
                 'plain-password',
@@ -106,6 +120,7 @@ final class RegisterAccountHandlerTest extends TestCase
             self::assertSame([], $hasher->receivedPlainPasswords);
             self::assertSame(0, $idGenerator->generateCallCount);
             self::assertSame([], $repository->savedAccounts);
+            self::assertSame([], $outbox->storedEvents);
         }
     }
 
@@ -232,14 +247,47 @@ final class RegisterAccountHandlerTest extends TestCase
         self::assertSame(1, $transactional->transactionCallCount);
     }
 
+    public function testAccountSaveAndOutboxStoreRunInsideTransactionInOrder(): void
+    {
+        $transactional = new FakeTransactional();
+        $operationLog = new FakeOperationLog();
+        $repository = new FakeAccountRepository(transactional: $transactional, operationLog: $operationLog);
+        $outbox = new FakeOutbox($transactional, $operationLog);
+
+        $this->handler(
+            $repository,
+            new FakePasswordHasher(self::VALID_HASH),
+            new FakeClock(new DateTimeImmutable('2026-05-03T10:15:30+00:00')),
+            new FakeIdGenerator(self::GENERATED_ACCOUNT_ID),
+            $transactional,
+            $outbox,
+        )->__invoke(new RegisterAccountCommand(
+            'registered@example.com',
+            'plain-password',
+            'Registered Account',
+        ));
+
+        self::assertSame(['save', 'outbox'], $operationLog->operations);
+        self::assertSame([true], $repository->saveInsideTransaction);
+        self::assertSame([true], $outbox->storeInsideTransaction);
+    }
+
     private function handler(
         FakeAccountRepository $repository,
         FakePasswordHasher $hasher,
         FakeClock $clock,
         FakeIdGenerator $idGenerator,
         ?FakeTransactional $transactional = null,
+        ?FakeOutbox $outbox = null,
     ): RegisterAccountHandler {
-        return new RegisterAccountHandler($repository, $hasher, $clock, $idGenerator, $transactional ?? new FakeTransactional());
+        return new RegisterAccountHandler(
+            $repository,
+            $hasher,
+            $clock,
+            $idGenerator,
+            $transactional ?? new FakeTransactional(),
+            $outbox ?? new FakeOutbox(),
+        );
     }
 }
 
@@ -255,11 +303,20 @@ final class FakeAccountRepository implements AccountRepositoryInterface
      */
     public function __construct(
         private readonly array $existingNormalizedEmails = [],
+        private readonly ?FakeTransactional $transactional = null,
+        private readonly ?FakeOperationLog $operationLog = null,
     ) {
     }
 
+    /**
+     * @var list<bool>
+     */
+    public array $saveInsideTransaction = [];
+
     public function save(Account $account): void
     {
+        $this->operationLog?->record('save');
+        $this->saveInsideTransaction[] = $this->transactional !== null && $this->transactional->isInsideTransaction;
         $this->savedAccounts[] = $account;
     }
 
@@ -339,14 +396,65 @@ final class FakeIdGenerator implements IdGeneratorInterface
     }
 }
 
+final class FakeOutbox implements OutboxInterface
+{
+    /**
+     * @var list<DomainEvent>
+     */
+    public array $storedEvents = [];
+
+    /**
+     * @var list<bool>
+     */
+    public array $storeInsideTransaction = [];
+
+    public function __construct(
+        private readonly ?FakeTransactional $transactional = null,
+        private readonly ?FakeOperationLog $operationLog = null,
+    ) {
+    }
+
+    /**
+     * @param list<DomainEvent> $events
+     */
+    public function store(array $events): void
+    {
+        $this->operationLog?->record('outbox');
+        $this->storeInsideTransaction[] = $this->transactional !== null && $this->transactional->isInsideTransaction;
+
+        foreach ($events as $event) {
+            $this->storedEvents[] = $event;
+        }
+    }
+}
+
+final class FakeOperationLog
+{
+    /**
+     * @var list<string>
+     */
+    public array $operations = [];
+
+    public function record(string $operation): void
+    {
+        $this->operations[] = $operation;
+    }
+}
+
 final class FakeTransactional implements TransactionalInterface
 {
     public int $transactionCallCount = 0;
+    public bool $isInsideTransaction = false;
 
     public function transactional(callable $operation): mixed
     {
         ++$this->transactionCallCount;
+        $this->isInsideTransaction = true;
 
-        return $operation();
+        try {
+            return $operation();
+        } finally {
+            $this->isInsideTransaction = false;
+        }
     }
 }
