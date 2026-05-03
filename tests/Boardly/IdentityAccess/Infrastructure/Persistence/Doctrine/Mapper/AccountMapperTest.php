@@ -263,10 +263,11 @@ final class AccountMapperTest extends TestCase
 
     public function testMapperDoesNotExposeDoctrineTypesToDomainAccount(): void
     {
+        $method = new \ReflectionMethod(AccountMapper::class, 'toDomain');
         $account = $this->mapper()->toDomain($this->entity());
 
-        self::assertInstanceOf(Account::class, $account);
-        self::assertNotInstanceOf(AccountEntity::class, $account);
+        self::assertSame(Account::class, (string) $method->getReturnType());
+        self::assertSame(self::ACCOUNT_ID, $account->id()->value());
     }
 
     private function mapper(): AccountMapper

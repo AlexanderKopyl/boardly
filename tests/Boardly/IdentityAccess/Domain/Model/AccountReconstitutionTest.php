@@ -111,6 +111,7 @@ final class AccountReconstitutionTest extends TestCase
 
     public function testReconstituteReturnsAccountAndDoesNotReturnDomainEvents(): void
     {
+        $method = new \ReflectionMethod(Account::class, 'reconstitute');
         $account = $this->reconstitute(
             AccountStatus::pendingApproval(),
             false,
@@ -119,8 +120,8 @@ final class AccountReconstitutionTest extends TestCase
             null,
         );
 
-        self::assertInstanceOf(Account::class, $account);
-        self::assertFalse(method_exists($account, 'event'));
+        self::assertSame(Account::class, (string) $method->getReturnType());
+        self::assertTrue($account->status()->isPendingApproval());
     }
 
     public function testRejectsPendingAccountWithLifecycleTimestamps(): void

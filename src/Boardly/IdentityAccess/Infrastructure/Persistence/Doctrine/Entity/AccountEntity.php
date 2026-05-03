@@ -7,12 +7,8 @@ namespace App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-#[ORM\Table(
-    name: 'accounts',
-    uniqueConstraints: [
-        new ORM\UniqueConstraint(name: 'uniq_accounts_email', columns: ['email']),
-    ],
-)]
+#[ORM\Table(name: 'accounts')]
+#[ORM\UniqueConstraint(name: 'uniq_accounts_email', columns: ['email'])]
 class AccountEntity
 {
     #[ORM\Id]
