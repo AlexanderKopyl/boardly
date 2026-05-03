@@ -19,6 +19,7 @@ final class AccountRegisteredOutboxEventSerializer implements OutboxEventSeriali
 
     public function serialize(DomainEvent $event, ?\DateTimeImmutable $now = null): SerializedOutboxEvent
     {
+        /** @var AccountRegistered $event */
         $accountId = $event->accountId()->value();
         $registeredAt = $event->registeredAt();
 
