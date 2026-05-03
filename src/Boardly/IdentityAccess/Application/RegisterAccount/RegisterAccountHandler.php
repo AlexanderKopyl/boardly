@@ -14,6 +14,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\IdGeneratorInterface;
+use App\Shared\Application\Outbox\OutboxInterface;
 use App\Shared\Application\Transaction\TransactionalInterface;
 
 final readonly class RegisterAccountHandler
@@ -24,6 +25,7 @@ final readonly class RegisterAccountHandler
         private ClockInterface $clock,
         private IdGeneratorInterface $idGenerator,
         private TransactionalInterface $transactional,
+        private OutboxInterface $outbox,
     ) {
     }
 
@@ -48,6 +50,7 @@ final readonly class RegisterAccountHandler
                 $account = $domainResult->account();
 
                 $this->accounts->save($account);
+                $this->outbox->store([$domainResult->event()]);
 
                 return new RegisterAccountResult(
                     $account->id()->value(),

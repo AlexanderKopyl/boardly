@@ -5,6 +5,11 @@ services:
         autowire: true
         autoconfigure: true
 
+    _instanceof:
+        App\Shared\Infrastructure\Outbox\OutboxEventSerializerInterface:
+            tags:
+                - { name: boardly.outbox_event_serializer }
+
     App\:
         resource: '../src/'
         exclude:
@@ -23,6 +28,14 @@ services:
     App\Shared\Infrastructure\Symfony\Messenger\MessengerQueryBus:
         arguments:
             $queryBus: '@query.bus'
+
+    App\Shared\Infrastructure\Outbox\OutboxPublisher:
+        arguments:
+            $messageBus: '@event.bus'
+
+    App\Shared\Infrastructure\Outbox\OutboxEventSerializerRegistry:
+        arguments:
+            $serializers: !tagged_iterator boardly.outbox_event_serializer
 
     App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler:
         tags:
