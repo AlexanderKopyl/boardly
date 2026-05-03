@@ -28,6 +28,12 @@ Detailed HTTP controller and transport-layer rules are defined in:
 docs/architecture/http-controller-rules.md
 ```
 
+Detailed application command/query bus rules are defined in:
+
+```text
+docs/architecture/application-bus-rules.md
+```
+
 ---
 
 ## 2. Core Architecture
@@ -128,6 +134,12 @@ Application handlers should coordinate:
 3. calling domain behavior;
 4. persisting changes;
 5. publishing domain events or scheduling async side effects.
+
+Application command/query bus details are governed by:
+
+```text
+docs/architecture/application-bus-rules.md
+```
 
 ### Infrastructure Layer
 
@@ -277,6 +289,8 @@ Do not use async messaging for:
 - enforcing permissions;
 - core state mutation that must be immediately consistent.
 
+Domain events are not commands and must not be dispatched through the command bus.
+
 ---
 
 ## 6. CQRS Rules
@@ -285,6 +299,7 @@ CQRS is allowed when it makes the model clearer.
 
 Use commands for state changes:
 
+- RegisterAccount;
 - CreateProject;
 - CreateIssue;
 - AssignIssue;
@@ -294,6 +309,7 @@ Use commands for state changes:
 
 Use queries for reads:
 
+- GetCurrentAccount;
 - GetIssueDetails;
 - SearchIssues;
 - GetProjectBoard;
@@ -305,10 +321,17 @@ Rules:
 
 - Commands represent user intent.
 - Queries do not mutate state.
+- Events represent facts that already happened.
 - Command handlers should not return complex read models.
 - Query handlers may use optimized DBAL, Doctrine projections, or OpenSearch where appropriate.
 - Read models can be eventually consistent if business allows it.
 - Critical user-visible state should be confirmable from the database.
+
+Command/query bus rules are defined in:
+
+```text
+docs/architecture/application-bus-rules.md
+```
 
 ---
 
@@ -316,6 +339,9 @@ Rules:
 
 Synchronous DB transaction is required for:
 
+- creating account;
+- login / refresh-session state changes;
+- approving / rejecting / disabling account;
 - creating project;
 - archiving project;
 - creating issue;
@@ -336,6 +362,8 @@ Can be asynchronous:
 - recalculating non-critical counters.
 
 A successful DB transaction must not depend on RabbitMQ, Redis, or OpenSearch availability.
+
+Application commands that must return an immediate result to the caller must be handled synchronously. Do not route core application commands to RabbitMQ by default.
 
 ---
 
@@ -405,11 +433,19 @@ Rules:
 - Security must not be only route-level.
 - Serializer must not expose domain objects blindly.
 - Symfony Workflow Component must not force an anemic domain model.
+- Controllers must depend on Boardly bus abstractions, not directly on Symfony MessageBusInterface.
+- Symfony Messenger must stay an infrastructure detail behind application bus interfaces.
 
 HTTP controller details are governed by:
 
 ```text
 docs/architecture/http-controller-rules.md
+```
+
+Application bus details are governed by:
+
+```text
+docs/architecture/application-bus-rules.md
 ```
 
 ---
@@ -422,23 +458,26 @@ Expected flow:
 
 1. Controller receives request.
 2. Application command is created.
-3. Permission policy checks actor access.
-4. Issue aggregate is loaded.
-5. Workflow configuration is loaded.
-6. Workflow policy validates transition.
-7. Issue executes status transition.
-8. Domain event `IssueStatusChanged` is recorded.
-9. Issue is persisted in one DB transaction.
-10. Async side effects are scheduled after commit.
-11. Search index, notifications, reporting, and activity projections are updated asynchronously.
+3. Command is dispatched through CommandBusInterface.
+4. Permission policy checks actor access.
+5. Issue aggregate is loaded.
+6. Workflow configuration is loaded.
+7. Workflow policy validates transition.
+8. Issue executes status transition.
+9. Domain event `IssueStatusChanged` is recorded.
+10. Issue is persisted in one DB transaction.
+11. Async side effects are scheduled after commit.
+12. Search index, notifications, reporting, and activity projections are updated asynchronously.
 
 Forbidden flow:
 
 1. Controller changes `status` field directly.
-2. Frontend decides allowed transitions.
-3. Doctrine listener secretly sends core business messages.
-4. OpenSearch is updated before DB commit.
-5. RabbitMQ success is required for status change to be valid.
+2. Controller calls Symfony MessageBusInterface directly.
+3. Frontend decides allowed transitions.
+4. Doctrine listener secretly sends core business messages.
+5. OpenSearch is updated before DB commit.
+6. RabbitMQ success is required for status change to be valid.
+7. Core application command is accidentally routed to async transport.
 
 ---
 
