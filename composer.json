@@ -67,7 +67,7 @@
             "@auto-scripts"
         ],
         "test": "phpunit",
-        "phpstan": "phpstan analyse",
+        "phpstan": "phpstan analyse --memory-limit=1G",
         "cs-fix": "php-cs-fixer fix --diff",
         "rector": "rector process",
         "qa": [
