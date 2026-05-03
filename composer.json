@@ -23,6 +23,7 @@
         "symfony/runtime": "^7.0",
         "symfony/security-bundle": "^7.0",
         "symfony/serializer": "^7.0",
+        "symfony/uid": "^7.0",
         "symfony/validator": "^7.0",
         "symfony/yaml": "^7.0"
     },
@@ -66,7 +67,7 @@
             "@auto-scripts"
         ],
         "test": "phpunit",
-        "phpstan": "phpstan analyse",
+        "phpstan": "phpstan analyse --memory-limit=1G",
         "cs-fix": "php-cs-fixer fix --diff",
         "rector": "rector process",
         "qa": [
