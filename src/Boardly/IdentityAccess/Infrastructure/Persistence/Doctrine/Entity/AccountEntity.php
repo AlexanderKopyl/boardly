@@ -19,7 +19,7 @@ class AccountEntity
     #[ORM\Column(type: 'string', length: 36)]
     private string $id;
 
-    #[ORM\Column(type: 'string', unique: true)]
+    #[ORM\Column(type: 'string')]
     private string $email;
 
     #[ORM\Column(name: 'password_hash', type: 'string')]
