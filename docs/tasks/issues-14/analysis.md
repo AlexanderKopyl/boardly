@@ -2,7 +2,7 @@
 
 ## 1. Issue Summary
 
-Issue #14 adds the public `POST /api/auth/register` HTTP endpoint that wraps the already-implemented `RegisterAccountHandler` use case. The controller must stay thin: parse the JSON request body, construct `RegisterAccountCommand`, invoke the handler, map the result or exception to an HTTP response. No business logic, no Doctrine, no password hashing, no direct aggregate access belongs in the controller.
+Issue #14 adds the public `POST /api/auth/register` HTTP endpoint that wraps the already-implemented `RegisterAccountHandler` use case. The controller must stay thin: receive a validated `RegisterAccountRequestDto` via `#[MapRequestPayload]`, construct `RegisterAccountCommand`, invoke the handler, and return a success response. No business logic, no Doctrine, no password hashing, no direct aggregate access belongs in the controller. Exception mapping is handled centrally by `IdentityAccessApiExceptionSubscriber`.
 
 ---
 
@@ -27,6 +27,9 @@ Issue #14 adds the public `POST /api/auth/register` HTTP endpoint that wraps the
 | `config/services.yaml` | `autowire: true`, `autoconfigure: true`, `App\:` scans all of `src/` |
 | `config/packages/security.yaml` | No `access_control` rules; all routes are currently public |
 | `tests/Boardly/IdentityAccess/Application/RegisterAccount/RegisterAccountHandlerTest.php` | Domain exception types that propagate from the handler |
+| `docs/architecture/http-controller-rules.md` | Accepted HTTP controller flow, request DTO rules, request payload mapping, exception mapping rules, HTTP status code policy |
+| `src/Boardly/IdentityAccess/Interfaces/Http/Request/RegisterAccountRequestDto.php` | Request DTO shape and Symfony Validator constraints |
+| `src/Boardly/IdentityAccess/Interfaces/Http/EventSubscriber/IdentityAccessApiExceptionSubscriber.php` | Centralized exception-to-HTTP-response mapping for IdentityAccess API routes |
 
 ---
 
@@ -94,11 +97,53 @@ new RegisterAccountCommand(
 - Maps to → `409 Conflict`
 
 **Domain exceptions that propagate from handler value-object construction**:
-- `InvalidEmail` — thrown by `Email::fromString()` for malformed email
-- `InvalidAccountName` — thrown by `AccountName::fromString()` for empty/too-long name
-- `InvalidPasswordHash` — thrown by `PasswordHash::fromString()` if the hasher returns an unsupported format
+- `InvalidEmail` — thrown by `Email::fromString()` for malformed email. Under normal flow, `RegisterAccountRequestDto` (`Assert\Email`) catches this before the handler runs. If it still surfaces, `IdentityAccessApiExceptionSubscriber` maps it to → `422 Unprocessable Entity`.
+- `InvalidAccountName` — thrown by `AccountName::fromString()` for empty/too-long name. Under normal flow, `RegisterAccountRequestDto` (`Assert\NotBlank`, `Assert\Length`) catches this before the handler runs. If it still surfaces, `IdentityAccessApiExceptionSubscriber` maps it to → `422 Unprocessable Entity`.
+- `InvalidPasswordHash` — thrown by `PasswordHash::fromString()` if the hasher returns an unsupported format. Maps to → `500 Internal Server Error` (infrastructure failure; not caught by the subscriber).
 
-All three map to → `400 Bad Request`.
+The earlier analysis assumption that "all three map to 400 Bad Request" is superseded by `docs/architecture/http-controller-rules.md`, which separates transport validation failures (422) from malformed request body (400).
+
+---
+
+## 5.1 Accepted HTTP Controller Flow (per `http-controller-rules.md`)
+
+`docs/architecture/http-controller-rules.md` is the authoritative rule document for controller design. Its accepted flow:
+
+```text
+HTTP Request
+-> RegisterAccountRequestDto via #[MapRequestPayload]
+-> Symfony Validator validates RegisterAccountRequestDto
+-> RegisterAccountController maps DTO to RegisterAccountCommand
+-> RegisterAccountHandler executes use case
+-> IdentityAccessApiExceptionSubscriber maps failures to API error responses
+-> RegisterAccountController maps RegisterAccountResult to 201 JsonResponse
+```
+
+**Controller rules** (from `http-controller-rules.md`):
+- Must use `#[MapRequestPayload]` for JSON request body binding — no manual `json_decode()`
+- Must not manually validate individual fields
+- Must not catch expected application/domain exceptions locally — subscriber handles them
+- Must not inject `EntityManagerInterface`, `DoctrineRepository`, or domain infrastructure
+- Must map DTO to command explicitly — must not pass DTO directly to handler
+
+**Request DTO rules**:
+- `RegisterAccountRequestDto` owns transport validation (Symfony Validator constraints)
+- DTO validation does not replace domain validation — `Email` value object still validates on its own
+- Constraints: `email` → `NotBlank` + `Email`; `plainPassword` → `NotBlank` + `Length(min:8, max:4096)`; `name` → `NotBlank` + `Length(max:100)`
+
+**Status code policy** (from `http-controller-rules.md`):
+- Malformed/unreadable JSON body → `400 Bad Request`, code `invalid_request`
+- DTO constraint violations → `422 Unprocessable Entity`, code `validation_failed`, with `violations[]`
+- `EmailAlreadyRegistered` → `409 Conflict`, code `email_already_registered`
+- Success → `201 Created`
+
+**Exception mapping** (from `IdentityAccessApiExceptionSubscriber`):
+- Subscriber intercepts `kernel.exception` events for `/api/` routes
+- `BadRequestHttpException` (standalone) → `400`
+- `HttpException` wrapping `ValidationFailedException` → `422`
+- `EmailAlreadyRegistered` → `409`
+- `InvalidEmail` / `InvalidAccountName` (bypass DTO path) → `422`
+- All other exceptions → left to Symfony default error handling
 
 ---
 
@@ -258,7 +303,7 @@ Business state + Outbox record = one DB transaction. RabbitMQ/Messenger publishi
 | `RegisterAccountHandler` test rewrites | Low | Wrapping handler mutation in `transactional(...)` requires injecting `TransactionalInterface` into the handler. Existing unit tests must pass a test double for `TransactionalInterface`. If tests use `InMemoryAccountRepository`, the transaction double can execute the callback directly. No large rewrite expected. |
 | Transaction wrapping changes public behavior | Low | If `wrapInTransaction()` changes how exceptions propagate (e.g., wraps them), the existing `EmailAlreadyRegistered`, `InvalidEmail`, `InvalidAccountName` exception types must still surface correctly through the boundary. Verify this during implementation. |
 | Response shape discrepancy | Low | The design doc specifies `{ "id", "email", "name", "status" }`. The issue spec and `RegisterAccountResult` use `{ "accountId", "status" }`. Issue #14 follows the issue spec. |
-| Validation error code discrepancy | Low | The design doc specifies `422 Unprocessable Entity` with `validation_failed` for input errors. The issue spec requires `400 Bad Request`. Issue #14 follows the issue spec. Document the divergence. |
+| Validation error code discrepancy | Resolved | `docs/architecture/http-controller-rules.md` establishes the authoritative rule: DTO validation failures → `422 Unprocessable Entity`; malformed JSON → `400 Bad Request`. This supersedes the issue spec's earlier `400`-for-all-validation approach. `IdentityAccessApiExceptionSubscriber` implements this mapping. |
 | Request `password` vs `plainPassword` | Low | The design doc uses `"password"` as the JSON key. The issue spec uses `"plainPassword"`. The controller parses the request body, so the JSON key is a controller concern. Issue #14 uses `"plainPassword"` per the task spec. |
 | `InvalidPasswordHash` from hasher | Low | If `SymfonyPasswordHasher` produces a format not accepted by `PasswordHash::fromString()`, the domain exception propagates. Should map to 500 Internal Server Error (infrastructure failure), not 400. |
 | Routes.yaml must be updated | Low | `config/routes.yaml` must be extended to scan `src/Boardly/*/Interfaces/Http/Controller/`. This affects all future bounded context controllers. |

@@ -4,7 +4,7 @@
 
 **Goal:** Add the public `POST /api/auth/register` HTTP endpoint that wraps the existing `RegisterAccountHandler` use case, returns `201 Created` with `{ "accountId", "status": "pending_approval" }`, and maps domain/application exceptions to correct HTTP error responses.
 
-**Architecture:** Thin controller in the IdentityAccess `Interfaces` layer; request JSON parsing is manual (no Symfony Serializer or form); an application-level `TransactionalInterface` port wraps handler mutations so the controller and handler stay Doctrine-free; the `DoctrineTransactional` adapter uses `EntityManagerInterface::wrapInTransaction()` to flush and commit in one atomic boundary; all business rules remain in the existing application/domain layer.
+**Architecture:** Thin controller in the IdentityAccess `Interfaces` layer; request body is mapped via `#[MapRequestPayload]` into `RegisterAccountRequestDto` with Symfony Validator constraints (no manual `json_decode` or field validation in the controller); `IdentityAccessApiExceptionSubscriber` maps application/domain exceptions to standardized JSON error responses centrally; an application-level `TransactionalInterface` port wraps handler mutations so the controller and handler stay Doctrine-free; the `DoctrineTransactional` adapter uses `EntityManagerInterface::wrapInTransaction()` to flush and commit in one atomic boundary; all business rules remain in the existing application/domain layer.
 
 **Tech Stack:** Symfony 7, PHP 8.3, `JsonResponse`, `WebTestCase`, `RegisterAccountHandler` (already wired via autowire).
 
@@ -17,9 +17,11 @@
 | Create | `src/Shared/Application/Transaction/TransactionalInterface.php` | Application port: wraps mutation callbacks in an atomic transaction boundary |
 | Create | `src/Shared/Infrastructure/Doctrine/DoctrineTransactional.php` | Infrastructure adapter: implements `TransactionalInterface` via `EntityManagerInterface::wrapInTransaction()` |
 | Modify | `src/Boardly/IdentityAccess/Application/RegisterAccount/RegisterAccountHandler.php` | Inject `TransactionalInterface`; wrap mutation body in `transactional(...)` |
-| Create | `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Parse JSON, build command, call handler, return 201 / 400 / 409 |
+| Create | `src/Boardly/IdentityAccess/Interfaces/Http/Request/RegisterAccountRequestDto.php` | Transport validation DTO: Symfony Validator constraints for `email`, `plainPassword`, `name` |
+| Create | `src/Boardly/IdentityAccess/Interfaces/Http/EventSubscriber/IdentityAccessApiExceptionSubscriber.php` | Context-local exception subscriber: maps application/domain exceptions to standardized API error responses |
+| Create | `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Receive `RegisterAccountRequestDto` via `#[MapRequestPayload]`, build command, call handler, return 201 |
 | Modify | `config/routes.yaml` | Add `src/Boardly/*/Interfaces/Http/Controller/` routing resource (already planned) |
-| Create | `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountControllerTest.php` | HTTP integration tests for all success and error cases |
+| Create | `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountControllerTest.php` | HTTP integration tests: 400 malformed JSON, 422 validation failures, 409 duplicate email, 201 success |
 
 No other files need to change. `DoctrineFlushListener` must not be created.
 
@@ -45,7 +47,7 @@ Why: ADR-0002 places context-specific controllers under `src/Boardly/<Context>/I
 Use PHP attribute routing, consistent with `HealthCheckController`:
 
 ```php
-#[Route('/api/auth/register', name: 'api_auth_register', methods: ['POST'])]
+#[Route('/api/auth/register', name: 'api_auth_register', methods: ['POST'], format: 'json')]
 ```
 
 Routes.yaml must be updated to scan the new path. The existing entry scans only `src/Interfaces/Http/Controller/`. Add a second entry:
@@ -81,17 +83,43 @@ boardly_controllers:
 
 ---
 
-## 3. Request JSON Parsing Strategy
+## 3. Request DTO and Payload Mapping Strategy
 
-Use manual JSON parsing from `$request->getContent()`. No Symfony Serializer, no DTO class, no `#[MapRequestPayload]`.
+Use `#[MapRequestPayload]` to bind the JSON request body to `RegisterAccountRequestDto`. No manual `json_decode()`. No manual field presence or type checks in the controller.
 
-Reason: the request has three fields (`email`, `plainPassword`, `name`), all required strings. Manual parsing is minimal, explicit, and produces the correct 400 response without extra infrastructure.
+Per `docs/architecture/http-controller-rules.md`: controllers must not manually parse JSON with `json_decode()` when Symfony request mapping can be used.
 
-Parsing steps:
-1. `json_decode($request->getContent(), true)` — returns `null` if invalid JSON
-2. If result is not an array → `400 Bad Request`, code `invalid_request`
-3. Check that `email`, `plainPassword`, and `name` keys exist and are non-empty strings → `400 Bad Request`, code `validation_failed`
-4. Pass the three raw strings to `new RegisterAccountCommand(...)` — domain value objects handle further validation
+```text
+src/Boardly/IdentityAccess/Interfaces/Http/Request/RegisterAccountRequestDto.php
+```
+
+`RegisterAccountRequestDto` shape:
+
+```php
+final readonly class RegisterAccountRequestDto
+{
+    public function __construct(
+        #[Assert\NotBlank]
+        #[Assert\Email]
+        public string $email,
+
+        #[Assert\NotBlank]
+        #[Assert\Length(min: 8, max: 4096)]
+        public string $plainPassword,
+
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 100)]
+        public string $name,
+    ) {
+    }
+}
+```
+
+Symfony handles the two failure paths automatically before the controller body executes:
+- Malformed or unreadable JSON body → Symfony throws `BadRequestHttpException` → `IdentityAccessApiExceptionSubscriber` returns `400 invalid_request`
+- Structurally valid JSON with constraint violations → Symfony throws `HttpException` wrapping `ValidationFailedException` → subscriber returns `422 validation_failed` with field-level violations
+
+The controller receives `$requestDto` only after both paths pass. No controller-level JSON parsing or field checks are needed.
 
 ---
 
@@ -99,13 +127,13 @@ Parsing steps:
 
 ```php
 $command = new RegisterAccountCommand(
-    email: $data['email'],
-    plainPassword: $data['plainPassword'],
-    name: $data['name'],
+    email: $requestDto->email,
+    plainPassword: $requestDto->plainPassword,
+    name: $requestDto->name,
 );
 ```
 
-`RegisterAccountCommand` accepts raw strings. Domain value objects (`Email`, `AccountName`) perform normalization and validation when the handler runs.
+`RegisterAccountCommand` accepts raw strings. Domain value objects (`Email`, `AccountName`) perform normalization and validation when the handler runs. The request DTO must not be passed directly to the handler — the explicit mapping preserves the separation between the HTTP layer and the application layer.
 
 ---
 
@@ -165,24 +193,30 @@ return new JsonResponse(
 
 ## 7. Error Response Shape
 
-All error responses use a consistent envelope:
+All error responses use a consistent envelope. Mapping is handled by `IdentityAccessApiExceptionSubscriber`, not inside the controller.
 
-**400 Bad Request — invalid JSON**:
+**400 Bad Request — malformed or unreadable request body**:
 ```json
 {
     "error": {
         "code": "invalid_request",
-        "message": "Invalid JSON body."
+        "message": "Invalid request body."
     }
 }
 ```
 
-**400 Bad Request — missing or wrong-type fields, domain validation failure**:
+**422 Unprocessable Entity — DTO validation failure**:
 ```json
 {
     "error": {
         "code": "validation_failed",
-        "message": "Validation failed."
+        "message": "The request payload is invalid.",
+        "violations": [
+            {
+                "field": "email",
+                "message": "This value is not a valid email address."
+            }
+        ]
     }
 }
 ```
@@ -197,22 +231,46 @@ All error responses use a consistent envelope:
 }
 ```
 
-**Note on design-doc divergence**: The design doc specifies `422 Unprocessable Entity` with a field-level errors map for validation failures. Issue #14 spec requires `400 Bad Request`. Issue #14 follows the issue spec. The `422` path and field map can be added in a later issue if the design is revised.
+Per `docs/architecture/http-controller-rules.md`: malformed JSON → `400`; structurally valid JSON with invalid fields → `422`. The earlier issue spec assumption of `400`-for-all-validation is superseded by the HTTP controller rules.
 
 ---
 
 ## 8. Exception/Error Mapping
 
-| Exception | HTTP Status | Error Code |
-|-----------|------------|------------|
-| `EmailAlreadyRegistered` (application) | `409 Conflict` | `email_already_registered` |
-| `InvalidEmail` (domain) | `400 Bad Request` | `validation_failed` |
-| `InvalidAccountName` (domain) | `400 Bad Request` | `validation_failed` |
-| `InvalidPasswordHash` (domain, from infra hasher) | `500 Internal Server Error` | Let Symfony handle — this is an infrastructure failure, not user input |
-| `json_decode` returns non-array | `400 Bad Request` | `invalid_request` |
-| Missing or non-string `email`/`plainPassword`/`name` | `400 Bad Request` | `validation_failed` |
+All mappings are handled by `IdentityAccessApiExceptionSubscriber`. Per `docs/architecture/http-controller-rules.md`, controllers must not catch expected exceptions locally.
 
-Do not catch `InvalidPasswordHash` and return 400 — it means `SymfonyPasswordHasher` produced a hash that `PasswordHash::fromString()` rejected, which is an infrastructure misconfiguration.
+| Source | HTTP Status | Error Code | Handled by |
+|--------|------------|------------|------------|
+| Malformed/unreadable request body | `400 Bad Request` | `invalid_request` | `BadRequestHttpException` → subscriber |
+| DTO constraint violation (`NotBlank`, `Email`, `Length`) | `422 Unprocessable Entity` | `validation_failed` | `HttpException(ValidationFailedException)` → subscriber |
+| `EmailAlreadyRegistered` (application) | `409 Conflict` | `email_already_registered` | subscriber |
+| `InvalidEmail` (domain, bypass DTO path) | `422 Unprocessable Entity` | `validation_failed` | subscriber |
+| `InvalidAccountName` (domain, bypass DTO path) | `422 Unprocessable Entity` | `validation_failed` | subscriber |
+| `InvalidPasswordHash` (domain, from infra hasher) | `500 Internal Server Error` | — | Symfony default error handler |
+
+Do not catch `InvalidPasswordHash` and return a client error — it is an infrastructure misconfiguration, not a user input failure.
+
+`InvalidEmail` and `InvalidAccountName` should normally not reach the subscriber because `RegisterAccountRequestDto` catches equivalent transport-level violations earlier. The subscriber handles them for defense-in-depth.
+
+## 8.1. IdentityAccessApiExceptionSubscriber
+
+```text
+src/Boardly/IdentityAccess/Interfaces/Http/EventSubscriber/IdentityAccessApiExceptionSubscriber.php
+```
+
+Placement: context-local first (per `http-controller-rules.md` section 11). The subscriber intercepts `kernel.exception` events and acts only on `/api/` routes.
+
+Mapping logic:
+- `EmailAlreadyRegistered` → `409` with `email_already_registered`
+- `HttpException` wrapping `ValidationFailedException` → `422` with `validation_failed` + `violations[]`
+- `BadRequestHttpException` (standalone) → `400` with `invalid_request`
+- `InvalidEmail` / `InvalidAccountName` → `422` with `validation_failed`
+- All other exceptions → not handled; Symfony default behavior applies
+
+Rules that must remain true:
+- Subscriber must not contain business rules
+- Subscriber must not call repositories or handlers
+- Subscriber must not expose raw exception messages, stack traces, or entity internals
 
 ---
 
@@ -330,14 +388,21 @@ These are HTTP integration tests. They boot the Symfony kernel, hit the real rou
 
 - `testDuplicateEmailReturns409()` — register twice with same email; assert second call returns `409`; assert `error.code` is `"email_already_registered"`
 
-**Invalid input — 400:**
+**Malformed request — 400:**
 
-- `testInvalidJsonReturns400()` — send `Content-Type: application/json` with body `not json`; assert `400`
-- `testMissingEmailReturns400()` — omit `email` field; assert `400`
-- `testMissingPlainPasswordReturns400()` — omit `plainPassword` field; assert `400`
-- `testMissingNameReturns400()` — omit `name` field; assert `400`
-- `testInvalidEmailFormatReturns400()` — send `"email": "not-an-email"`; assert `400`
-- `testNonStringEmailReturns400()` — send `"email": 123` (integer); assert `400`
+- `testMalformedJsonReturns400()` — POST with body `{not valid json}`; assert `400`; assert `error.code` is `"invalid_request"`; assert `error.message` is `"Invalid request body."`
+
+**DTO validation failures — 422:**
+
+- `testMissingEmailReturns422()` — omit `email` field; assert `422`; assert `error.code` is `"validation_failed"`; assert `error.violations` is non-empty
+- `testBlankEmailReturns422()` — send `"email": ""`; assert `422`
+- `testInvalidEmailReturns422()` — send `"email": "not-an-email"`; assert `422`
+- `testMissingPlainPasswordReturns422()` — omit `plainPassword` field; assert `422`
+- `testBlankPlainPasswordReturns422()` — send `"plainPassword": ""`; assert `422`
+- `testTooShortPlainPasswordReturns422()` — send a 7-character password (below `Length(min:8)`); assert `422`
+- `testMissingNameReturns422()` — omit `name` field; assert `422`
+- `testBlankNameReturns422()` — send `"name": ""`; assert `422`
+- `testTooLongNameReturns422()` — send a 101-character name (above `Length(max:100)`); assert `422`
 
 **Response does not expose sensitive data:**
 
@@ -349,27 +414,35 @@ These are HTTP integration tests. They boot the Symfony kernel, hit the real rou
 **Test helpers:**
 
 ```php
-private function registerPayload(
-    string $email = 'user@example.com',
-    string $plainPassword = 'correct horse battery staple',
-    string $name = 'Test User',
-): string {
-    return json_encode([
-        'email' => $email,
-        'plainPassword' => $plainPassword,
-        'name' => $name,
-    ], JSON_THROW_ON_ERROR);
+/** @return array<string, mixed> */
+private function validPayload(?string $email = null): array
+{
+    return [
+        'email' => $email ?? $this->uniqueEmail(),
+        'plainPassword' => 'valid-password-123',
+        'name' => 'Test User',
+    ];
 }
 
-private function postRegister(string $body): void
+private function uniqueEmail(): string
 {
+    return sprintf('user+%s@example.com', uniqid('', true));
+}
+
+/** @param array<string, mixed>|string $payload */
+private function postRegister(array|string $payload): void
+{
+    $content = \is_array($payload)
+        ? json_encode($payload, JSON_THROW_ON_ERROR)
+        : $payload;
+
     $this->client->request(
         'POST',
         '/api/auth/register',
         [],
         [],
-        ['CONTENT_TYPE' => 'application/json'],
-        $body,
+        ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'],
+        $content,
     );
 }
 ```
@@ -384,8 +457,10 @@ private function postRegister(string $body): void
 | `src/Shared/Infrastructure/Doctrine/DoctrineTransactional.php` | Create | Infrastructure adapter using `wrapInTransaction()` |
 | `src/Boardly/IdentityAccess/Application/RegisterAccount/RegisterAccountHandler.php` | Modify | Inject `TransactionalInterface`, wrap mutation in `transactional(...)` |
 | `config/routes.yaml` | Modify | Add IdentityAccess controller routing resource |
-| `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Create | New file |
-| `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountControllerTest.php` | Create | HTTP integration tests |
+| `src/Boardly/IdentityAccess/Interfaces/Http/Request/RegisterAccountRequestDto.php` | Create | Transport validation DTO with Symfony Validator constraints |
+| `src/Boardly/IdentityAccess/Interfaces/Http/EventSubscriber/IdentityAccessApiExceptionSubscriber.php` | Create | Context-local exception subscriber for IdentityAccess API routes |
+| `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php` | Create | Thin controller: `#[MapRequestPayload]`, DTO → command, return 201 |
+| `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountControllerTest.php` | Create | HTTP integration tests: 400, 422, 409, 201 |
 
 **Must not change:**
 - `RegisterAccountCommand`, `RegisterAccountResult`
