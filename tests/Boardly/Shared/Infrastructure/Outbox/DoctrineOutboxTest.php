@@ -6,9 +6,10 @@ namespace App\Tests\Boardly\Shared\Infrastructure\Outbox;
 
 use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
+use App\Boardly\IdentityAccess\Infrastructure\Outbox\AccountRegisteredOutboxEventSerializer;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Shared\Infrastructure\Outbox\DoctrineOutbox;
-use App\Shared\Infrastructure\Outbox\OutboxEventSerializer;
+use App\Shared\Infrastructure\Outbox\OutboxEventSerializerRegistry;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
 use PHPUnit\Framework\TestCase;
@@ -54,7 +55,10 @@ final class DoctrineOutboxTest extends TestCase
         $connection->expects(self::never())->method('commit');
         $connection->expects(self::never())->method('rollBack');
 
-        (new DoctrineOutbox($connection, new OutboxEventSerializer()))->store($events);
+        (new DoctrineOutbox(
+            $connection,
+            new OutboxEventSerializerRegistry([new AccountRegisteredOutboxEventSerializer()]),
+        ))->store($events);
     }
 
     private function accountRegistered(string $accountId, string $email): AccountRegistered

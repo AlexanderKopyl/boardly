@@ -2,32 +2,31 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Outbox;
+namespace App\Boardly\IdentityAccess\Infrastructure\Outbox;
 
 use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
 use App\Boardly\SharedKernel\Domain\Event\DomainEvent;
+use App\Shared\Infrastructure\Outbox\OutboxEventSerializerInterface;
+use App\Shared\Infrastructure\Outbox\SerializedOutboxEvent;
 use Symfony\Component\Uid\Uuid;
 
-final class OutboxEventSerializer
+final class AccountRegisteredOutboxEventSerializer implements OutboxEventSerializerInterface
 {
-    public function serialize(DomainEvent $event, ?\DateTimeImmutable $now = null): SerializedOutboxEvent
+    public function supports(DomainEvent $event): bool
     {
-        return match (true) {
-            $event instanceof AccountRegistered => $this->serializeAccountRegistered(
-                $event,
-                $now ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
-            ),
-            default => throw new \InvalidArgumentException(sprintf(
-                'Unsupported domain event "%s" cannot be serialized for the outbox.',
-                $event::class,
-            )),
-        };
+        return $event instanceof AccountRegistered;
     }
 
-    private function serializeAccountRegistered(
-        AccountRegistered $event,
-        \DateTimeImmutable $createdAt,
-    ): SerializedOutboxEvent {
+    public function serialize(DomainEvent $event, ?\DateTimeImmutable $now = null): SerializedOutboxEvent
+    {
+        if (!$event instanceof AccountRegistered) {
+            throw new \InvalidArgumentException(sprintf(
+                'Expected domain event "%s", got "%s".',
+                AccountRegistered::class,
+                $event::class,
+            ));
+        }
+
         $accountId = $event->accountId()->value();
         $registeredAt = $event->registeredAt();
 
@@ -44,7 +43,7 @@ final class OutboxEventSerializer
             ],
             occurredAt: $registeredAt,
             availableAt: $registeredAt,
-            createdAt: $createdAt,
+            createdAt: $now ?? new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
         );
     }
 }

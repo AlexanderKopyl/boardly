@@ -14,7 +14,7 @@ final readonly class DoctrineOutbox implements OutboxInterface
 {
     public function __construct(
         private Connection $connection,
-        private OutboxEventSerializer $serializer,
+        private OutboxEventSerializerRegistry $serializerRegistry,
     ) {
     }
 
@@ -24,7 +24,7 @@ final readonly class DoctrineOutbox implements OutboxInterface
     public function store(array $events): void
     {
         foreach ($events as $event) {
-            $serialized = $this->serializer->serialize($event);
+            $serialized = $this->serializerRegistry->serialize($event);
 
             $this->connection->insert('outbox_messages', [
                 'id' => Uuid::v7()->toRfc4122(),

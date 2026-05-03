@@ -8,7 +8,6 @@ use App\Boardly\IdentityAccess\Domain\Event\AccountRegistered;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Shared\Infrastructure\Outbox\DoctrineOutbox;
-use App\Shared\Infrastructure\Outbox\OutboxEventSerializer;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -23,7 +22,7 @@ final class DoctrineOutboxIntegrationTest extends KernelTestCase
         self::bootKernel();
 
         $this->connection = self::getContainer()->get(Connection::class);
-        $this->outbox = new DoctrineOutbox($this->connection, new OutboxEventSerializer());
+        $this->outbox = self::getContainer()->get(DoctrineOutbox::class);
 
         $this->connection->executeQuery('SELECT 1 FROM outbox_messages WHERE 1 = 0');
         $this->connection->executeStatement('DELETE FROM outbox_messages');
