@@ -14,7 +14,7 @@ final class Version20260503075438 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Create accounts table for IdentityAccess account persistence.';
     }
 
     public function up(Schema $schema): void
@@ -28,4 +28,3 @@ final class Version20260503075438 extends AbstractMigration
         $this->addSql('DROP TABLE accounts');
     }
 }
-
