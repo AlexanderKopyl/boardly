@@ -21,6 +21,9 @@ services:
     App\Shared\Application\Bus\QueryBusInterface:
         alias: App\Shared\Infrastructure\Symfony\Messenger\MessengerQueryBus
 
+    App\Shared\Application\Messaging\ProcessedMessageStoreInterface:
+        alias: App\Shared\Infrastructure\Messaging\DoctrineProcessedMessageStore
+
     App\Shared\Infrastructure\Symfony\Messenger\MessengerCommandBus:
         arguments:
             $commandBus: '@command.bus'
