@@ -26,6 +26,12 @@ If the task is simple and does not touch architecture, security, persistence, as
 
 If more context is needed, explain why before loading additional documents.
 
+Use `caveman-response` when the user asks for short answers or when the task is simple.
+
+Use `graphify-context` when a compact relationship map is better than long prose.
+
+Do not claim fixed token savings. Token reduction depends on task size and context.
+
 ## Operating Rule
 
 Before proposing architecture, generating code, or changing structure:
@@ -121,6 +127,8 @@ Subagents live in `.claude/agents/`.
 | Testing strategy | `testing-strategy` |
 | Observability/operations | `observability-operations` |
 | ADR writing | `adr-writing` |
+| Short/token-efficient answers | `caveman-response` |
+| Compact relationship map | `graphify-context` |
 
 Skills live in `.claude/skills/`.
 
@@ -140,6 +148,8 @@ Skills live in `.claude/skills/`.
 | Security review | only the relevant ADR/design doc | `/review-security`, `testing-security-reviewer` |
 | Testing review | only the relevant feature/design doc | `/review-tests`, `testing-security-reviewer` |
 | New ADR | relevant existing ADRs; template | `/write-adr`, `devops-adr-documentation` |
+| Short/simple response | no extra docs unless needed | `caveman-response` |
+| Compact context map | only directly related docs/nodes | `graphify-context` |
 
 ## External Documentation Checks
 
