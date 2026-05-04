@@ -80,3 +80,7 @@ services:
     App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccountHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
