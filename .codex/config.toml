@@ -77,6 +77,14 @@ enabled = true
 path = "skills/adr-writing/SKILL.md"
 enabled = true
 
+[[skills.config]]
+path = "skills/caveman-response/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/graphify-knowledge-map/SKILL.md"
+enabled = true
+
 [permissions.boardly-safe.filesystem]
 glob_scan_max_depth = 8
 ":minimal" = "read"
