@@ -27,6 +27,9 @@ services:
     App\Shared\Application\Messaging\ProcessedMessageStoreInterface:
         alias: App\Shared\Infrastructure\Messaging\DoctrineProcessedMessageStore
 
+    App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Repository\DoctrineRefreshSessionRepository
+
     App\Shared\Infrastructure\Symfony\Messenger\MessengerCommandBus:
         arguments:
             $commandBus: '@command.bus'
