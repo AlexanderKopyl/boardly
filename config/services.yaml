@@ -9,6 +9,9 @@ services:
         App\Shared\Infrastructure\Outbox\OutboxEventSerializerInterface:
             tags:
                 - { name: boardly.outbox_event_serializer }
+        App\Shared\Infrastructure\Outbox\OutboxMessageMapperInterface:
+            tags:
+                - { name: boardly.outbox_message_mapper }
 
     App\:
         resource: '../src/'
@@ -39,6 +42,10 @@ services:
     App\Shared\Infrastructure\Outbox\OutboxEventSerializerRegistry:
         arguments:
             $serializers: !tagged_iterator boardly.outbox_event_serializer
+
+    App\Shared\Infrastructure\Outbox\OutboxMessageMapperRegistry:
+        arguments:
+            $mappers: !tagged_iterator boardly.outbox_message_mapper
 
     App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler:
         tags:

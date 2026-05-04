@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Boardly\Shared\Infrastructure\Outbox\Command;
 
+use App\Boardly\IdentityAccess\Infrastructure\Message\AccountRegisteredMessage;
+use App\Boardly\IdentityAccess\Infrastructure\Outbox\AccountRegisteredOutboxMessageMapper;
 use App\Shared\Infrastructure\Outbox\Command\PublishOutboxCommand;
 use App\Shared\Infrastructure\Outbox\DoctrineOutbox;
-use App\Shared\Infrastructure\Outbox\OutboxEventSerializer;
-use App\Shared\Infrastructure\Outbox\OutboxMessage;
+use App\Shared\Infrastructure\Outbox\OutboxEventSerializerRegistry;
+use App\Shared\Infrastructure\Outbox\OutboxMessageMapperRegistry;
 use App\Shared\Infrastructure\Outbox\OutboxPublisher;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -58,8 +60,8 @@ final class PublishOutboxCommandTest extends TestCase
         $bus
             ->expects(self::once())
             ->method('dispatch')
-            ->with(self::isInstanceOf(OutboxMessage::class))
-            ->willReturnCallback(static fn (OutboxMessage $message): Envelope => new Envelope($message));
+            ->with(self::isInstanceOf(AccountRegisteredMessage::class))
+            ->willReturnCallback(static fn (object $message): Envelope => new Envelope($message));
         $connection
             ->expects(self::once())
             ->method('update')
@@ -136,7 +138,8 @@ final class PublishOutboxCommandTest extends TestCase
     private function command(Connection $connection, MessageBusInterface $bus): PublishOutboxCommand
     {
         return new PublishOutboxCommand(new OutboxPublisher(
-            new DoctrineOutbox($connection, new OutboxEventSerializer()),
+            new DoctrineOutbox($connection, new OutboxEventSerializerRegistry([])),
+            new OutboxMessageMapperRegistry([new AccountRegisteredOutboxMessageMapper()]),
             $bus,
         ));
     }
@@ -154,7 +157,11 @@ final class PublishOutboxCommandTest extends TestCase
             'event_type' => 'identity_access.account_registered',
             'aggregate_type' => 'identity_access.account',
             'aggregate_id' => '018f3f7a-9e4c-7b2d-9c52-3f8f9b8b4c2f',
-            'payload' => ['account_id' => '018f3f7a-9e4c-7b2d-9c52-3f8f9b8b4c2f'],
+            'payload' => [
+                'account_id' => '018f3f7a-9e4c-7b2d-9c52-3f8f9b8b4c2f',
+                'registered_at' => $now->format(\DateTimeInterface::ATOM),
+                'is_system_admin' => false,
+            ],
             'occurred_at' => $now,
             'available_at' => $now,
             'published_at' => null,

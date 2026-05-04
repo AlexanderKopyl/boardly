@@ -10,6 +10,7 @@ final readonly class OutboxPublisher
 {
     public function __construct(
         private DoctrineOutbox $outbox,
+        private OutboxMessageMapperRegistry $messageMapperRegistry,
         private MessageBusInterface $messageBus,
     ) {
     }
@@ -28,7 +29,8 @@ final readonly class OutboxPublisher
 
         foreach ($records as $record) {
             try {
-                $this->messageBus->dispatch(OutboxMessage::fromRecord($record));
+                $message = $this->messageMapperRegistry->map($record);
+                $this->messageBus->dispatch($message);
             } catch (\Throwable $exception) {
                 $this->outbox->recordFailure(
                     $record->id,

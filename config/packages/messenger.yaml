@@ -28,7 +28,7 @@ framework:
                 dsn: 'doctrine://default?queue_name=failed'
 
         routing:
-            App\Shared\Infrastructure\Outbox\OutboxMessage: async
+            App\Boardly\IdentityAccess\Infrastructure\Message\AccountRegisteredMessage: async
 
 when@test:
     framework:

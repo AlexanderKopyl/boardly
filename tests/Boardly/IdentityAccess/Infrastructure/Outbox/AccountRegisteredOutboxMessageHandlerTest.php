@@ -1,0 +1,305 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Boardly\IdentityAccess\Infrastructure\Outbox;
+
+use App\Boardly\IdentityAccess\Infrastructure\Message\AccountRegisteredMessage;
+use App\Boardly\IdentityAccess\Infrastructure\Outbox\AccountRegisteredOutboxMessageHandler;
+use App\Shared\Application\Messaging\ProcessedMessageStoreInterface;
+use App\Shared\Application\Transaction\TransactionalInterface;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\AbstractLogger;
+use ReflectionMethod;
+use Stringable;
+
+final class AccountRegisteredOutboxMessageHandlerTest extends TestCase
+{
+    private const string EVENT_ID = '018f3f7a-9e4c-7b2d-9c52-3f8f9b8b4c2d';
+    private const string ACCOUNT_ID = '018f3f7b-7b07-70c2-ae02-ef5df6170c28';
+
+    public function testHandlerAcceptsAccountRegisteredMessage(): void
+    {
+        $method = new ReflectionMethod(AccountRegisteredOutboxMessageHandler::class, '__invoke');
+        $parameters = $method->getParameters();
+
+        self::assertCount(1, $parameters);
+        self::assertSame(AccountRegisteredMessage::class, (string) $parameters[0]->getType());
+    }
+
+    public function testHandlerNoLongerDependsOnGenericOutboxMessageOrEventTypeFiltering(): void
+    {
+        $source = file_get_contents(dirname(__DIR__, 5).'/src/Boardly/IdentityAccess/Infrastructure/Outbox/AccountRegisteredOutboxMessageHandler.php');
+
+        self::assertIsString($source);
+        self::assertStringNotContainsString('App\\Shared\\Infrastructure\\Outbox\\OutboxMessage', $source);
+        self::assertStringNotContainsString('__invoke(OutboxMessage', $source);
+        self::assertStringNotContainsString('event_type', $source);
+        self::assertStringNotContainsString('eventType', $source);
+        self::assertStringNotContainsString('identity_access.account_registered', $source);
+    }
+
+    public function testProcessesConcreteMessageInsideTransaction(): void
+    {
+        $operationLog = [];
+        $transactional = new RecordingTransactional($operationLog);
+        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new RecordingLogger($transactional, $operationLog);
+
+        $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
+
+        self::assertSame([
+            'transaction.begin',
+            'tryStart',
+            'log.info',
+            'markProcessed',
+            'transaction.commit',
+        ], $operationLog);
+
+        self::assertSame([[self::EVENT_ID, AccountRegisteredOutboxMessageHandler::class]], $processedMessages->tryStartCalls);
+        self::assertSame([[self::EVENT_ID, AccountRegisteredOutboxMessageHandler::class]], $processedMessages->markProcessedCalls);
+        self::assertCount(1, $logger->records);
+        self::assertSame('info', $logger->records[0]['level']);
+        self::assertSame('AccountRegistered outbox message consumed.', $logger->records[0]['message']);
+        self::assertSame([
+            'outbox_id' => 'outbox-record-id',
+            'event_id' => self::EVENT_ID,
+            'account_id' => self::ACCOUNT_ID,
+            'registered_at' => '2026-05-03T10:15:30+00:00',
+            'is_system_admin' => true,
+        ], $logger->records[0]['context']);
+    }
+
+    public function testDuplicateDeliveryIsSkippedWhenTryStartReturnsFalse(): void
+    {
+        $operationLog = [];
+        $transactional = new RecordingTransactional($operationLog);
+        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog, tryStartResult: false);
+        $logger = new RecordingLogger($transactional, $operationLog);
+
+        $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
+
+        self::assertSame([
+            'transaction.begin',
+            'tryStart',
+            'transaction.commit',
+        ], $operationLog);
+        self::assertSame([[self::EVENT_ID, AccountRegisteredOutboxMessageHandler::class]], $processedMessages->tryStartCalls);
+        self::assertSame([], $processedMessages->markProcessedCalls);
+        self::assertSame([], $logger->records);
+    }
+
+    public function testMarkProcessedIsNotCalledWhenSideEffectThrows(): void
+    {
+        $operationLog = [];
+        $transactional = new RecordingTransactional($operationLog);
+        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new RecordingLogger($transactional, $operationLog, throwOnInfo: true);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Diagnostic side effect failed.');
+
+        try {
+            $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
+        } finally {
+            self::assertSame([
+                'transaction.begin',
+                'tryStart',
+                'log.info',
+                'transaction.rollback',
+            ], $operationLog);
+            self::assertSame([[self::EVENT_ID, AccountRegisteredOutboxMessageHandler::class]], $processedMessages->tryStartCalls);
+            self::assertSame([], $processedMessages->markProcessedCalls);
+        }
+    }
+
+    public function testRawEmailIsNotLogged(): void
+    {
+        $operationLog = [];
+        $transactional = new RecordingTransactional($operationLog);
+        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new RecordingLogger($transactional, $operationLog);
+
+        $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
+
+        self::assertStringNotContainsString(
+            'registered@example.com',
+            json_encode($logger->records, JSON_THROW_ON_ERROR),
+        );
+        self::assertStringNotContainsString('email', json_encode($logger->records, JSON_THROW_ON_ERROR));
+    }
+
+    private function handler(
+        RecordingLogger $logger,
+        RecordingTransactional $transactional,
+        FakeProcessedMessageStore $processedMessages,
+    ): AccountRegisteredOutboxMessageHandler {
+        return new AccountRegisteredOutboxMessageHandler($logger, $transactional, $processedMessages);
+    }
+
+    private function message(): AccountRegisteredMessage
+    {
+        return new AccountRegisteredMessage(
+            outboxId: 'outbox-record-id',
+            eventId: self::EVENT_ID,
+            accountId: self::ACCOUNT_ID,
+            registeredAt: new \DateTimeImmutable('2026-05-03T10:15:30+00:00'),
+            isSystemAdmin: true,
+        );
+    }
+}
+
+final class RecordingTransactional implements TransactionalInterface
+{
+    public bool $isActive = false;
+
+    /**
+     * @var list<string>
+     */
+    private array $operationLog;
+
+    /**
+     * @param list<string> $operationLog
+     */
+    public function __construct(array &$operationLog)
+    {
+        $this->operationLog = &$operationLog;
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $operation
+     * @return T
+     */
+    public function transactional(callable $operation): mixed
+    {
+        $this->recordOperation('transaction.begin');
+        $this->isActive = true;
+
+        try {
+            $result = $operation();
+        } catch (\Throwable $throwable) {
+            $this->isActive = false;
+            $this->recordOperation('transaction.rollback');
+
+            throw $throwable;
+        }
+
+        $this->isActive = false;
+        $this->recordOperation('transaction.commit');
+
+        return $result;
+    }
+
+    private function recordOperation(string $operation): void
+    {
+        $operationLog = $this->operationLog;
+        $operationLog[] = $operation;
+        $this->operationLog = $operationLog;
+    }
+}
+
+final class FakeProcessedMessageStore implements ProcessedMessageStoreInterface
+{
+    /**
+     * @var list<array{0: string, 1: string}>
+     */
+    public array $tryStartCalls = [];
+
+    /**
+     * @var list<array{0: string, 1: string}>
+     */
+    public array $markProcessedCalls = [];
+
+    /**
+     * @param list<string> $operationLog
+     */
+    public function __construct(
+        private readonly RecordingTransactional $transactional,
+        array &$operationLog,
+        private readonly bool $tryStartResult = true,
+    ) {
+        $this->operationLog = &$operationLog;
+    }
+
+    /**
+     * @var list<string>
+     */
+    private array $operationLog;
+
+    public function tryStart(string $eventId, string $handlerName): bool
+    {
+        TestCase::assertTrue($this->transactional->isActive, 'tryStart must run inside the transaction.');
+
+        $this->recordOperation('tryStart');
+        $this->tryStartCalls[] = [$eventId, $handlerName];
+
+        return $this->tryStartResult;
+    }
+
+    public function markProcessed(string $eventId, string $handlerName): void
+    {
+        TestCase::assertTrue($this->transactional->isActive, 'markProcessed must run inside the transaction.');
+
+        $this->recordOperation('markProcessed');
+        $this->markProcessedCalls[] = [$eventId, $handlerName];
+    }
+
+    private function recordOperation(string $operation): void
+    {
+        $operationLog = $this->operationLog;
+        $operationLog[] = $operation;
+        $this->operationLog = $operationLog;
+    }
+}
+
+final class RecordingLogger extends AbstractLogger
+{
+    /**
+     * @var list<array{level: string, message: string, context: array<string, mixed>}>
+     */
+    public array $records = [];
+
+    /**
+     * @param list<string> $operationLog
+     */
+    public function __construct(
+        private readonly RecordingTransactional $transactional,
+        array &$operationLog,
+        private readonly bool $throwOnInfo = false,
+    ) {
+        $this->operationLog = &$operationLog;
+    }
+
+    /**
+     * @var list<string>
+     */
+    private array $operationLog;
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function log($level, Stringable|string $message, array $context = []): void
+    {
+        TestCase::assertTrue($this->transactional->isActive, 'diagnostic logging must run inside the transaction.');
+
+        $this->recordOperation(sprintf('log.%s', (string) $level));
+
+        if ($this->throwOnInfo && 'info' === $level) {
+            throw new \RuntimeException('Diagnostic side effect failed.');
+        }
+
+        $this->records[] = [
+            'level' => (string) $level,
+            'message' => (string) $message,
+            'context' => $context,
+        ];
+    }
+
+    private function recordOperation(string $operation): void
+    {
+        $operationLog = $this->operationLog;
+        $operationLog[] = $operation;
+        $this->operationLog = $operationLog;
+    }
+}
