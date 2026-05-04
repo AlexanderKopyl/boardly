@@ -20,6 +20,8 @@ When a user request matches a skill, the subagent must follow that skill instead
 | Redis, TTL, invalidation, hot paths, query optimization, locks | `cache-performance` |
 | Health checks, logs, metrics, workers, recovery, production readiness | `observability-operations` |
 | Architecture decision records, alternatives, consequences, trade-offs | `adr-writing` |
+| Short answer, low-token response, terse summary, compact final output | `caveman-response` |
+| Knowledge graph, dependency map, architecture graph, relation map | `graphify-knowledge-map` |
 
 ## Multi-skill requests
 
@@ -30,6 +32,8 @@ Examples:
 - `ChangeIssueStatus` usually needs `feature-architecture`, `domain-modeling`, `workflow-design`, `permission-modeling`, `async-flow`, `search-indexing`, `testing-strategy`, and possibly `adr-writing`.
 - `SearchIssues` usually needs `feature-architecture`, `search-indexing`, `permission-modeling`, `cache-performance`, and `testing-strategy`.
 - `GetProjectBoard` usually needs `feature-architecture`, `search-indexing` or read-model reasoning, `permission-modeling`, `cache-performance`, and `observability-operations`.
+- A compact answer to a previously analyzed feature can add `caveman-response` as the final output layer.
+- A compact structural map can add `graphify-knowledge-map` after the relevant architecture/domain skill.
 
 ## Priority rule
 
@@ -42,6 +46,8 @@ If several skills apply, start with the business architecture skill, then add sp
 5. `testing-strategy`
 6. `observability-operations`
 7. `adr-writing`
+8. `graphify-knowledge-map` when the user asks for graph output
+9. `caveman-response` only as a final compression layer when the user asks for short output
 
 ## Global constraints
 
@@ -55,3 +61,6 @@ If several skills apply, start with the business architecture skill, then add sp
 - Controllers stay thin.
 - Domain logic must not be hidden in Doctrine listeners.
 - Permissions, visibility, and auditability must be designed early.
+- Compact output must not remove security, permission, audit, source-of-truth, or transaction-boundary warnings when they matter.
+- Graph output must use directed edges and meaningful relationship labels.
+- Do not claim guaranteed token reduction ratios for compact or graph output.

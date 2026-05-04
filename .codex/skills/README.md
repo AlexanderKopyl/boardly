@@ -25,6 +25,8 @@ To avoid duplicated behavior:
 | `cache-performance` | Redis, TTL, invalidation, hot paths, DB query risks |
 | `observability-operations` | health checks, queues, logs, metrics, recovery commands |
 | `adr-writing` | architecture decision records and trade-off documentation |
+| `caveman-response` | short, direct, low-token answers when explicitly requested |
+| `graphify-knowledge-map` | compact knowledge graphs, dependency maps, architecture maps |
 
 ## Global Boardly rules
 
@@ -43,3 +45,5 @@ To avoid duplicated behavior:
 - Controllers stay thin.
 - Domain logic must not be hidden in Doctrine listeners.
 - Permissions and auditability must be designed early.
+- Compact output must not hide important security, permission, source-of-truth, or transaction-boundary risks.
+- Knowledge graphs must preserve direction and relationship labels.
