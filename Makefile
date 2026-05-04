@@ -1,4 +1,6 @@
-.PHONY: install up down restart shell console test phpstan cs-fix rector qa logs infra-up infra-down infra-restart serve local-install local-console local-test local-phpstan local-cs-fix local-rector local-qa sf about cc warmup routes router container autowiring env db-create db-migrate db-diff db-status messenger-consume messenger-failed-show messenger-failed-retry messenger-failed-remove
+PHP_BIN ?= php
+
+.PHONY: install up down restart shell console test phpstan cs-fix rector qa logs infra-up infra-down infra-restart serve local-install local-console local-test local-phpstan local-cs-fix local-rector local-qa console-debug sf about cc warmup routes router container autowiring env db-create db-migrate db-diff db-status messenger-consume messenger-failed-show messenger-failed-retry messenger-failed-remove
 
 install:
 	docker compose build
@@ -68,6 +70,12 @@ local-rector:
 	vendor/bin/rector process
 
 local-qa: local-test local-phpstan
+
+console-debug:
+	@test -x "$(PHP_BIN)" || (echo "Missing PHP bin: $(PHP_BIN)"; exit 1)
+	@test -f "bin/console" || (echo "Missing bin/console (not a Symfony app?)"; exit 1)
+	@test -n "$(CONSOLE_ARGS)" || (echo "Missing CONSOLE_ARGS. Example: make console-debug CONSOLE_ARGS='list'"; exit 1)
+	XDEBUG_MODE=debug XDEBUG_TRIGGER=PHPSTORM $(PHP_BIN) bin/console $(CONSOLE_ARGS)
 
 sf:
 	php bin/console $(cmd)
