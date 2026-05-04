@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Infrastructure\Outbox;
 
+use App\Shared\Application\Messaging\ProcessedMessageStoreInterface;
+use App\Shared\Application\Transaction\TransactionalInterface;
 use App\Shared\Infrastructure\Outbox\OutboxMessage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -22,6 +24,8 @@ final readonly class AccountRegisteredOutboxMessageHandler
 
     public function __construct(
         private LoggerInterface $logger,
+        private TransactionalInterface $transactional,
+        private ProcessedMessageStoreInterface $processedMessages,
     ) {
     }
 
@@ -31,17 +35,30 @@ final readonly class AccountRegisteredOutboxMessageHandler
             return;
         }
 
-        $this->logger->info('AccountRegistered outbox message consumed.', [
-            'outbox_id' => $message->outboxId,
-            'event_id' => $message->eventId,
-            'event_type' => $message->eventType,
-            'aggregate_type' => $message->aggregateType,
-            'aggregate_id' => $message->aggregateId,
-            'account_id' => $this->payloadString($message, 'account_id'),
-            'registered_at' => $this->payloadString($message, 'registered_at'),
-            'is_system_admin' => $this->payloadBool($message, 'is_system_admin'),
-            'email_hash' => $this->payloadSha256($message, 'email'),
-        ]);
+        $this->transactional->transactional(function () use ($message): void {
+            if (!$this->processedMessages->tryStart($message->eventId, self::class)) {
+                $this->logger->debug('Duplicate AccountRegistered outbox message skipped.', [
+                    'event_id' => $message->eventId,
+                    'handler' => self::class,
+                ]);
+
+                return;
+            }
+
+            $this->logger->info('AccountRegistered outbox message consumed.', [
+                'outbox_id' => $message->outboxId,
+                'event_id' => $message->eventId,
+                'event_type' => $message->eventType,
+                'aggregate_type' => $message->aggregateType,
+                'aggregate_id' => $message->aggregateId,
+                'account_id' => $this->payloadString($message, 'account_id'),
+                'registered_at' => $this->payloadString($message, 'registered_at'),
+                'is_system_admin' => $this->payloadBool($message, 'is_system_admin'),
+                'email_hash' => $this->payloadSha256($message, 'email'),
+            ]);
+
+            $this->processedMessages->markProcessed($message->eventId, self::class);
+        });
     }
 
     private function payloadString(OutboxMessage $message, string $key): string
