@@ -1,4 +1,4 @@
-PHP_BIN ?= php
+PHP_BIN ?= /opt/homebrew/bin/php
 
 .PHONY: install up down restart shell console test phpstan cs-fix rector qa logs infra-up infra-down infra-restart serve local-install local-console local-test local-phpstan local-cs-fix local-rector local-qa console-debug sf about cc warmup routes router container autowiring env db-create db-migrate db-diff db-status messenger-consume messenger-failed-show messenger-failed-retry messenger-failed-remove
 
