@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Interfaces\Http\EventSubscriber;
 
+use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AccountNotActive;
+use App\Boardly\IdentityAccess\Application\AuthenticateAccount\InvalidCredentials;
 use App\Boardly\IdentityAccess\Application\Exception\EmailAlreadyRegistered;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountName;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidEmail;
@@ -31,6 +33,22 @@ final class IdentityAccessApiExceptionSubscriber implements EventSubscriberInter
         }
 
         $exception = $event->getThrowable();
+
+        if ($exception instanceof InvalidCredentials) {
+            $event->setResponse(new JsonResponse(
+                ['error' => ['code' => 'invalid_credentials', 'message' => 'Invalid credentials.']],
+                JsonResponse::HTTP_UNAUTHORIZED,
+            ));
+            return;
+        }
+
+        if ($exception instanceof AccountNotActive) {
+            $event->setResponse(new JsonResponse(
+                ['error' => ['code' => 'account_not_active', 'message' => 'Account is not active.']],
+                JsonResponse::HTTP_FORBIDDEN,
+            ));
+            return;
+        }
 
         if ($exception instanceof EmailAlreadyRegistered) {
             $event->setResponse(new JsonResponse(
