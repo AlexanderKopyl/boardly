@@ -69,6 +69,7 @@ final readonly class RefreshAuthenticationHandler
         $newTokenHash = $this->refreshTokenHasher->hash($newRawRefreshToken);
         $newSessionId = RefreshSessionId::fromString($this->idGenerator->generate());
         $refreshTokenExpiresAt = $now->modify(self::REFRESH_TOKEN_TTL);
+        $accessToken = $this->accessTokenIssuer->issueForAccount($account->id(), $now);
 
         $this->transactional->transactional(function () use (
             $currentSession,
@@ -93,8 +94,6 @@ final readonly class RefreshAuthenticationHandler
             $this->refreshSessions->save($currentSession);
             $this->refreshSessions->save($newSession);
         });
-
-        $accessToken = $this->accessTokenIssuer->issueForAccount($account->id(), $now);
 
         return new RefreshAuthenticationResult(
             $accessToken->token(),

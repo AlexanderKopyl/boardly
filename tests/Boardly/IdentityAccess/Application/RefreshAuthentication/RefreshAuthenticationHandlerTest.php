@@ -30,6 +30,7 @@ use App\Shared\Application\Port\IdGeneratorInterface;
 use App\Shared\Application\Transaction\TransactionalInterface;
 use DateTimeImmutable;
 use LogicException;
+use RuntimeException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -124,6 +125,33 @@ final class RefreshAuthenticationHandlerTest extends TestCase
         foreach ($refreshSessions->savedSessions as $session) {
             self::assertNotSame('old-raw-refresh-token', $session->tokenHash()->value());
             self::assertNotSame('new-raw-refresh-token', $session->tokenHash()->value());
+        }
+    }
+
+    public function testAccessTokenIssuingFailureDoesNotPersistRefreshSessionRotation(): void
+    {
+        $now = new DateTimeImmutable('2026-05-04T09:10:11+00:00');
+        $oldSession = self::usableSession();
+        $refreshSessions = new FakeRefreshSessionRepository([$oldSession]);
+        $accessTokenIssuer = new FakeAccessTokenIssuer(exception: new RuntimeException('Access token issuing failed.'));
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Access token issuing failed.');
+
+        try {
+            $this->successfulHandler(
+                refreshSessions: $refreshSessions,
+                accessTokenIssuer: $accessTokenIssuer,
+                clock: new FakeClock($now),
+            )->__invoke(self::validCommand());
+        } finally {
+            self::assertSame(1, $accessTokenIssuer->issueCallCount);
+            self::assertSame([], $refreshSessions->savedSessions);
+            self::assertTrue($oldSession->isUsable($now));
+            self::assertFalse($oldSession->isRevoked());
+            self::assertFalse($oldSession->wasReplaced());
+            self::assertNull($oldSession->replacedByTokenId());
+            self::assertNull($oldSession->lastUsedAt());
         }
     }
 
@@ -388,12 +416,17 @@ final class FakeAccessTokenIssuer implements AccessTokenIssuerInterface
         private readonly string $token = 'issued-access-token',
         private readonly ?DateTimeImmutable $expiresAt = null,
         private readonly int $expiresInSeconds = 900,
+        private readonly ?RuntimeException $exception = null,
     ) {
     }
 
     public function issueForAccount(AccountId $accountId, DateTimeImmutable $issuedAt, ?int $ttlSeconds = null): AccessToken
     {
         ++$this->issueCallCount;
+
+        if (null !== $this->exception) {
+            throw $this->exception;
+        }
 
         return new AccessToken(
             $this->token,
