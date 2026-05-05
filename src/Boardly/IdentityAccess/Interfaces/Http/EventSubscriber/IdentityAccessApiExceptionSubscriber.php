@@ -7,9 +7,11 @@ namespace App\Boardly\IdentityAccess\Interfaces\Http\EventSubscriber;
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AccountNotActive;
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\InvalidCredentials;
 use App\Boardly\IdentityAccess\Application\Exception\EmailAlreadyRegistered;
+use App\Boardly\IdentityAccess\Application\RefreshAuthentication\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountName;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -19,6 +21,8 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 final class IdentityAccessApiExceptionSubscriber implements EventSubscriberInterface
 {
+    private const string REFRESH_COOKIE_NAME = 'refresh_token';
+
     public static function getSubscribedEvents(): array
     {
         return [
@@ -47,6 +51,24 @@ final class IdentityAccessApiExceptionSubscriber implements EventSubscriberInter
                 ['error' => ['code' => 'account_not_active', 'message' => 'Account is not active.']],
                 JsonResponse::HTTP_FORBIDDEN,
             ));
+            return;
+        }
+
+        if ($exception instanceof InvalidRefreshToken) {
+            $response = new JsonResponse(
+                ['error' => ['code' => 'invalid_refresh_token', 'message' => 'Invalid refresh token.']],
+                JsonResponse::HTTP_UNAUTHORIZED,
+            );
+            $response->headers->clearCookie(
+                self::REFRESH_COOKIE_NAME,
+                '/api/auth',
+                null,
+                true,
+                true,
+                Cookie::SAMESITE_LAX,
+            );
+
+            $event->setResponse($response);
             return;
         }
 
