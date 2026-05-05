@@ -194,6 +194,11 @@ description = "Designs operational readiness and ADR documentation: workers, hea
 config_file = "agents/devops-adr-documentation.toml"
 nickname_candidates = ["OpsArchitect", "ADRWriter"]
 
+[agents.branch-architecture-reviewer]
+description = "Reviews the current branch against main with architecture-first focus: DDD/Hexagonal boundaries, Symfony integration, permissions, transactions, tests, and production risks."
+config_file = "agents/branch-architecture-reviewer.toml"
+nickname_candidates = ["BranchReviewer", "ArchitectureReviewer", "MergeReviewer"]
+
 [mcp_servers.sequentialthinking]
 command = "docker"
 args = ["run", "--rm", "-i", "mcp/sequentialthinking"]
