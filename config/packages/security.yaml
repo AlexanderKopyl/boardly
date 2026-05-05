@@ -12,6 +12,10 @@ security:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+        api:
+            pattern: ^/api
+            stateless: true
+            custom_authenticator: App\Boardly\IdentityAccess\Infrastructure\Security\BearerTokenAuthenticator
         main:
             lazy: true
             provider: users_in_memory
@@ -24,8 +28,11 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/auth/login$, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/auth/refresh$, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/auth/register$, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
