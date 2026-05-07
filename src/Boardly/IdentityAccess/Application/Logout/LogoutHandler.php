@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Application\Logout;
 
-use App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface;
-use App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface;
-use App\Shared\Application\Port\ClockInterface;
+use App\Boardly\IdentityAccess\Application\RefreshSession\RefreshSessionRevoker;
 use App\Shared\Application\Transaction\TransactionalInterface;
 
 final readonly class LogoutHandler
 {
     public function __construct(
-        private RefreshTokenHasherInterface $refreshTokenHasher,
-        private RefreshSessionRepositoryInterface $refreshSessions,
+        private RefreshSessionRevoker $refreshSessionRevoker,
         private TransactionalInterface $transactional,
-        private ClockInterface $clock,
     ) {
     }
 
@@ -27,18 +23,8 @@ final readonly class LogoutHandler
             return LogoutResult::success();
         }
 
-        $tokenHash = $this->refreshTokenHasher->hash($rawRefreshToken);
-
-        return $this->transactional->transactional(function () use ($tokenHash): LogoutResult {
-            $session = $this->refreshSessions->findByTokenHashForUpdate($tokenHash);
-
-            if (null === $session) {
-                return LogoutResult::success();
-            }
-
-            $now = $this->clock->now();
-            $session->revoke($now);
-            $this->refreshSessions->save($session);
+        return $this->transactional->transactional(function () use ($rawRefreshToken): LogoutResult {
+            $this->refreshSessionRevoker->revoke($rawRefreshToken);
 
             return LogoutResult::success();
         });

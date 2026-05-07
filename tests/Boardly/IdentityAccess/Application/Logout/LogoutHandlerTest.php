@@ -8,6 +8,7 @@ use App\Boardly\IdentityAccess\Application\Logout\LogoutCommand;
 use App\Boardly\IdentityAccess\Application\Logout\LogoutHandler;
 use App\Boardly\IdentityAccess\Application\Logout\LogoutResult;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface;
+use App\Boardly\IdentityAccess\Application\RefreshSession\RefreshSessionRevoker;
 use App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface;
 use App\Boardly\IdentityAccess\Domain\Model\RefreshSession;
 use App\Boardly\IdentityAccess\Domain\ValueObject\RefreshSessionFamilyId;
@@ -202,10 +203,12 @@ final class LogoutHandlerTest extends TestCase
         ?FakeClock $clock = null,
     ): LogoutHandler {
         return new LogoutHandler(
-            $refreshTokenHasher ?? new FakeRefreshTokenHasher(['current-raw-token' => 'current-token-hash']),
-            $refreshSessions ?? new FakeRefreshSessionRepository([self::currentSession()]),
+            new RefreshSessionRevoker(
+                $refreshTokenHasher ?? new FakeRefreshTokenHasher(['current-raw-token' => 'current-token-hash']),
+                $refreshSessions ?? new FakeRefreshSessionRepository([self::currentSession()]),
+                $clock ?? new FakeClock(new DateTimeImmutable('2026-05-04T09:10:11+00:00')),
+            ),
             $transactional ?? new FakeTransactional(),
-            $clock ?? new FakeClock(new DateTimeImmutable('2026-05-04T09:10:11+00:00')),
         );
     }
 

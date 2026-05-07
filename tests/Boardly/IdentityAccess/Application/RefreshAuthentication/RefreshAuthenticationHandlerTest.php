@@ -14,6 +14,7 @@ use App\Boardly\IdentityAccess\Application\RefreshAuthentication\InvalidRefreshT
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationCommand;
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationHandler;
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationResult;
+use App\Boardly\IdentityAccess\Application\RefreshSession\RefreshSessionRotator;
 use App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface;
 use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\Model\RefreshSession;
@@ -328,14 +329,16 @@ final class RefreshAuthenticationHandlerTest extends TestCase
         FakeIdGenerator $idGenerator,
     ): RefreshAuthenticationHandler {
         return new RefreshAuthenticationHandler(
-            $refreshTokenHasher,
-            $refreshTokenGenerator,
-            $refreshSessions,
-            $accounts,
             $accessTokenIssuer,
+            new RefreshSessionRotator(
+                $refreshTokenHasher,
+                $refreshTokenGenerator,
+                $refreshSessions,
+                $accounts,
+                $clock,
+                $idGenerator,
+            ),
             $transactional,
-            $clock,
-            $idGenerator,
         );
     }
 

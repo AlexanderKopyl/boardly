@@ -17,6 +17,7 @@ use App\Boardly\IdentityAccess\Application\Security\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\PasswordVerifierInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenGeneratorInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface;
+use App\Boardly\IdentityAccess\Application\RefreshSession\RefreshSessionIssuer;
 use App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface;
 use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\Model\RefreshSession;
@@ -352,12 +353,15 @@ final class AuthenticateAccountHandlerTest extends TestCase
             $repository,
             $passwordVerifier,
             $accessTokenIssuer,
-            $refreshTokenGenerator,
-            $refreshTokenHasher,
-            $refreshSessions,
+            new RefreshSessionIssuer(
+                $refreshTokenGenerator,
+                $refreshTokenHasher,
+                $refreshSessions,
+                $clock,
+                $idGenerator,
+            ),
             $transactional,
             $clock,
-            $idGenerator,
         );
     }
 
