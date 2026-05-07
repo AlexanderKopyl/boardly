@@ -6,6 +6,10 @@ namespace App\Boardly\IdentityAccess\Interfaces\Console;
 
 use App\Boardly\IdentityAccess\Application\CreateSystemAdmin\CreateSystemAdminCommand;
 use App\Boardly\IdentityAccess\Application\CreateSystemAdmin\CreateSystemAdminResult;
+use App\Boardly\IdentityAccess\Application\Exception\EmailAlreadyRegistered;
+use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountName;
+use App\Boardly\IdentityAccess\Domain\Exception\InvalidEmail;
+use App\Boardly\IdentityAccess\Domain\Exception\InvalidPasswordHash;
 use App\Shared\Application\Bus\CommandBusInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -49,7 +53,7 @@ final class CreateSystemAdminConsoleCommand extends Command
                     CreateSystemAdminResult::class,
                 ));
             }
-        } catch (\Throwable) {
+        } catch (EmailAlreadyRegistered|InvalidAccountName|InvalidEmail|InvalidPasswordHash|\InvalidArgumentException|\RuntimeException) {
             $output->writeln('<error>Failed to create system admin account.</error>');
 
             return Command::FAILURE;
