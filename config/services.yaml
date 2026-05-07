@@ -1,4 +1,7 @@
 parameters:
+    boardly_identity_access.access_token_signing_secret: '%env(IDENTITY_ACCESS_JWT_SIGNING_SECRET)%'
+    boardly_identity_access.access_token_ttl_seconds: 900
+    boardly_identity_access.refresh_token_hash_secret: '%env(IDENTITY_ACCESS_REFRESH_TOKEN_HASH_SECRET)%'
 
 services:
     _defaults:
@@ -12,6 +15,9 @@ services:
         App\Shared\Infrastructure\Outbox\OutboxMessageMapperInterface:
             tags:
                 - { name: boardly.outbox_message_mapper }
+        App\Boardly\IdentityAccess\Interfaces\Http\Exception\ApiExceptionMapperInterface:
+            tags:
+                - { name: identity_access.api_exception_mapper }
 
     App\:
         resource: '../src/'
@@ -26,6 +32,37 @@ services:
 
     App\Shared\Application\Messaging\ProcessedMessageStoreInterface:
         alias: App\Shared\Infrastructure\Messaging\DoctrineProcessedMessageStore
+
+    App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Repository\DoctrineRefreshSessionRepository
+
+    App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Security\JwtAccessTokenService
+
+    App\Boardly\IdentityAccess\Application\Port\AccessTokenVerifierInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Security\JwtAccessTokenService
+
+    App\Boardly\IdentityAccess\Application\Port\RefreshTokenGeneratorInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Security\SecureRefreshTokenGenerator
+
+    App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Security\HmacRefreshTokenHasher
+
+    App\Boardly\IdentityAccess\Application\Port\PasswordVerifierInterface:
+        alias: App\Boardly\IdentityAccess\Infrastructure\Security\SymfonyPasswordHasher
+
+    App\Boardly\IdentityAccess\Interfaces\Http\EventSubscriber\IdentityAccessApiExceptionSubscriber:
+        arguments:
+            $exceptionMappers: !tagged_iterator { tag: identity_access.api_exception_mapper, default_priority_method: getDefaultPriority }
+
+    App\Boardly\IdentityAccess\Infrastructure\Security\JwtAccessTokenService:
+        arguments:
+            $signingSecret: '%boardly_identity_access.access_token_signing_secret%'
+            $ttlSeconds: '%boardly_identity_access.access_token_ttl_seconds%'
+
+    App\Boardly\IdentityAccess\Infrastructure\Security\HmacRefreshTokenHasher:
+        arguments:
+            $secret: '%boardly_identity_access.refresh_token_hash_secret%'
 
     App\Shared\Infrastructure\Symfony\Messenger\MessengerCommandBus:
         arguments:
@@ -48,5 +85,17 @@ services:
             $mappers: !tagged_iterator boardly.outbox_message_mapper
 
     App\Boardly\IdentityAccess\Application\RegisterAccount\RegisterAccountHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccountHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\IdentityAccess\Application\Logout\LogoutHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }

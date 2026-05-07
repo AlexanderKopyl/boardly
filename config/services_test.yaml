@@ -1,0 +1,6 @@
+services:
+    App\Tests\Boardly\IdentityAccess\Interfaces\Http\Security\TestProtectedApiController:
+        autowire: true
+        autoconfigure: true
+        tags:
+            - { name: controller.service_arguments }

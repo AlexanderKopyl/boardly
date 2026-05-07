@@ -1,0 +1,4 @@
+boardly_identity_access_test_protected_api:
+    path: /api/test/protected
+    controller: App\Tests\Boardly\IdentityAccess\Interfaces\Http\Security\TestProtectedApiController
+    methods: [GET]

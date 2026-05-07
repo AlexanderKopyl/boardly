@@ -25,3 +25,30 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
+
+# MemPalace / AI mining safety
+.env
+.env.*
+!.env.example
+
+var/
+vendor/
+node_modules/
+storage/
+public/uploads/
+coverage/
+.next/
+dist/
+build/
+
+*.sql
+*.dump
+*.sqlite
+*.db
+*.log
+*.pem
+*.key
