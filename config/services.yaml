@@ -15,6 +15,9 @@ services:
         App\Shared\Infrastructure\Outbox\OutboxMessageMapperInterface:
             tags:
                 - { name: boardly.outbox_message_mapper }
+        App\Boardly\IdentityAccess\Interfaces\Http\Exception\ApiExceptionMapperInterface:
+            tags:
+                - { name: identity_access.api_exception_mapper }
 
     App\:
         resource: '../src/'
@@ -47,6 +50,10 @@ services:
 
     App\Boardly\IdentityAccess\Application\Port\PasswordVerifierInterface:
         alias: App\Boardly\IdentityAccess\Infrastructure\Security\SymfonyPasswordHasher
+
+    App\Boardly\IdentityAccess\Interfaces\Http\EventSubscriber\IdentityAccessApiExceptionSubscriber:
+        arguments:
+            $exceptionMappers: !tagged_iterator { tag: identity_access.api_exception_mapper, default_priority_method: getDefaultPriority }
 
     App\Boardly\IdentityAccess\Infrastructure\Security\JwtAccessTokenService:
         arguments:
