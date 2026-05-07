@@ -26,3 +26,23 @@ Recommended follow-up scope:
 - Implement the infrastructure adapter with Symfony RateLimiter or Redis-backed storage.
 - Add application and HTTP tests.
 ```
+
+## Known Design Follow-Up
+
+Login/session creation outbox events are intentionally deferred from issue #36.
+
+Successful login creates and persists `RefreshSession` transactionally, but this PR does not publish or store an outbox event for login/session creation. Do not introduce `AccountAuthenticated`, `LoginSucceeded`, or `RefreshSessionCreated` in this PR.
+
+ADR-0003 requires outbox storage for domain events that need reliable async side effects. Issue #36 does not define authentication audit, security, integration consumers, or an event schema for login/session creation, so adding this event now would expand the authentication baseline scope.
+
+If audit, security, or integration visibility is required, a follow-up must explicitly define:
+
+```text
+- event name and owner
+- payload and PII policy
+- outbox serializer/mapper
+- consumer/idempotency strategy
+- retention/monitoring expectations
+```
+
+This is a known design follow-up, not a current blocker for issue #36.

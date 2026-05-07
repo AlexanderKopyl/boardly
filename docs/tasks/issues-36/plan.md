@@ -169,6 +169,24 @@ Transaction boundary:
 RefreshSession creation and persistence must be inside TransactionalInterface.
 ```
 
+Outbox decision:
+
+```text
+Login creates RefreshSession transactionally but intentionally does not publish or store an outbox event in issue #36.
+Do not add AccountAuthenticated, LoginSucceeded, or RefreshSessionCreated in this PR.
+Auth audit/session events require separate explicit design before they become outbox events.
+```
+
+Required follow-up design if audit/security/integration visibility is needed:
+
+```text
+- event name and owner
+- payload and PII policy
+- outbox serializer/mapper
+- consumer/idempotency strategy
+- retention/monitoring expectations
+```
+
 Tests:
 
 ```text

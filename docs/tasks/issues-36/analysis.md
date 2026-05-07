@@ -185,6 +185,24 @@ It wraps use-case operations in `EntityManagerInterface::wrapInTransaction()`.
 
 `RegisterAccountHandler` performs account save and outbox store in one transaction. Login, refresh, and logout should follow the same convention for refresh-session persistence and token rotation/revocation.
 
+### Login/session outbox decision
+
+Successful login creates and persists a `RefreshSession` transactionally, but issue #36 intentionally does not publish or store an outbox event for login/session creation.
+
+Do not introduce `AccountAuthenticated`, `LoginSucceeded`, or `RefreshSessionCreated` as an outbox event in this PR.
+
+ADR-0003 requires outbox storage for domain events that need reliable async side effects. Issue #36 does not define authentication audit, security, integration consumers, or an event schema for login/session creation. Adding that event now would expand the authentication baseline beyond the current issue scope.
+
+Auth audit/session events such as `AccountAuthenticated`, `LoginSucceeded`, or `RefreshSessionCreated` require a separate explicit design. If audit, security, or integration visibility is required, the follow-up must define:
+
+```text
+- event name and owner
+- payload and PII policy
+- outbox serializer/mapper
+- consumer/idempotency strategy
+- retention/monitoring expectations
+```
+
 ### Existing `security.yaml` state
 
 `config/packages/security.yaml` is still the Symfony skeleton configuration:
