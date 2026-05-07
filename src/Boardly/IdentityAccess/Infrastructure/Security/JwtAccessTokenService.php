@@ -8,12 +8,12 @@ use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenVerifierInterface;
 use App\Boardly\IdentityAccess\Application\Security\AccessToken;
 use App\Boardly\IdentityAccess\Application\Security\VerifiedAccessToken;
+use App\Boardly\SharedKernel\Domain\Exception\InvalidAccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\IdGeneratorInterface;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Throwable;
 
 final readonly class JwtAccessTokenService implements AccessTokenIssuerInterface, AccessTokenVerifierInterface
 {
@@ -69,7 +69,7 @@ final readonly class JwtAccessTokenService implements AccessTokenIssuerInterface
 
         try {
             $payload = JWT::decode($token, new Key($this->signingSecret, self::ALGORITHM));
-        } catch (Throwable $exception) {
+        } catch (\DomainException|\UnexpectedValueException) {
             throw AccessTokenVerificationFailed::invalid();
         } finally {
             JWT::$timestamp = $previousTimestamp;
@@ -92,7 +92,7 @@ final readonly class JwtAccessTokenService implements AccessTokenIssuerInterface
                 $this->dateTimeFromTimestamp((int) $payload->iat),
                 $this->dateTimeFromTimestamp((int) $payload->exp),
             );
-        } catch (Throwable) {
+        } catch (InvalidAccountId) {
             throw AccessTokenVerificationFailed::invalid();
         }
     }

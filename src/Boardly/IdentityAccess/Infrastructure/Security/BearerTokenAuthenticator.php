@@ -15,7 +15,6 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
-use Throwable;
 
 final class BearerTokenAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
@@ -30,11 +29,12 @@ final class BearerTokenAuthenticator extends AbstractAuthenticator implements Au
 
     public function supports(Request $request): bool
     {
-        if (!str_starts_with($request->getPathInfo(), '/api')) {
+        $authorization = $request->headers->get('Authorization');
+        if (null === $authorization) {
             return false;
         }
 
-        return !$this->isPublicAuthEndpoint($request);
+        return str_starts_with($authorization, self::BEARER_PREFIX) && '' !== trim(substr($authorization, strlen(self::BEARER_PREFIX)));
     }
 
     public function authenticate(Request $request): SelfValidatingPassport
@@ -43,7 +43,7 @@ final class BearerTokenAuthenticator extends AbstractAuthenticator implements Au
 
         try {
             $verifiedToken = $this->accessTokenVerifier->verify($token);
-        } catch (Throwable) {
+        } catch (AccessTokenVerificationFailed) {
             throw $this->authenticationFailed();
         }
 
@@ -92,20 +92,6 @@ final class BearerTokenAuthenticator extends AbstractAuthenticator implements Au
         }
 
         return $token;
-    }
-
-    private function isPublicAuthEndpoint(Request $request): bool
-    {
-        if ('POST' !== $request->getMethod()) {
-            return false;
-        }
-
-        return in_array($request->getPathInfo(), [
-            '/api/auth/login',
-            '/api/auth/refresh',
-            '/api/auth/logout',
-            '/api/auth/register',
-        ], true);
     }
 
     private function authenticationFailed(): AuthenticationException

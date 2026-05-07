@@ -13,6 +13,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
 use App\Boardly\IdentityAccess\Infrastructure\Security\AuthenticatedAccountUser;
+use App\Boardly\IdentityAccess\Infrastructure\Security\AccessTokenVerificationFailed;
 use App\Boardly\IdentityAccess\Infrastructure\Security\AuthenticationFailureResponseFactory;
 use App\Boardly\IdentityAccess\Infrastructure\Security\BearerTokenAuthenticator;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
@@ -24,19 +25,27 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 final class BearerTokenAuthenticatorTest extends TestCase
 {
-    public function testSupportsProtectedApiRoute(): void
+    public function testSupportsRequestWithBearerToken(): void
     {
         $authenticator = $this->authenticator();
 
-        self::assertTrue($authenticator->supports(Request::create('/api/projects', 'GET')));
+        self::assertTrue($authenticator->supports($this->requestWithBearerToken('valid-token')));
     }
 
-    #[DataProvider('publicAuthEndpointProvider')]
-    public function testDoesNotSupportPublicAuthEndpoints(string $path): void
+    public function testDoesNotSupportRequestWithoutBearerToken(): void
     {
         $authenticator = $this->authenticator();
 
-        self::assertFalse($authenticator->supports(Request::create($path, 'POST')));
+        self::assertFalse($authenticator->supports(Request::create('/api/projects', 'GET')));
+    }
+
+    public function testSupportsPublicAuthEndpointWhenBearerTokenIsPresent(): void
+    {
+        $authenticator = $this->authenticator();
+        $request = Request::create('/api/auth/login', 'POST');
+        $request->headers->set('Authorization', 'Bearer valid-token');
+
+        self::assertTrue($authenticator->supports($request));
     }
 
     public function testMissingAuthorizationHeaderFailsWithGeneric401(): void
@@ -68,11 +77,23 @@ final class BearerTokenAuthenticatorTest extends TestCase
     public function testMalformedInvalidOrExpiredTokenFailsWithGeneric401(string $token): void
     {
         $authenticator = $this->authenticator(
-            verifier: new FakeAccessTokenVerifier(failure: new \RuntimeException('specific verifier failure')),
+            verifier: new FakeAccessTokenVerifier(failure: AccessTokenVerificationFailed::invalid()),
         );
         $request = $this->requestWithBearerToken($token);
 
         $this->assertAuthenticationFailureResponse($authenticator, $request);
+    }
+
+    public function testUnexpectedVerifierFailureIsNotConvertedToAuthenticationFailure(): void
+    {
+        $authenticator = $this->authenticator(
+            verifier: new FakeAccessTokenVerifier(failure: new \LogicException('misconfigured verifier')),
+        );
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('misconfigured verifier');
+
+        $authenticator->authenticate($this->requestWithBearerToken('valid-token'));
     }
 
     public function testTokenForMissingAccountFailsWithGeneric401(): void
@@ -128,7 +149,7 @@ final class BearerTokenAuthenticatorTest extends TestCase
     public function testAuthenticatorDoesNotExposeFailureReason(): void
     {
         $authenticator = $this->authenticator(
-            verifier: new FakeAccessTokenVerifier(failure: new \RuntimeException('expired token for account abc')),
+            verifier: new FakeAccessTokenVerifier(failure: AccessTokenVerificationFailed::invalid()),
         );
 
         $response = $this->failureResponseFor($authenticator, $this->requestWithBearerToken('expired-token'));
@@ -140,17 +161,6 @@ final class BearerTokenAuthenticatorTest extends TestCase
         );
         self::assertStringNotContainsString('expired', (string) $response->getContent());
         self::assertStringNotContainsString('abc', (string) $response->getContent());
-    }
-
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function publicAuthEndpointProvider(): iterable
-    {
-        yield 'register' => ['/api/auth/register'];
-        yield 'login' => ['/api/auth/login'];
-        yield 'refresh' => ['/api/auth/refresh'];
-        yield 'logout' => ['/api/auth/logout'];
     }
 
     /**
