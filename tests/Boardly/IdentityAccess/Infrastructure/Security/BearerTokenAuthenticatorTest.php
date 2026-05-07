@@ -7,7 +7,7 @@ namespace App\Tests\Boardly\IdentityAccess\Infrastructure\Security;
 use App\Boardly\IdentityAccess\Application\Exception\AccountNotFound;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenVerifierInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccountRepositoryInterface;
-use App\Boardly\IdentityAccess\Application\Port\VerifiedAccessToken;
+use App\Boardly\IdentityAccess\Application\Security\VerifiedAccessToken;
 use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;

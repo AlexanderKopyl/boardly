@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Boardly\IdentityAccess\Application\Port;
+namespace App\Boardly\IdentityAccess\Application\Security;
 
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Infrastructure\Security;
 
-use App\Boardly\IdentityAccess\Application\Port\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenVerifierInterface;
-use App\Boardly\IdentityAccess\Application\Port\VerifiedAccessToken;
+use App\Boardly\IdentityAccess\Application\Security\AccessToken;
+use App\Boardly\IdentityAccess\Application\Security\VerifiedAccessToken;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Port\IdGeneratorInterface;

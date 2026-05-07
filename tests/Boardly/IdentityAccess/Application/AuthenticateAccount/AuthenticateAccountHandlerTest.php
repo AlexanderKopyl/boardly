@@ -11,9 +11,9 @@ use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticatedAcco
 use App\Boardly\IdentityAccess\Application\Exception\AccountNotActive;
 use App\Boardly\IdentityAccess\Application\Exception\AccountNotFound;
 use App\Boardly\IdentityAccess\Application\Exception\InvalidCredentials;
-use App\Boardly\IdentityAccess\Application\Port\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccountRepositoryInterface;
+use App\Boardly\IdentityAccess\Application\Security\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\PasswordVerifierInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenGeneratorInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface;

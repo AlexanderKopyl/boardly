@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Boardly\IdentityAccess\Infrastructure\Security;
 
-use App\Boardly\IdentityAccess\Application\Port\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenVerifierInterface;
-use App\Boardly\IdentityAccess\Application\Port\VerifiedAccessToken;
+use App\Boardly\IdentityAccess\Application\Security\AccessToken;
+use App\Boardly\IdentityAccess\Application\Security\VerifiedAccessToken;
 use App\Boardly\IdentityAccess\Infrastructure\Security\AccessTokenVerificationFailed;
 use App\Boardly\IdentityAccess\Infrastructure\Security\JwtAccessTokenService;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
