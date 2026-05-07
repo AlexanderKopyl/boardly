@@ -262,6 +262,34 @@ Tests:
 - malformed/invalid payload returns existing 400/422 shape
 ```
 
+Explicit deferral:
+
+```text
+Login rate limiting is intentionally deferred from issue #36.
+
+This PR does not fully satisfy ADR-0005's login-rate-limiting requirement.
+The missing limiter is a security-required follow-up before public production deployment.
+```
+
+Recommended follow-up scope:
+
+```text
+- Add LoginRateLimiterInterface application port.
+- Rate limit by IP + normalized email.
+- Use initial policy: 5 failed attempts per 5 minutes per IP+email.
+- Add TooManyLoginAttempts exception.
+- Map TooManyLoginAttempts to HTTP 429:
+  {
+    "error": {
+      "code": "too_many_login_attempts",
+      "message": "Too many login attempts. Please try again later."
+    }
+  }
+- Keep the application layer independent from Redis and Symfony RateLimiter.
+- Implement the infrastructure adapter with Symfony RateLimiter or Redis-backed storage.
+- Add application and HTTP tests.
+```
+
 ## Step 5: Add refresh use case and endpoint
 
 Goal:
@@ -510,6 +538,7 @@ Expected search outcomes:
 - Do not introduce roles/permissions beyond what JWT authentication minimally needs.
 - Do not make application commands async.
 - Do not move business logic into controllers.
+- Do not implement login rate limiting in issue #36; defer it to a separate security follow-up required before public production deployment.
 ```
 
 ## Commit Breakdown

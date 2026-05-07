@@ -919,3 +919,30 @@ Issue #36 should authenticate active accounts only. It must not introduce broad 
 No new ADR is required for the baseline auth architecture. ADR-0005 already decides JWT access tokens plus opaque HttpOnly refresh cookies, token rotation, account lifecycle constraints, CORS/CSRF baseline, and frontend storage behavior.
 
 An ADR would only be justified if the implementation locks in a major package/key-management strategy that the team wants to treat as binding beyond this issue.
+
+### Login rate limiting deferral
+
+Login rate limiting is intentionally deferred from issue #36.
+
+This PR does not fully satisfy ADR-0005's login-rate-limiting requirement. ADR-0005 and the authentication API strategy require login attempts to be rate-limited by IP plus normalized email, with an initial policy of 5 failed attempts per 5 minutes per IP+email and a 429 `too_many_login_attempts` response.
+
+The deferral is explicit because the current project does not have installed/configured limiter infrastructure. Implementing this correctly requires a new application port, controlled exception/error mapping, an infrastructure adapter, package/configuration decisions, failure accounting semantics, and application plus HTTP tests. That scope is larger than the current authentication baseline PR.
+
+Follow-up security issue required before public production deployment:
+
+```text
+- Add LoginRateLimiterInterface application port.
+- Rate limit by IP + normalized email.
+- Use initial policy: 5 failed attempts per 5 minutes per IP+email.
+- Add TooManyLoginAttempts exception.
+- Map TooManyLoginAttempts to HTTP 429:
+  {
+    "error": {
+      "code": "too_many_login_attempts",
+      "message": "Too many login attempts. Please try again later."
+    }
+  }
+- Keep the application layer independent from Redis and Symfony RateLimiter.
+- Implement the infrastructure adapter with Symfony RateLimiter or Redis-backed storage.
+- Add application and HTTP tests for allowed attempts, blocked attempts, invalid credentials accounting, and successful-login reset/clear behavior if supported by the selected limiter.
+```
