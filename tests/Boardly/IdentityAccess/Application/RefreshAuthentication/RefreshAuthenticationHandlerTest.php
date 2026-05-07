@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Boardly\IdentityAccess\Application\RefreshAuthentication;
 
 use App\Boardly\IdentityAccess\Application\Exception\AccountNotFound;
+use App\Boardly\IdentityAccess\Application\Exception\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccountRepositoryInterface;
 use App\Boardly\IdentityAccess\Application\Security\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenGeneratorInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface;
-use App\Boardly\IdentityAccess\Application\RefreshAuthentication\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationCommand;
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationHandler;
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\RefreshAuthenticationResult;

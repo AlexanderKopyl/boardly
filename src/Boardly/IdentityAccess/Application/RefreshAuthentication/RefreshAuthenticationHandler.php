@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Application\RefreshAuthentication;
 
+use App\Boardly\IdentityAccess\Application\Exception\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\RefreshSession\RefreshSessionRotator;
 use App\Boardly\IdentityAccess\Application\Security\AccessToken;

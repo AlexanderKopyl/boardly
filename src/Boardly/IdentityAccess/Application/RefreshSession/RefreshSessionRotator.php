@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Application\RefreshSession;
 
+use App\Boardly\IdentityAccess\Application\Exception\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Application\Port\AccountRepositoryInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenGeneratorInterface;
 use App\Boardly\IdentityAccess\Application\Port\RefreshTokenHasherInterface;
-use App\Boardly\IdentityAccess\Application\RefreshAuthentication\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Application\Repository\RefreshSessionRepositoryInterface;
 use App\Boardly\IdentityAccess\Domain\Model\RefreshSession;
 use App\Boardly\IdentityAccess\Domain\ValueObject\RefreshSessionId;
