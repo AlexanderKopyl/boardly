@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Domain\Event;
 
+use App\Boardly\SharedKernel\Domain\Event\DomainEvent;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 
-final class AccountApproved
+final class AccountApproved implements DomainEvent
 {
     public function __construct(
         private readonly AccountId $accountId,
