@@ -99,3 +99,7 @@ services:
     App\Boardly\IdentityAccess\Application\Logout\LogoutHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\IdentityAccess\Application\CreateSystemAdmin\CreateSystemAdminHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
