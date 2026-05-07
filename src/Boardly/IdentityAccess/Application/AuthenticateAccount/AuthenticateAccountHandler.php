@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Application\AuthenticateAccount;
 
+use App\Boardly\IdentityAccess\Application\Exception\AccountNotActive;
+use App\Boardly\IdentityAccess\Application\Exception\InvalidCredentials;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccountRepositoryInterface;
 use App\Boardly\IdentityAccess\Application\Port\PasswordVerifierInterface;

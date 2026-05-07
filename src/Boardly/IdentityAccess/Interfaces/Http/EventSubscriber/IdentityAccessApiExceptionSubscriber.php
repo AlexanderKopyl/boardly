@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Boardly\IdentityAccess\Interfaces\Http\EventSubscriber;
 
-use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AccountNotActive;
-use App\Boardly\IdentityAccess\Application\AuthenticateAccount\InvalidCredentials;
+use App\Boardly\IdentityAccess\Application\Exception\AccountNotActive;
 use App\Boardly\IdentityAccess\Application\Exception\EmailAlreadyRegistered;
+use App\Boardly\IdentityAccess\Application\Exception\InvalidCredentials;
 use App\Boardly\IdentityAccess\Application\RefreshAuthentication\InvalidRefreshToken;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidAccountName;
 use App\Boardly\IdentityAccess\Domain\Exception\InvalidEmail;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Boardly\IdentityAccess\Application\AuthenticateAccount;
 
-use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AccountNotActive;
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccountCommand;
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccountHandler;
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccountResult;
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticatedAccount;
-use App\Boardly\IdentityAccess\Application\AuthenticateAccount\InvalidCredentials;
+use App\Boardly\IdentityAccess\Application\Exception\AccountNotActive;
 use App\Boardly\IdentityAccess\Application\Exception\AccountNotFound;
+use App\Boardly\IdentityAccess\Application\Exception\InvalidCredentials;
 use App\Boardly\IdentityAccess\Application\Port\AccessToken;
 use App\Boardly\IdentityAccess\Application\Port\AccessTokenIssuerInterface;
 use App\Boardly\IdentityAccess\Application\Port\AccountRepositoryInterface;
