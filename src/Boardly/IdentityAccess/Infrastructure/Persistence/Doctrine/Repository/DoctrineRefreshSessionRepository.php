@@ -69,7 +69,7 @@ final readonly class DoctrineRefreshSessionRepository implements RefreshSessionR
         return $this->mapper->toDomain($entity);
     }
 
-    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession
+    public function findByTokenHashForUpdate(RefreshTokenHash $tokenHash): ?RefreshSession
     {
         $entity = $this->entityManager
             ->createQueryBuilder()

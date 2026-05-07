@@ -17,7 +17,7 @@ interface RefreshSessionRepositoryInterface
 
     public function findByTokenHash(RefreshTokenHash $tokenHash): ?RefreshSession;
 
-    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession;
+    public function findByTokenHashForUpdate(RefreshTokenHash $tokenHash): ?RefreshSession;
 
     public function revokeFamily(RefreshSessionFamilyId $familyId, \DateTimeImmutable $revokedAt): void;
 }

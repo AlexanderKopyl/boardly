@@ -69,8 +69,8 @@ final class LogoutHandlerTest extends TestCase
     public function testUnknownTokenReturnsSuccess(): void
     {
         $refreshTokenHasher = new FakeRefreshTokenHasher(['unknown-raw-token' => 'unknown-token-hash']);
-        $refreshSessions = new FakeRefreshSessionRepository();
         $transactional = new FakeTransactional();
+        $refreshSessions = new FakeRefreshSessionRepository([], $transactional);
 
         $result = $this->handler(
             refreshTokenHasher: $refreshTokenHasher,
@@ -81,8 +81,9 @@ final class LogoutHandlerTest extends TestCase
         self::assertInstanceOf(LogoutResult::class, $result);
         self::assertSame(['unknown-raw-token'], $refreshTokenHasher->receivedRawRefreshTokens);
         self::assertSame(['unknown-token-hash'], $refreshSessions->lookedUpTokenHashes);
+        self::assertSame([true], $refreshSessions->findByTokenHashForUpdateInsideTransaction);
         self::assertSame([], $refreshSessions->savedSessions);
-        self::assertSame(0, $transactional->transactionCallCount);
+        self::assertSame(1, $transactional->transactionCallCount);
     }
 
     public function testKnownTokenIsHashedFoundRevokedAndSaved(): void
@@ -153,7 +154,7 @@ final class LogoutHandlerTest extends TestCase
         self::assertNotSame('current-raw-token', $refreshSessions->savedSessions[0]->tokenHash()->value());
     }
 
-    public function testRepositorySaveHappensInsideTransactionForKnownToken(): void
+    public function testRepositoryLookupAndSaveHappenInsideTransactionForKnownToken(): void
     {
         $transactional = new FakeTransactional();
         $refreshSessions = new FakeRefreshSessionRepository([self::currentSession()], $transactional);
@@ -165,6 +166,7 @@ final class LogoutHandlerTest extends TestCase
         )->__invoke(new LogoutCommand('current-raw-token'));
 
         self::assertSame(1, $transactional->transactionCallCount);
+        self::assertSame([true], $refreshSessions->findByTokenHashForUpdateInsideTransaction);
         self::assertSame([true], $refreshSessions->saveInsideTransaction);
     }
 
@@ -262,6 +264,9 @@ final class FakeRefreshSessionRepository implements RefreshSessionRepositoryInte
     /** @var list<bool> */
     public array $saveInsideTransaction = [];
 
+    /** @var list<bool> */
+    public array $findByTokenHashForUpdateInsideTransaction = [];
+
     /** @var list<RefreshSessionFamilyId> */
     public array $revokedFamilyIds = [];
 
@@ -290,14 +295,16 @@ final class FakeRefreshSessionRepository implements RefreshSessionRepositoryInte
 
     public function findByTokenHash(RefreshTokenHash $tokenHash): ?RefreshSession
     {
-        $this->lookedUpTokenHashes[] = $tokenHash->value();
-
-        return $this->sessionsByTokenHash[$tokenHash->value()] ?? null;
+        throw new LogicException('FakeRefreshSessionRepository::findByTokenHash() is not used by these tests.');
     }
 
-    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession
+    public function findByTokenHashForUpdate(RefreshTokenHash $tokenHash): ?RefreshSession
     {
-        throw new LogicException('FakeRefreshSessionRepository::findByTokenHashForRotation() is not used by these tests.');
+        $this->lookedUpTokenHashes[] = $tokenHash->value();
+        $this->findByTokenHashForUpdateInsideTransaction[] = $this->transactional !== null
+            && $this->transactional->isInsideTransaction;
+
+        return $this->sessionsByTokenHash[$tokenHash->value()] ?? null;
     }
 
     public function revokeFamily(RefreshSessionFamilyId $familyId, DateTimeImmutable $revokedAt): void

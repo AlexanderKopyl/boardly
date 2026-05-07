@@ -46,3 +46,22 @@ If audit, security, or integration visibility is required, a follow-up must expl
 ```
 
 This is a known design follow-up, not a current blocker for issue #36.
+
+## Logout / Session Revocation Audit Follow-Up
+
+Logout and refresh-session revocation audit/outbox events are intentionally deferred from issue #36.
+
+This PR revokes the current `RefreshSession` synchronously in the logout application transaction, but it does not introduce `RefreshSessionRevoked`, `LogoutSucceeded`, auth/session audit events, or outbox storage for logout/session revocation.
+
+Authentication and session audit events require a separate explicit design before implementation. That design must cover:
+
+```text
+- event name and owner
+- payload and PII policy
+- outbox serializer/mapper
+- consumers and idempotency strategy
+- retention expectations
+- monitoring expectations
+```
+
+This is a known design follow-up, not a current blocker for issue #36.

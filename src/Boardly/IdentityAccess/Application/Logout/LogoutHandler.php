@@ -28,19 +28,19 @@ final readonly class LogoutHandler
         }
 
         $tokenHash = $this->refreshTokenHasher->hash($rawRefreshToken);
-        $session = $this->refreshSessions->findByTokenHash($tokenHash);
 
-        if (null === $session) {
-            return LogoutResult::success();
-        }
+        return $this->transactional->transactional(function () use ($tokenHash): LogoutResult {
+            $session = $this->refreshSessions->findByTokenHashForUpdate($tokenHash);
 
-        $now = $this->clock->now();
+            if (null === $session) {
+                return LogoutResult::success();
+            }
 
-        $this->transactional->transactional(function () use ($session, $now): void {
+            $now = $this->clock->now();
             $session->revoke($now);
             $this->refreshSessions->save($session);
-        });
 
-        return LogoutResult::success();
+            return LogoutResult::success();
+        });
     }
 }

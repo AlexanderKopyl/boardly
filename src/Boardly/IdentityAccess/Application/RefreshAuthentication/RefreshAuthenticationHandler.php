@@ -43,7 +43,7 @@ final readonly class RefreshAuthenticationHandler
         $tokenHash = $this->refreshTokenHasher->hash($rawRefreshToken);
 
         $result = $this->transactional->transactional(function () use ($tokenHash, $now): ?RefreshAuthenticationResult {
-            $currentSession = $this->refreshSessions->findByTokenHashForRotation($tokenHash);
+            $currentSession = $this->refreshSessions->findByTokenHashForUpdate($tokenHash);
 
             if (null === $currentSession) {
                 throw InvalidRefreshToken::create();
