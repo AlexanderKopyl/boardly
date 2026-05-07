@@ -60,13 +60,13 @@ final readonly class AuthenticateAccountHandler
             throw AccountNotActive::create();
         }
 
-        $now = $this->clock->now();
-        $accessToken = $this->accessTokenIssuer->issueForAccount($account->id(), $now);
-        $refreshToken = $this->refreshTokenGenerator->generate();
-        $refreshTokenHash = $this->refreshTokenHasher->hash($refreshToken);
-        $refreshTokenExpiresAt = $now->modify(self::REFRESH_TOKEN_TTL);
+        return $this->transactional->transactional(function () use ($account): AuthenticateAccountResult {
+            $now = $this->clock->now();
+            $accessToken = $this->accessTokenIssuer->issueForAccount($account->id(), $now);
+            $refreshToken = $this->refreshTokenGenerator->generate();
+            $refreshTokenHash = $this->refreshTokenHasher->hash($refreshToken);
+            $refreshTokenExpiresAt = $now->modify(self::REFRESH_TOKEN_TTL);
 
-        $this->transactional->transactional(function () use ($account, $refreshTokenHash, $refreshTokenExpiresAt, $now): void {
             $this->refreshSessions->save(RefreshSession::create(
                 RefreshSessionId::fromString($this->idGenerator->generate()),
                 $account->id(),
@@ -75,20 +75,20 @@ final readonly class AuthenticateAccountHandler
                 $refreshTokenExpiresAt,
                 $now,
             ));
-        });
 
-        return new AuthenticateAccountResult(
-            $accessToken->token(),
-            $accessToken->expiresAt(),
-            $accessToken->expiresInSeconds(),
-            $refreshToken,
-            $refreshTokenExpiresAt,
-            new AuthenticatedAccount(
-                $account->id()->value(),
-                $account->email()->value(),
-                $account->name()->value(),
-                $account->status()->value(),
-            ),
-        );
+            return new AuthenticateAccountResult(
+                $accessToken->token(),
+                $accessToken->expiresAt(),
+                $accessToken->expiresInSeconds(),
+                $refreshToken,
+                $refreshTokenExpiresAt,
+                new AuthenticatedAccount(
+                    $account->id()->value(),
+                    $account->email()->value(),
+                    $account->name()->value(),
+                    $account->status()->value(),
+                ),
+            );
+        });
     }
 }
