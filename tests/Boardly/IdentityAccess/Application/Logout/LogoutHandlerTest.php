@@ -295,6 +295,11 @@ final class FakeRefreshSessionRepository implements RefreshSessionRepositoryInte
         return $this->sessionsByTokenHash[$tokenHash->value()] ?? null;
     }
 
+    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession
+    {
+        throw new LogicException('FakeRefreshSessionRepository::findByTokenHashForRotation() is not used by these tests.');
+    }
+
     public function revokeFamily(RefreshSessionFamilyId $familyId, DateTimeImmutable $revokedAt): void
     {
         $this->revokedFamilyIds[] = $familyId;

@@ -41,44 +41,36 @@ final readonly class RefreshAuthenticationHandler
 
         $now = $this->clock->now();
         $tokenHash = $this->refreshTokenHasher->hash($rawRefreshToken);
-        $currentSession = $this->refreshSessions->findByTokenHash($tokenHash);
 
-        if (null === $currentSession) {
-            throw InvalidRefreshToken::create();
-        }
+        $result = $this->transactional->transactional(function () use ($tokenHash, $now): ?RefreshAuthenticationResult {
+            $currentSession = $this->refreshSessions->findByTokenHashForRotation($tokenHash);
 
-        if ($currentSession->wasReplaced()) {
-            $this->transactional->transactional(function () use ($currentSession, $now): void {
+            if (null === $currentSession) {
+                throw InvalidRefreshToken::create();
+            }
+
+            if ($currentSession->wasReplaced()) {
                 $this->refreshSessions->revokeFamily($currentSession->familyId(), $now);
-            });
 
-            throw InvalidRefreshToken::create();
-        }
+                return null;
+            }
 
-        if ($currentSession->isExpired($now) || $currentSession->isRevoked()) {
-            throw InvalidRefreshToken::create();
-        }
+            if ($currentSession->isExpired($now) || $currentSession->isRevoked()) {
+                throw InvalidRefreshToken::create();
+            }
 
-        $account = $this->accounts->find($currentSession->accountId());
+            $account = $this->accounts->find($currentSession->accountId());
 
-        if (null === $account || !$account->status()->isActive()) {
-            throw InvalidRefreshToken::create();
-        }
+            if (null === $account || !$account->status()->isActive()) {
+                throw InvalidRefreshToken::create();
+            }
 
-        $newRawRefreshToken = $this->refreshTokenGenerator->generate();
-        $newTokenHash = $this->refreshTokenHasher->hash($newRawRefreshToken);
-        $newSessionId = RefreshSessionId::fromString($this->idGenerator->generate());
-        $refreshTokenExpiresAt = $now->modify(self::REFRESH_TOKEN_TTL);
-        $accessToken = $this->accessTokenIssuer->issueForAccount($account->id(), $now);
+            $newRawRefreshToken = $this->refreshTokenGenerator->generate();
+            $newTokenHash = $this->refreshTokenHasher->hash($newRawRefreshToken);
+            $newSessionId = RefreshSessionId::fromString($this->idGenerator->generate());
+            $refreshTokenExpiresAt = $now->modify(self::REFRESH_TOKEN_TTL);
+            $accessToken = $this->accessTokenIssuer->issueForAccount($account->id(), $now);
 
-        $this->transactional->transactional(function () use (
-            $currentSession,
-            $newSessionId,
-            $account,
-            $newTokenHash,
-            $refreshTokenExpiresAt,
-            $now,
-        ): void {
             $currentSession->markUsed($now);
             $currentSession->replaceWith($newSessionId, $now);
 
@@ -93,14 +85,20 @@ final readonly class RefreshAuthenticationHandler
 
             $this->refreshSessions->save($currentSession);
             $this->refreshSessions->save($newSession);
+
+            return new RefreshAuthenticationResult(
+                $accessToken->token(),
+                $accessToken->expiresAt(),
+                $accessToken->expiresInSeconds(),
+                $newRawRefreshToken,
+                $refreshTokenExpiresAt,
+            );
         });
 
-        return new RefreshAuthenticationResult(
-            $accessToken->token(),
-            $accessToken->expiresAt(),
-            $accessToken->expiresInSeconds(),
-            $newRawRefreshToken,
-            $refreshTokenExpiresAt,
-        );
+        if (null === $result) {
+            throw InvalidRefreshToken::create();
+        }
+
+        return $result;
     }
 }

@@ -12,6 +12,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\RefreshTokenHash;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity\AccountEntity;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity\RefreshSessionEntity;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Mapper\RefreshSessionMapper;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DoctrineRefreshSessionRepository implements RefreshSessionRepositoryInterface
@@ -60,6 +61,25 @@ final readonly class DoctrineRefreshSessionRepository implements RefreshSessionR
         $entity = $this->entityManager
             ->getRepository(RefreshSessionEntity::class)
             ->findOneBy(['tokenHash' => $tokenHash->value()]);
+
+        if (!$entity instanceof RefreshSessionEntity) {
+            return null;
+        }
+
+        return $this->mapper->toDomain($entity);
+    }
+
+    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession
+    {
+        $entity = $this->entityManager
+            ->createQueryBuilder()
+            ->select('refreshSession')
+            ->from(RefreshSessionEntity::class, 'refreshSession')
+            ->where('refreshSession.tokenHash = :tokenHash')
+            ->setParameter('tokenHash', $tokenHash->value())
+            ->getQuery()
+            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
+            ->getOneOrNullResult();
 
         if (!$entity instanceof RefreshSessionEntity) {
             return null;

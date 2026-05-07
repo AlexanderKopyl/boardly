@@ -97,7 +97,10 @@ final class ApiAuthenticationTest extends WebTestCase
 
     public function testRefreshRemainsReachableWithoutAuthorizationAndUsesRefreshError(): void
     {
-        $this->client->request('POST', '/api/auth/refresh', [], [], ['HTTP_ACCEPT' => 'application/json']);
+        $this->client->request('POST', '/api/auth/refresh', [], [], [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_X_CSRF_INTENT' => 'auth-refresh',
+        ]);
 
         self::assertResponseStatusCodeSame(401);
         self::assertSame('invalid_refresh_token', $this->responseData()['error']['code']);
@@ -105,7 +108,10 @@ final class ApiAuthenticationTest extends WebTestCase
 
     public function testLogoutRemainsReachableWithoutAuthorization(): void
     {
-        $this->client->request('POST', '/api/auth/logout', [], [], ['HTTP_ACCEPT' => 'application/json']);
+        $this->client->request('POST', '/api/auth/logout', [], [], [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_X_CSRF_INTENT' => 'auth-refresh',
+        ]);
 
         self::assertResponseStatusCodeSame(204);
         self::assertSame('', (string) $this->client->getResponse()->getContent());

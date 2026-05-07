@@ -587,6 +587,11 @@ final class FakeRefreshSessionRepository implements RefreshSessionRepositoryInte
         throw new LogicException('FakeRefreshSessionRepository::findByTokenHash() is not used by these tests.');
     }
 
+    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession
+    {
+        throw new LogicException('FakeRefreshSessionRepository::findByTokenHashForRotation() is not used by these tests.');
+    }
+
     public function revokeFamily(RefreshSessionFamilyId $familyId, DateTimeImmutable $revokedAt): void
     {
         throw new LogicException('FakeRefreshSessionRepository::revokeFamily() is not used by these tests.');

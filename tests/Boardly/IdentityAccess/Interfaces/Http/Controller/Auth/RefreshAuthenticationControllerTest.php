@@ -157,6 +157,34 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
         $this->assertClearsRefreshCookie();
     }
 
+    public function testMissingCsrfIntentHeaderReturns403ClearsCookieAndDoesNotDispatch(): void
+    {
+        $account = $this->persistAccount('refresh-missing-csrf@example.com', 'Refresh Missing CSRF', 'active');
+        $this->persistRefreshSession($account, 'csrf-refresh-token');
+
+        $this->postRefresh('csrf-refresh-token', csrfIntent: null);
+
+        self::assertResponseStatusCodeSame(403);
+        $this->assertCsrfIntentRequiredError();
+        $this->assertClearsRefreshCookie();
+        self::assertSame(1, $this->refreshSessionCount($account));
+        self::assertSame(0, $this->revokedRefreshSessionCount($account));
+    }
+
+    public function testWrongCsrfIntentHeaderReturns403ClearsCookieAndDoesNotDispatch(): void
+    {
+        $account = $this->persistAccount('refresh-wrong-csrf@example.com', 'Refresh Wrong CSRF', 'active');
+        $this->persistRefreshSession($account, 'csrf-refresh-token');
+
+        $this->postRefresh('csrf-refresh-token', csrfIntent: 'wrong-intent');
+
+        self::assertResponseStatusCodeSame(403);
+        $this->assertCsrfIntentRequiredError();
+        $this->assertClearsRefreshCookie();
+        self::assertSame(1, $this->refreshSessionCount($account));
+        self::assertSame(0, $this->revokedRefreshSessionCount($account));
+    }
+
     public function testUnknownTokenReturns401AndClearsCookie(): void
     {
         $this->postRefresh('unknown-refresh-token');
@@ -250,7 +278,7 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
         $_SERVER['IDENTITY_ACCESS_REFRESH_TOKEN_HASH_SECRET'] = str_repeat('b', 64);
     }
 
-    private function postRefresh(?string $rawRefreshToken = null): void
+    private function postRefresh(?string $rawRefreshToken = null, ?string $csrfIntent = 'auth-refresh'): void
     {
         $this->client->getCookieJar()->clear();
 
@@ -268,17 +296,23 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
             ));
         }
 
+        $server = [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_USER_AGENT' => 'Boardly HTTP test',
+            'REMOTE_ADDR' => '203.0.113.10',
+            'HTTPS' => 'on',
+        ];
+
+        if (null !== $csrfIntent) {
+            $server['HTTP_X_CSRF_INTENT'] = $csrfIntent;
+        }
+
         $this->client->request(
             'POST',
             '/api/auth/refresh',
             [],
             [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'HTTP_USER_AGENT' => 'Boardly HTTP test',
-                'REMOTE_ADDR' => '203.0.113.10',
-                'HTTPS' => 'on',
-            ],
+            $server,
         );
     }
 
@@ -411,12 +445,44 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
         return $count;
     }
 
+    private function refreshSessionCount(Account $account): int
+    {
+        $count = $this->entityManager->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM refresh_sessions WHERE account_id = :accountId',
+            ['accountId' => $account->id()->value()],
+        );
+
+        self::assertIsInt($count);
+
+        return $count;
+    }
+
+    private function revokedRefreshSessionCount(Account $account): int
+    {
+        $count = $this->entityManager->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM refresh_sessions WHERE account_id = :accountId AND revoked_at IS NOT NULL',
+            ['accountId' => $account->id()->value()],
+        );
+
+        self::assertIsInt($count);
+
+        return $count;
+    }
+
     private function assertInvalidRefreshTokenError(): void
     {
         $data = $this->responseData();
 
         self::assertSame('invalid_refresh_token', $data['error']['code']);
         self::assertSame('Invalid refresh token.', $data['error']['message']);
+    }
+
+    private function assertCsrfIntentRequiredError(): void
+    {
+        $data = $this->responseData();
+
+        self::assertSame('csrf_intent_required', $data['error']['code']);
+        self::assertSame('CSRF intent header is required.', $data['error']['message']);
     }
 
     private function assertClearsRefreshCookie(): void

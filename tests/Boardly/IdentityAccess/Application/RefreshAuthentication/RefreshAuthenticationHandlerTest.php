@@ -92,6 +92,7 @@ final class RefreshAuthenticationHandlerTest extends TestCase
         )->__invoke(self::validCommand());
 
         self::assertSame(1, $transactional->transactionCallCount);
+        self::assertSame([true], $refreshSessions->findByTokenHashForRotationInsideTransaction);
         self::assertSame([true, true], $refreshSessions->saveInsideTransaction);
         self::assertCount(2, $refreshSessions->savedSessions);
 
@@ -131,8 +132,9 @@ final class RefreshAuthenticationHandlerTest extends TestCase
     public function testAccessTokenIssuingFailureDoesNotPersistRefreshSessionRotation(): void
     {
         $now = new DateTimeImmutable('2026-05-04T09:10:11+00:00');
+        $transactional = new FakeTransactional();
         $oldSession = self::usableSession();
-        $refreshSessions = new FakeRefreshSessionRepository([$oldSession]);
+        $refreshSessions = new FakeRefreshSessionRepository([$oldSession], $transactional);
         $accessTokenIssuer = new FakeAccessTokenIssuer(exception: new RuntimeException('Access token issuing failed.'));
 
         $this->expectException(RuntimeException::class);
@@ -142,10 +144,13 @@ final class RefreshAuthenticationHandlerTest extends TestCase
             $this->successfulHandler(
                 refreshSessions: $refreshSessions,
                 accessTokenIssuer: $accessTokenIssuer,
+                transactional: $transactional,
                 clock: new FakeClock($now),
             )->__invoke(self::validCommand());
         } finally {
             self::assertSame(1, $accessTokenIssuer->issueCallCount);
+            self::assertSame(1, $transactional->transactionCallCount);
+            self::assertSame([true], $refreshSessions->findByTokenHashForRotationInsideTransaction);
             self::assertSame([], $refreshSessions->savedSessions);
             self::assertTrue($oldSession->isUsable($now));
             self::assertFalse($oldSession->isRevoked());
@@ -162,7 +167,17 @@ final class RefreshAuthenticationHandlerTest extends TestCase
 
     public function testUnknownTokenFailsWithoutSideEffects(): void
     {
-        $this->assertInvalidRefreshTokenHasNoTokenOrSessionSideEffects(self::validCommand(), new FakeRefreshSessionRepository());
+        $transactional = new FakeTransactional();
+        $refreshSessions = new FakeRefreshSessionRepository([], $transactional);
+
+        $this->assertInvalidRefreshTokenHasNoTokenOrSessionSideEffects(
+            self::validCommand(),
+            $refreshSessions,
+            transactional: $transactional,
+        );
+
+        self::assertSame(1, $transactional->transactionCallCount);
+        self::assertSame([true], $refreshSessions->findByTokenHashForRotationInsideTransaction);
     }
 
     public function testExpiredTokenFailsWithoutSideEffects(): void
@@ -254,6 +269,7 @@ final class RefreshAuthenticationHandlerTest extends TestCase
         RefreshAuthenticationCommand $command,
         ?FakeRefreshSessionRepository $refreshSessions = null,
         ?FakeAccountRepository $accounts = null,
+        ?FakeTransactional $transactional = null,
     ): void {
         $accessTokenIssuer = new FakeAccessTokenIssuer();
         $refreshTokenGenerator = new FakeRefreshTokenGenerator();
@@ -267,6 +283,7 @@ final class RefreshAuthenticationHandlerTest extends TestCase
                 refreshTokenGenerator: $refreshTokenGenerator,
                 refreshSessions: $refreshSessions,
                 accounts: $accounts ?? new FakeAccountRepository([self::activeAccount()]),
+                transactional: $transactional,
             )->__invoke($command);
         } finally {
             self::assertSame(0, $accessTokenIssuer->issueCallCount);
@@ -480,6 +497,9 @@ final class FakeRefreshSessionRepository implements RefreshSessionRepositoryInte
     /** @var list<bool> */
     public array $saveInsideTransaction = [];
 
+    /** @var list<bool> */
+    public array $findByTokenHashForRotationInsideTransaction = [];
+
     /** @var list<RefreshSessionFamilyId> */
     public array $revokedFamilyIds = [];
 
@@ -516,6 +536,14 @@ final class FakeRefreshSessionRepository implements RefreshSessionRepositoryInte
 
     public function findByTokenHash(RefreshTokenHash $tokenHash): ?RefreshSession
     {
+        return $this->sessionsByTokenHash[$tokenHash->value()] ?? null;
+    }
+
+    public function findByTokenHashForRotation(RefreshTokenHash $tokenHash): ?RefreshSession
+    {
+        $this->findByTokenHashForRotationInsideTransaction[] = $this->transactional !== null
+            && $this->transactional->isInsideTransaction;
+
         return $this->sessionsByTokenHash[$tokenHash->value()] ?? null;
     }
 

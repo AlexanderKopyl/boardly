@@ -75,6 +75,32 @@ final class LogoutControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(204);
     }
 
+    public function testMissingCsrfIntentHeaderReturns403ClearsCookieAndDoesNotDispatch(): void
+    {
+        $account = $this->persistAccount('logout-missing-csrf@example.com', 'Logout Missing CSRF');
+        $session = $this->persistRefreshSession($account, 'csrf-refresh-token');
+
+        $this->postLogout('csrf-refresh-token', csrfIntent: null);
+
+        self::assertResponseStatusCodeSame(403);
+        $this->assertCsrfIntentRequiredError();
+        $this->assertClearsRefreshCookie();
+        self::assertSame(0, $this->revokedSessionCount($session->id()));
+    }
+
+    public function testWrongCsrfIntentHeaderReturns403ClearsCookieAndDoesNotDispatch(): void
+    {
+        $account = $this->persistAccount('logout-wrong-csrf@example.com', 'Logout Wrong CSRF');
+        $session = $this->persistRefreshSession($account, 'csrf-refresh-token');
+
+        $this->postLogout('csrf-refresh-token', csrfIntent: 'wrong-intent');
+
+        self::assertResponseStatusCodeSame(403);
+        $this->assertCsrfIntentRequiredError();
+        $this->assertClearsRefreshCookie();
+        self::assertSame(0, $this->revokedSessionCount($session->id()));
+    }
+
     public function testResponseClearsRefreshTokenCookie(): void
     {
         $this->postLogout();
@@ -186,7 +212,7 @@ final class LogoutControllerTest extends WebTestCase
         $_SERVER['IDENTITY_ACCESS_REFRESH_TOKEN_HASH_SECRET'] = str_repeat('b', 64);
     }
 
-    private function postLogout(?string $rawRefreshToken = null): void
+    private function postLogout(?string $rawRefreshToken = null, ?string $csrfIntent = 'auth-refresh'): void
     {
         $this->client->getCookieJar()->clear();
 
@@ -204,17 +230,23 @@ final class LogoutControllerTest extends WebTestCase
             ));
         }
 
+        $server = [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_USER_AGENT' => 'Boardly HTTP test',
+            'REMOTE_ADDR' => '203.0.113.10',
+            'HTTPS' => 'on',
+        ];
+
+        if (null !== $csrfIntent) {
+            $server['HTTP_X_CSRF_INTENT'] = $csrfIntent;
+        }
+
         $this->client->request(
             'POST',
             '/api/auth/logout',
             [],
             [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'HTTP_USER_AGENT' => 'Boardly HTTP test',
-                'REMOTE_ADDR' => '203.0.113.10',
-                'HTTPS' => 'on',
-            ],
+            $server,
         );
     }
 
@@ -291,6 +323,20 @@ final class LogoutControllerTest extends WebTestCase
     private function assertResponseBodyIsEmpty(): void
     {
         self::assertSame('', (string) $this->client->getResponse()->getContent());
+    }
+
+    private function assertCsrfIntentRequiredError(): void
+    {
+        $data = json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        self::assertIsArray($data);
+        self::assertSame('csrf_intent_required', $data['error']['code']);
+        self::assertSame('CSRF intent header is required.', $data['error']['message']);
     }
 
     private function assertClearsRefreshCookie(): void
