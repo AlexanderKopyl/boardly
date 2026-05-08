@@ -4,7 +4,7 @@ import type { AuthSessionStore } from '../ports/auth-session-store'
 
 export interface LoginInput {
   email: string
-  password: string
+  plainPassword: string
 }
 
 export interface LoginDependencies {
@@ -19,7 +19,7 @@ export async function loginUseCase(
 ): Promise<AuthSession> {
   const now = deps.now ?? (() => new Date())
 
-  const loginResult = await deps.gateway.login(input.email, input.password)
+  const loginResult = await deps.gateway.login(input.email, input.plainPassword)
   const account = await deps.gateway.getMe(loginResult.accessToken)
 
   const session: AuthSession = {

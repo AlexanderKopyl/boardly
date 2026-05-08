@@ -419,8 +419,8 @@ export interface RegisterResult {
 }
 
 export interface AuthGateway {
-  login(email: string, password: string): Promise<LoginResult>
-  register(email: string, password: string, name: string): Promise<RegisterResult>
+  login(email: string, plainPassword: string): Promise<LoginResult>
+  register(email: string, plainPassword: string, name: string): Promise<RegisterResult>
   refreshSession(): Promise<LoginResult>
   logout(): Promise<void>
   getMe(accessToken: string): Promise<Account>
@@ -446,7 +446,7 @@ No React. No HTTP client. Interface only.
 Signature: `loginUseCase(input, deps) => Promise<AuthSession>`
 
 Flow:
-1. Call `deps.gateway.login(email, password)`.
+1. Call `deps.gateway.login(email, plainPassword)`.
 2. Build `AuthSession` from `LoginResult` (`expiresAt = now + expiresIn * 1000`).
 3. Call `deps.store.save(session)`.
 4. Return session.
@@ -458,7 +458,7 @@ Depends only on `AuthGateway` and `AuthSessionStore` ports.
 Signature: `registerUseCase(input, deps) => Promise<RegisterResult>`
 
 Flow:
-1. Call `deps.gateway.register(email, password, name)`.
+1. Call `deps.gateway.register(email, plainPassword, name)`.
 2. Return result.
 
 Does not issue tokens. Returns `pending_approval` account. No session is created.
@@ -554,8 +554,8 @@ React hook wrapping auth use cases. Provides:
 
 - `session: AuthSession | null`
 - `isLoading: boolean`
-- `login(email: string, password: string): Promise<void>`
-- `register(email: string, password: string, name: string): Promise<void>`
+- `login(email: string, plainPassword: string): Promise<void>`
+- `register(email: string, plainPassword: string, name: string): Promise<void>`
 - `logout(): Promise<void>`
 
 Reads from and writes to auth context (provided by `providers.tsx`). Does not call

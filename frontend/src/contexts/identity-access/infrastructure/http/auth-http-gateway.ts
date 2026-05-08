@@ -5,10 +5,10 @@ import type { Account } from '../../domain/account'
 import type { LoginResponse, MeResponse, RegisterResponse } from './auth-api-contracts'
 
 export class AuthHttpGateway implements AuthGateway {
-  async login(email: string, password: string): Promise<LoginResult> {
+  async login(email: string, plainPassword: string): Promise<LoginResult> {
     const data = await httpRequest<LoginResponse>('/api/auth/login', {
       method: 'POST',
-      body: { email, password },
+      body: { email, plainPassword },
     })
     return {
       accessToken: data.accessToken,
@@ -16,10 +16,10 @@ export class AuthHttpGateway implements AuthGateway {
     }
   }
 
-  async register(email: string, password: string, name: string): Promise<RegisterResult> {
+  async register(email: string, plainPassword: string, name: string): Promise<RegisterResult> {
     const data = await httpRequest<RegisterResponse>('/api/auth/register', {
       method: 'POST',
-      body: { email, plainPassword: password, name },
+      body: { email, plainPassword, name },
     })
     return {
       id: data.id,
