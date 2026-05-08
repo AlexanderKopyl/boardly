@@ -11,20 +11,36 @@ To avoid duplicated behavior:
 - keep subagent files focused on role, scope, and skill selection;
 - when a request matches a skill, the subagent should follow the skill workflow instead of reinventing the response structure.
 
-## Skills
+## Backend / platform skills
 
 | Skill | Use for |
 | --- | --- |
 | `domain-modeling` | aggregates, invariants, value objects, domain events, transaction boundaries |
-| `feature-architecture` | end-to-end architecture for a feature/use case |
+| `feature-architecture` | end-to-end backend architecture for a feature/use case |
 | `workflow-design` | issue statuses, transitions, guards, validators, Symfony Workflow fit |
 | `async-flow` | RabbitMQ/Messenger, Outbox, retries, DLQ, idempotency |
 | `search-indexing` | OpenSearch/Elasticsearch documents, projections, reindexing |
 | `permission-modeling` | RBAC/ABAC, project membership, issue visibility, voters/policies |
-| `testing-strategy` | domain/application/integration/async/security test design |
+| `testing-strategy` | domain/application/integration/async/security/frontend test design |
 | `cache-performance` | Redis, TTL, invalidation, hot paths, DB query risks |
 | `observability-operations` | health checks, queues, logs, metrics, recovery commands |
 | `adr-writing` | architecture decision records and trade-off documentation |
+
+## Frontend skills
+
+| Skill | Use for |
+| --- | --- |
+| `frontend-context-architecture` | ADR-0006 context-based frontend hexagonal architecture, layers, imports |
+| `frontend-use-case-flow` | frontend application use cases, ports, orchestration, browser-side flows |
+| `frontend-api-integration` | HTTP gateways, API contracts, error normalization, mapping |
+| `frontend-auth-session` | memory-only access token, HttpOnly refresh cookie, bootstrap, logout, protected routes |
+| `frontend-ui-composition` | Next.js pages, layouts, providers, React components, hooks, guards, forms |
+| `frontend-review-checklist` | ADR-0006 frontend review, auth safety, API/UI boundary checks |
+
+## Output modifier skills
+
+| Skill | Use for |
+| --- | --- |
 | `caveman-response` | short, direct, low-token answers when explicitly requested |
 | `graphify-knowledge-map` | compact knowledge graphs, dependency maps, architecture maps |
 
@@ -37,6 +53,11 @@ To avoid duplicated behavior:
 - Redis is cache/fast storage only.
 - OpenSearch/Elasticsearch is search/read-side only.
 - RabbitMQ is for asynchronous side effects, not core consistency.
+- Next.js is the frontend framework, not the source of business truth.
+- Backend remains source of truth for business invariants, permissions, workflow transitions, identity lifecycle, persistence, and project/task state.
+- Frontend context domain models are not backend aggregates.
+- Frontend access token must be memory-only.
+- Frontend refresh token must be HttpOnly and unreadable by JavaScript.
 - Commands represent user intentions.
 - Queries do not mutate state.
 - Domain events represent business facts.
