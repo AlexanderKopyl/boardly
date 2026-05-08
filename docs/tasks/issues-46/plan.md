@@ -69,11 +69,15 @@ composer show symfony/framework-bundle | grep versions
 composer require nelmio/api-doc-bundle
 ```
 
-NelmioApiDocBundle requires `twig/twig` for the HTML UI. If Twig is not installed:
+NelmioApiDocBundle v5 requires both `twig/twig`/`symfony/twig-bundle` AND `symfony/asset` for the HTML Swagger UI. If either is missing, `nelmio_api_doc.controller.swagger_ui` is removed at container compile time and `/api/doc` will fail.
+
+If Twig or asset is not installed:
 
 ```bash
-composer require twig/twig symfony/twig-bundle
+composer require twig/twig symfony/twig-bundle symfony/asset
 ```
+
+Note: `symfony/asset` is required even if you don't use asset management — Nelmio checks for `Symfony\Component\Asset\Packages` to decide whether to register the UI controller.
 
 Do not run `composer require` now. This is planning only.
 

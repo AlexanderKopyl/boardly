@@ -348,11 +348,21 @@ Implemented inline in `RefreshAuthenticationController` and `LogoutController` (
 
 ## 7. Current OpenAPI / Nelmio State
 
-- **NelmioApiDocBundle installed:** No — not found in `composer.json`
-- **Nelmio routes config:** None — no `config/routes/nelmio_api_doc.yaml` exists
-- **Nelmio packages config:** None — no `config/packages/nelmio_api_doc.yaml` exists
-- **OpenAPI routes exposed:** None — `/api/doc` and `/api/doc.json` do not currently exist
-- **Composer changes required during implementation:** Yes — `nelmio/api-doc-bundle` must be added
+- **NelmioApiDocBundle installed:** Yes — `nelmio/api-doc-bundle` v5.10.0
+- **Nelmio routes config:** `config/routes/dev/nelmio_api_doc.yaml` — dev-only, `/api/doc` and `/api/doc.json`
+- **Nelmio packages config:** `config/packages/nelmio_api_doc.yaml` — bearerAuth scheme, path patterns
+- **OpenAPI routes exposed:** `/api/doc.json` works; `/api/doc` was broken (swagger_ui controller missing)
+- **Root cause:** `symfony/asset` was not installed. NelmioApiDocBundle v5 removes `nelmio_api_doc.controller.swagger_ui` at container compile time if `Symfony\Component\Asset\Packages` does not exist. `TwigBundle` alone is not sufficient — `symfony/asset` must also be present.
+- **Fix applied:** `composer require symfony/asset` (v8.0.8). No route or controller changes needed.
+
+### Swagger UI dependency requirements (NelmioApiDocBundle v5)
+
+For `/api/doc` (Swagger UI HTML) to work, both must be installed:
+
+1. `symfony/twig-bundle` — TwigBundle must be registered in `config/bundles.php`
+2. `symfony/asset` — `Symfony\Component\Asset\Packages` class must exist
+
+Missing either causes `nelmio_api_doc.controller.swagger_ui` to be removed at compile time.
 
 ### 7.1 Nelmio and Standalone Schema Classes
 
