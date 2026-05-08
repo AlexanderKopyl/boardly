@@ -311,7 +311,7 @@ Request:
 ```json
 {
   "email": "user@example.com",
-  "password": "plain-password",
+  "plainPassword": "plain-password",
   "name": "Alex"
 }
 ```
@@ -370,7 +370,7 @@ Request:
 ```json
 {
   "email": "user@example.com",
-  "password": "plain-password"
+  "plainPassword": "plain-password"
 }
 ```
 
@@ -752,7 +752,7 @@ Password setup mechanics are implementation details and may be interactive passw
     "message": "Validation failed.",
     "fields": {
       "email": ["Invalid email."],
-      "password": ["Password is too short."]
+      "plainPassword": ["Password is too short."]
     }
   }
 }
