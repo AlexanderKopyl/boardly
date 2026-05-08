@@ -43,9 +43,9 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
     public function testProcessesConcreteMessageInsideTransaction(): void
     {
         $operationLog = [];
-        $transactional = new RecordingTransactional($operationLog);
-        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
-        $logger = new RecordingLogger($transactional, $operationLog);
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
 
         $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
 
@@ -73,9 +73,9 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
     public function testDuplicateDeliveryIsSkippedWhenTryStartReturnsFalse(): void
     {
         $operationLog = [];
-        $transactional = new RecordingTransactional($operationLog);
-        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog, tryStartResult: false);
-        $logger = new RecordingLogger($transactional, $operationLog);
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog, tryStartResult: false);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
 
         $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
 
@@ -92,9 +92,9 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
     public function testMarkProcessedIsNotCalledWhenSideEffectThrows(): void
     {
         $operationLog = [];
-        $transactional = new RecordingTransactional($operationLog);
-        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
-        $logger = new RecordingLogger($transactional, $operationLog, throwOnInfo: true);
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog, throwOnInfo: true);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Diagnostic side effect failed.');
@@ -116,9 +116,9 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
     public function testLogContextContainsOnlySafeFields(): void
     {
         $operationLog = [];
-        $transactional = new RecordingTransactional($operationLog);
-        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
-        $logger = new RecordingLogger($transactional, $operationLog);
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
 
         $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
 
@@ -129,9 +129,9 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
     public function testApprovedAtIsFormattedAsDateAtom(): void
     {
         $operationLog = [];
-        $transactional = new RecordingTransactional($operationLog);
-        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
-        $logger = new RecordingLogger($transactional, $operationLog);
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
 
         $message = $this->message();
         $this->handler($logger, $transactional, $processedMessages)->__invoke($message);
@@ -143,12 +143,24 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
         self::assertSame($approvedAtFromMessage, $approvedAtFromContext);
     }
 
+    public function testLogMessageIsExactlyAccountApproved(): void
+    {
+        $operationLog = [];
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
+
+        $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
+
+        self::assertSame('IdentityAccess account approved.', $logger->records[0]['message']);
+    }
+
     public function testUnsafeFieldsAreNotLogged(): void
     {
         $operationLog = [];
-        $transactional = new RecordingTransactional($operationLog);
-        $processedMessages = new FakeProcessedMessageStore($transactional, $operationLog);
-        $logger = new RecordingLogger($transactional, $operationLog);
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
 
         $this->handler($logger, $transactional, $processedMessages)->__invoke($this->message());
 
@@ -164,10 +176,24 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
         self::assertStringNotContainsString('secret', $encoded);
     }
 
+    public function testTryStartAndMarkProcessedReceiveCorrectArguments(): void
+    {
+        $operationLog = [];
+        $transactional = new AccountApprovedRecordingTransactional($operationLog);
+        $processedMessages = new AccountApprovedFakeProcessedMessageStore($transactional, $operationLog);
+        $logger = new AccountApprovedRecordingLogger($transactional, $operationLog);
+
+        $message = $this->message();
+        $this->handler($logger, $transactional, $processedMessages)->__invoke($message);
+
+        self::assertSame([[self::EVENT_ID, AccountApprovedOutboxMessageHandler::class]], $processedMessages->tryStartCalls);
+        self::assertSame([[self::EVENT_ID, AccountApprovedOutboxMessageHandler::class]], $processedMessages->markProcessedCalls);
+    }
+
     private function handler(
-        RecordingLogger $logger,
-        RecordingTransactional $transactional,
-        FakeProcessedMessageStore $processedMessages,
+        AccountApprovedRecordingLogger $logger,
+        AccountApprovedRecordingTransactional $transactional,
+        AccountApprovedFakeProcessedMessageStore $processedMessages,
     ): AccountApprovedOutboxMessageHandler {
         return new AccountApprovedOutboxMessageHandler($logger, $transactional, $processedMessages);
     }
@@ -183,7 +209,7 @@ final class AccountApprovedOutboxMessageHandlerTest extends TestCase
     }
 }
 
-final class RecordingTransactional implements TransactionalInterface
+final class AccountApprovedRecordingTransactional implements TransactionalInterface
 {
     public bool $isActive = false;
 
@@ -233,7 +259,7 @@ final class RecordingTransactional implements TransactionalInterface
     }
 }
 
-final class FakeProcessedMessageStore implements ProcessedMessageStoreInterface
+final class AccountApprovedFakeProcessedMessageStore implements ProcessedMessageStoreInterface
 {
     /**
      * @var list<array{0: string, 1: string}>
@@ -249,7 +275,7 @@ final class FakeProcessedMessageStore implements ProcessedMessageStoreInterface
      * @param list<string> $operationLog
      */
     public function __construct(
-        private readonly RecordingTransactional $transactional,
+        private readonly AccountApprovedRecordingTransactional $transactional,
         array &$operationLog,
         private readonly bool $tryStartResult = true,
     ) {
@@ -287,7 +313,7 @@ final class FakeProcessedMessageStore implements ProcessedMessageStoreInterface
     }
 }
 
-final class RecordingLogger extends AbstractLogger
+final class AccountApprovedRecordingLogger extends AbstractLogger
 {
     /**
      * @var list<array{level: string, message: string, context: array<string, mixed>}>
@@ -298,7 +324,7 @@ final class RecordingLogger extends AbstractLogger
      * @param list<string> $operationLog
      */
     public function __construct(
-        private readonly RecordingTransactional $transactional,
+        private readonly AccountApprovedRecordingTransactional $transactional,
         array &$operationLog,
         private readonly bool $throwOnInfo = false,
     ) {
