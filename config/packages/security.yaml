@@ -28,6 +28,7 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/api/doc(?:\.json)?$, roles: PUBLIC_ACCESS, methods: [ GET ] }
         - { path: ^/api/auth/login$, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/auth/refresh$, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS, methods: [POST] }

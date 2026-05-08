@@ -13,7 +13,9 @@
         "doctrine/orm": "^3.3",
         "firebase/php-jwt": "^7.0",
         "monolog/monolog": "^3.0",
+        "nelmio/api-doc-bundle": "^5.10",
         "symfony/amqp-messenger": "^8.0",
+        "symfony/asset": "^8.0",
         "symfony/cache": "^8.0",
         "symfony/console": "^8.0",
         "symfony/doctrine-messenger": "^8.0",
@@ -24,6 +26,7 @@
         "symfony/runtime": "^8.0",
         "symfony/security-bundle": "^8.0",
         "symfony/serializer": "^8.0",
+        "symfony/twig-bundle": "^8.0",
         "symfony/uid": "^8.0",
         "symfony/validator": "^8.0",
         "symfony/yaml": "^8.0"
