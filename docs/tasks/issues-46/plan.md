@@ -32,14 +32,16 @@ src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/LoginRequest.php
 src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/LoginResponse.php
 src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/LoginAccountData.php
 src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/AccessTokenResponse.php
+src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/SchemaDescriber.php
 config/packages/nelmio_api_doc.yaml
-config/routes/nelmio_api_doc.yaml
+config/routes/dev/nelmio_api_doc.yaml
 ```
 
 Files to modify:
 
 ```text
 composer.json  (add nelmio/api-doc-bundle — via composer require, not manual edit)
+config/services.yaml  (register SchemaDescriber as nelmio_api_doc.describer with priority 100)
 src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RegisterAccountController.php
 src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/LoginController.php
 src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RefreshAuthenticationController.php
@@ -570,7 +572,7 @@ All schema PHP classes live in:
 src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/
 ```
 
-These classes are referenced via `ref: '#/components/schemas/<SchemaName>'`. NelmioApiDocBundle scans for `#[OA\Schema]` attributes via configured path patterns.
+These classes are referenced via `ref: '#/components/schemas/<SchemaName>'`.
 
 Ensure `config/packages/nelmio_api_doc.yaml` includes the correct scan path:
 
@@ -581,7 +583,7 @@ nelmio_api_doc:
       - ^/api/(?!doc$)
 ```
 
-NelmioApiDocBundle auto-discovers schema classes from controller namespaces by default if configured correctly. Verify during implementation by running `/api/doc.json` and checking `components.schemas`.
+**Important:** Standalone schema-only classes (not connected to any route) are NOT automatically included in `components.schemas` by Nelmio. A custom `SchemaDescriber` must be created and registered as a `nelmio_api_doc.describer` service to scan the `Schema/` directory and merge schemas into the generated OpenAPI spec. See Step 4.1 below.
 
 ---
 
@@ -684,27 +686,44 @@ Create all nine schema classes under `src/Boardly/IdentityAccess/Interfaces/Http
 
 Use the exact class bodies specified in Section 3 of this plan.
 
-Verify schemas appear:
+---
 
-```bash
-curl -s http://localhost:8000/api/doc.json | jq '.components.schemas | keys'
-```
+### Step 4.1: Create SchemaDescriber and register it
 
-Expected output (order may vary):
+Standalone schema classes will NOT appear in `/api/doc.json` `components.schemas` automatically — Nelmio only picks up classes referenced directly from scanned routes. To include all schema classes:
 
-```json
-[
-  "AccessTokenResponse",
-  "ErrorEnvelope",
-  "LoginAccountData",
-  "LoginRequest",
-  "LoginResponse",
-  "RegisterRequest",
-  "RegisterResponse",
-  "ValidationErrorEnvelope",
-  "Violation"
-]
-```
+1. Create `src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/SchemaDescriber.php`
+   - It must implement the `DescriberInterface` (or `DescriptionFillerInterface`) pattern used by NelmioApiDocBundle to scan the `Schema/` directory and merge all `#[OA\Schema]`-annotated classes into the generated OpenAPI `components`.
+
+2. Register in `config/services.yaml`:
+
+   ```yaml
+   App\Boardly\IdentityAccess\Interfaces\Http\OpenApi\SchemaDescriber:
+     tags:
+       - { name: nelmio_api_doc.describer, priority: 100 }
+   ```
+
+3. Verify all nine schema classes appear:
+
+   ```bash
+   curl -s http://localhost:8000/api/doc.json | jq '.components.schemas | keys'
+   ```
+
+   Expected output (order may vary):
+
+   ```json
+   [
+     "AccessTokenResponse",
+     "ErrorEnvelope",
+     "LoginAccountData",
+     "LoginRequest",
+     "LoginResponse",
+     "RegisterRequest",
+     "RegisterResponse",
+     "ValidationErrorEnvelope",
+     "Violation"
+   ]
+   ```
 
 ---
 
@@ -743,6 +762,38 @@ Expected after all four:
 ---
 
 ## 7. Verification Plan
+
+### 7.0 Verify components.schemas keys
+
+```bash
+curl -s http://localhost:8000/api/doc.json | jq '.components.schemas | keys'
+```
+
+Expected: all nine schema classes appear as keys:
+
+```json
+[
+  "AccessTokenResponse",
+  "ErrorEnvelope",
+  "LoginAccountData",
+  "LoginRequest",
+  "LoginResponse",
+  "RegisterRequest",
+  "RegisterResponse",
+  "ValidationErrorEnvelope",
+  "Violation"
+]
+```
+
+Verify that key `$ref` values resolve — RegisterRequest, LoginRequest, and AccessTokenResponse must be present:
+
+```bash
+curl -s http://localhost:8000/api/doc.json | jq '.components.schemas | has("RegisterRequest"), has("LoginRequest"), has("AccessTokenResponse")'
+```
+
+Expected: three lines of `true`.
+
+---
 
 ### 7.1 Route check
 

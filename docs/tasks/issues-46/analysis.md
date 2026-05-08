@@ -95,6 +95,7 @@ None found. Memory matches repository source exactly.
 | `tests/.../Controller/Auth/RefreshAuthenticationControllerTest.php` | Confirmed test infrastructure |
 | `composer.json` | Checked for NelmioApiDocBundle — not installed |
 | `config/packages/` | Checked for existing OpenAPI config — none |
+| `src/.../Interfaces/Http/OpenApi/SchemaDescriber.php` | Custom Nelmio describer that scans Schema/ directory and merges standalone schema classes into components.schemas |
 
 Files NOT inspected (out of scope):
 
@@ -353,6 +354,20 @@ Implemented inline in `RefreshAuthenticationController` and `LogoutController` (
 - **OpenAPI routes exposed:** None — `/api/doc` and `/api/doc.json` do not currently exist
 - **Composer changes required during implementation:** Yes — `nelmio/api-doc-bundle` must be added
 
+### 7.1 Nelmio and Standalone Schema Classes
+
+Nelmio does NOT automatically include standalone schema-only classes (classes annotated with `#[OA\Schema]` but not connected to any route) in `components.schemas`. Only classes that are directly referenced from a scanned controller route are picked up by Nelmio's default route-scanning mechanism.
+
+**The fix:** A custom `SchemaDescriber` was created at `src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/SchemaDescriber.php`. It scans the `OpenApi/Schema/` directory and merges all schema definitions into the generated OpenAPI `components` output. `SchemaDescriber` is documentation infrastructure only — it carries no business logic and does not change any endpoint behavior.
+
+It is registered in `config/services.yaml` with the `nelmio_api_doc.describer` tag at priority 100:
+
+```yaml
+App\Boardly\IdentityAccess\Interfaces\Http\OpenApi\SchemaDescriber:
+  tags:
+    - { name: nelmio_api_doc.describer, priority: 100 }
+```
+
 ---
 
 ## 8. Security Documentation Needs
@@ -425,9 +440,11 @@ None. All four auth endpoints are implemented and stable. Request/response shape
 
 ## 10. Files Considered for OpenAPI Attribute Placement
 
-OpenAPI attributes will be placed on controllers only. No separate schema-only classes required for this issue. The rationale:
+OpenAPI attributes will be placed on controllers and on standalone schema classes under `src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/`. The rationale:
 
 - All four controllers are simple and stable.
 - Attributes on controllers follow the NelmioApiDocBundle standard pattern.
 - No business logic lives in controllers per `http-controller-rules.md`.
 - Attributes are documentation-only — they carry no behavior.
+
+**Important:** Standalone schema-only classes (classes with `#[OA\Schema]` that are not connected to any route) are NOT automatically included in `components.schemas` by Nelmio. A custom `SchemaDescriber` must be created and registered as a `nelmio_api_doc.describer` service to scan the `Schema/` directory and merge all schema definitions into the generated OpenAPI spec. Without `SchemaDescriber`, schema `$ref` values in controller attributes will not resolve to anything in `components.schemas`.
