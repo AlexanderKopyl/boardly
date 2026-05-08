@@ -16,8 +16,8 @@ const store = new AuthMemoryStore()
 export interface UseAuthResult {
   session: AuthSession | null
   isLoading: boolean
-  login(email: string, password: string): Promise<void>
-  register(email: string, password: string, name: string): Promise<void>
+  login(email: string, plainPassword: string): Promise<void>
+  register(email: string, plainPassword: string, name: string): Promise<void>
   logout(): Promise<void>
   bootstrap(): Promise<void>
 }
@@ -26,13 +26,13 @@ export function useAuth(): UseAuthResult {
   const [session, setSession] = useState<AuthSession | null>(store.get())
   const [isLoading, setIsLoading] = useState(false)
 
-  async function login(email: string, password: string): Promise<void> {
-    const result = await loginUseCase({ email, password }, { gateway, store })
+  async function login(email: string, plainPassword: string): Promise<void> {
+    const result = await loginUseCase({ email, plainPassword }, { gateway, store })
     setSession(result)
   }
 
-  async function register(email: string, password: string, name: string): Promise<void> {
-    await registerUseCase({ email, password, name }, { gateway })
+  async function register(email: string, plainPassword: string, name: string): Promise<void> {
+    await registerUseCase({ email, plainPassword, name }, { gateway })
   }
 
   async function logout(): Promise<void> {

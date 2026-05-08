@@ -11,7 +11,7 @@ export function LoginForm() {
   const { login } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [plainPassword, setPlainPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -20,7 +20,7 @@ export function LoginForm() {
     setError(null)
     setLoading(true)
     try {
-      await login(email, password)
+      await login(email, plainPassword)
       router.push('/dashboard')
     } catch {
       setError('Invalid credentials. Please try again.')
@@ -42,9 +42,9 @@ export function LoginForm() {
       />
       <Input
         type="password"
-        name="password"
-        value={password}
-        onChange={setPassword}
+        name="plainPassword"
+        value={plainPassword}
+        onChange={setPlainPassword}
         placeholder="Password"
         required
         disabled={loading}

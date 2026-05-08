@@ -10,7 +10,7 @@ export function RegisterForm() {
   const { register } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [plainPassword, setPlainPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -20,7 +20,7 @@ export function RegisterForm() {
     setError(null)
     setLoading(true)
     try {
-      await register(email, password, name)
+      await register(email, plainPassword, name)
       setSubmitted(true)
     } catch {
       setError('Registration failed. Please try again.')
@@ -55,9 +55,9 @@ export function RegisterForm() {
       />
       <Input
         type="password"
-        name="password"
-        value={password}
-        onChange={setPassword}
+        name="plainPassword"
+        value={plainPassword}
+        onChange={setPlainPassword}
         placeholder="Password"
         required
         disabled={loading}
