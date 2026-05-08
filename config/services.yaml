@@ -107,3 +107,7 @@ services:
     App\Boardly\IdentityAccess\Application\ApproveAccount\ApproveAccountHandler:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\IdentityAccess\Interfaces\Http\OpenApi\SchemaDescriber:
+        tags:
+            - { name: nelmio_api_doc.describer, priority: 100 }
