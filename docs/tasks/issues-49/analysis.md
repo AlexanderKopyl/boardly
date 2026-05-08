@@ -23,6 +23,7 @@ Memory is context only. The current code/docs/tests below are stronger evidence 
 
 Frontend workspace:
 
+- There is no root `package.json`; the active frontend workspace metadata is `frontend/package.json`.
 - `frontend/package.json` defines `boardly-frontend` with Next.js `16.2.6`, React `19.2.6`, TypeScript `6.0.3`, npm scripts `dev`, `build`, `start`, `lint`, and `typecheck`.
 - `frontend/tsconfig.json` enables strict TypeScript and maps `@/*` to `frontend/src/*`.
 - `frontend/README.md` and `docs/development/frontend.md` document the accepted frontend structure and auth rules.
@@ -62,7 +63,16 @@ Current auth UI:
 
 Styling/design:
 
+- Tailwind CSS is not currently installed in `frontend/package.json`.
+- No Tailwind config file was found under the repo or `frontend/`.
+- No PostCSS config file was found under the repo or `frontend/`. `postcss` appears only as a transitive dependency in `frontend/package-lock.json`, not as an explicit frontend styling setup.
+- No Vite config exists; the frontend is a Next.js App Router app, not a Vite app.
 - No CSS/theme/token file currently exists under `frontend/src`.
+- `frontend/src/app/layout.tsx` does not import a global CSS entrypoint.
+- No global CSS entrypoint currently exists at `frontend/src/app/globals.css`.
+- No existing CSS custom properties for Boardly app tokens were found in frontend source.
+- No `components.json`, shadcn CLI setup, `@radix-ui/*`, `class-variance-authority`, `clsx`, or `tailwind-merge` dependency is present in `frontend/package.json`.
+- Existing `Button` and `Input` are local shared UI primitives with no Tailwind classes, variant system, `className` override, or `forwardRef`.
 - The standalone prototype at `docs/design/boardly/Boardly Prototype _standalone_.html` includes Navy tokens such as `--bd-primary: #1D4ED8`, `--bd-accent: #38BDF8`, `--bd-bg: #F6F8FB`, `--bd-surface: #FFFFFF`, `--bd-text: #0B1220`, status colors, 14px base text, 4px spacing scale, and dark sidebar tokens.
 - The prototype is generated standalone HTML with embedded bundled assets/scripts and must remain a visual reference only.
 
@@ -146,7 +156,27 @@ Expected bootstrap behavior:
 
 The frontend must never read `document.cookie` for the refresh token and must never persist access token to `localStorage`, `sessionStorage`, IndexedDB, readable cookies, URL params, persisted React state libraries, or env vars.
 
-## 7. Navy design token location
+## 7. Tailwind and Navy design token facts
+
+Current Tailwind state:
+
+- Tailwind is not installed or configured yet.
+- There is no `tailwind.config.*`.
+- There is no `postcss.config.*`.
+- There is no `@tailwind` or Tailwind CSS v4 `@import "tailwindcss"` entrypoint.
+- No frontend source file currently uses Tailwind utility classes.
+
+Required styling direction for issue #49 implementation:
+
+- Use Tailwind CSS as the styling utility layer.
+- Centralize Navy design tokens as CSS variables instead of repeating hardcoded hex values in pages/components.
+- Expose semantic token names suitable for shared primitives and page composition.
+- Prefer local reusable primitives with Tailwind classes for simple components.
+- Do not copy standalone prototype HTML, bundled script output, or generated prototype CSS wholesale.
+
+Because no Tailwind setup exists today, the later implementation should include the minimal Tailwind setup needed for the current Next.js version and package manager. That means adding the required Tailwind/PostCSS packages and config only in the implementation task, not in this planning-only task. If a Tailwind config is introduced, it should map semantic theme colors to CSS variables so components use classes such as `bg-background`, `text-foreground`, `bg-primary`, `text-primary-foreground`, `border-border`, and `bg-sidebar` rather than repeated hex values.
+
+## 8. Navy design token location
 
 The repo currently has no global stylesheet. The implementation should introduce Navy tokens in a frontend-owned global stylesheet, likely:
 
@@ -162,6 +192,26 @@ frontend/src/app/layout.tsx
 
 Tokens should be CSS custom properties on `:root` or a `.boardly` root class. Because this app is the product UI, `:root` is simpler unless there is a known need to embed multiple design systems on the same page.
 
+Use semantic token names that Tailwind and primitives can share:
+
+- `--background`
+- `--surface`
+- `--foreground`
+- `--primary`
+- `--primary-foreground`
+- `--accent`
+- `--accent-foreground`
+- `--success`
+- `--warning`
+- `--danger`
+- `--border`
+- `--muted`
+- `--muted-foreground`
+- `--sidebar`
+- `--sidebar-foreground`
+
+Additional implementation-only variables may be added for hover states, focus ring, radius, spacing, and shadows, but components should depend first on the semantic tokens above.
+
 Use the prototype values as token references, not copied standalone HTML:
 
 - `--bd-primary: #1D4ED8`
@@ -176,7 +226,24 @@ Use the prototype values as token references, not copied standalone HTML:
 - 14px base body text
 - comfortable SaaS spacing
 
-## 8. Reusable UI primitives needed
+## 9. shadcn/Radix-style primitive facts and direction
+
+Current shadcn/Radix state:
+
+- The repo does not currently use shadcn CLI artifacts.
+- No Radix packages are installed.
+- No variant helper dependencies such as `class-variance-authority`, `clsx`, or `tailwind-merge` are installed.
+- Existing shared primitives are local files under `frontend/src/shared/ui/`.
+
+Implementation direction:
+
+- Use "shadcn/Radix-style" as a component architecture direction, not as a requirement to install the shadcn CLI.
+- Build composable local primitives with accessible markup, Tailwind classes, variant-based styling, `className` override support, and `forwardRef` where the component wraps a native DOM element.
+- Do not add Radix packages for simple primitives that can be implemented with native accessible markup.
+- Consider Radix only for interaction/accessibility-heavy components if the component genuinely needs Radix behavior and the dependency is compatible with the project setup.
+- For this milestone, `Button`, `Input`, `Card`, `Badge`, and `Skeleton` should remain local primitives with Tailwind classes.
+
+## 10. Reusable UI primitives needed
 
 Existing:
 
@@ -198,7 +265,7 @@ Needed for this milestone:
 
 These should stay generic under `frontend/src/shared/ui/` unless they contain IdentityAccess-specific copy or behavior.
 
-## 9. Gap analysis by screen/interaction
+## 11. Gap analysis by screen/interaction
 
 Login:
 
@@ -244,12 +311,16 @@ Logout:
 - Local memory state should clear even when backend logout fails or after a best-effort attempt, depending on final policy.
 - Must not reveal refresh-token validity.
 
-## 10. Risks and constraints
+## 12. Risks and constraints
 
 - `plainPassword` is required by backend request DTOs; using `password` would fail.
 - `credentials: 'include'` is required so the browser sends/receives the refresh cookie.
 - Access token must remain memory-only.
 - Refresh token must remain HttpOnly-cookie-only and unreadable by frontend code.
+- Tailwind is not installed/configured yet; issue #49 implementation must either add the minimal Tailwind setup or explicitly block on a separate styling setup issue.
+- Do not hardcode repeated Navy hex colors in pages/components; use CSS variables and Tailwind theme mappings once Tailwind is configured.
+- Do not require the full shadcn CLI unless the repo explicitly adopts it later.
+- Do not add Radix packages unless a component genuinely needs Radix behavior.
 - Current frontend depends on `/api/auth/me`, but backend code does not implement it.
 - Current backend register response shape differs from `docs/development/frontend.md` and current frontend types.
 - Current backend login response includes account data, which can reduce or remove the need for `/api/auth/me` in this milestone.

@@ -74,47 +74,180 @@ frontend/src/
 
 Do not create Projects, Issues, Boards, Reports, Admin, analytics, or automation contexts for this milestone.
 
+Tailwind setup files may also be needed during later implementation because the repo currently has no Tailwind config or PostCSS config:
+
+```text
+frontend/
+  postcss.config.*
+  tailwind.config.*
+```
+
+Use the current Tailwind setup recommended for the installed Next.js version at implementation time. Do not modify package or config files during this planning-only task.
+
 ## 2. Step-by-step implementation plan
 
-1. Add Navy global tokens in `frontend/src/app/globals.css` and import them from `frontend/src/app/layout.tsx`.
-2. Upgrade shared primitives incrementally, keeping them generic and context-free.
-3. Fix current auth contract mappings to match backend code/tests:
+1. Add the minimal Tailwind CSS setup if it is still absent:
+   - add only the required Tailwind/PostCSS packages;
+   - add the smallest required config files;
+   - wire the global CSS entrypoint for the current Next.js App Router setup.
+2. Add Navy global tokens in `frontend/src/app/globals.css` and import them from `frontend/src/app/layout.tsx`.
+3. Map Tailwind theme colors to CSS variables if a Tailwind config exists or is introduced.
+4. Use Tailwind utility classes in shared primitives and page composition; avoid repeated hardcoded hex colors in components/pages.
+5. Upgrade shared primitives incrementally, keeping them generic and context-free.
+6. Implement shadcn/Radix-style local primitives:
+   - composable APIs;
+   - accessible markup;
+   - variant-based styling;
+   - `className` override support;
+   - `forwardRef` where wrapping native elements makes it useful.
+7. Do not install or require the full shadcn CLI unless the repo explicitly adopts it later.
+8. Do not add Radix packages unless a component genuinely needs Radix behavior.
+9. Prefer local Tailwind primitives for `Button`, `Input`, `Card`, `Badge`, and `Skeleton`.
+10. Fix current auth contract mappings to match backend code/tests:
    - login response includes `account`;
    - register response currently includes `accountId` and `status`;
    - do not rely on `/api/auth/me` unless backend adds it in an allowed task.
-4. Refine auth use cases and session state so login/refresh create an `AuthSession` without storing tokens outside memory.
-5. Improve `useAuth`/provider shape if needed so session state is shared consistently across guards, forms, shell, and logout.
-6. Update routes:
+11. Refine auth use cases and session state so login/refresh create an `AuthSession` without storing tokens outside memory.
+12. Improve `useAuth`/provider shape if needed so session state is shared consistently across guards, forms, shell, and logout.
+13. Update routes:
    - keep `/login`;
    - keep `/register`;
    - add `/pending-approval`;
    - add `/auth/session-loading`;
    - add `/app/dashboard`;
    - redirect old `/dashboard` if retained, or remove only if no references remain.
-7. Build auth screens using reusable primitives and IdentityAccess presentation components.
-8. Build `AppShell` and `SidebarNav` for authenticated pages only.
-9. Implement dashboard as a restrained authenticated placeholder, not detailed product UI.
-10. Implement logout as a best-effort backend call plus local memory clear and redirect to `/login`.
-11. Run focused verification commands later.
+14. Build auth screens using reusable primitives and IdentityAccess presentation components.
+15. Build `AppShell` and `SidebarNav` for authenticated pages only.
+16. Implement dashboard as a restrained authenticated placeholder, not detailed product UI.
+17. Implement logout as a best-effort backend call plus local memory clear and redirect to `/login`.
+18. Run focused verification commands later.
 
-## 3. Design token plan
+## 3. Tailwind CSS plan
+
+Current state:
+
+- Tailwind CSS is not installed in `frontend/package.json`.
+- No `tailwind.config.*` exists.
+- No `postcss.config.*` exists.
+- No global CSS entrypoint exists.
+- No Vite config exists because the frontend uses Next.js App Router.
+
+Implementation direction:
+
+- Use Tailwind CSS as the utility layer for shared primitives, auth pages, and the app shell.
+- Add only the minimal Tailwind/PostCSS setup required by the current Next.js version.
+- If a Tailwind config exists or is introduced, map semantic theme colors to CSS variables:
+  - `background: var(--background)`
+  - `surface: var(--surface)`
+  - `foreground: var(--foreground)`
+  - `primary: var(--primary)`
+  - `primary-foreground: var(--primary-foreground)`
+  - `accent: var(--accent)`
+  - `accent-foreground: var(--accent-foreground)`
+  - `success: var(--success)`
+  - `warning: var(--warning)`
+  - `danger: var(--danger)`
+  - `border: var(--border)`
+  - `muted: var(--muted)`
+  - `muted-foreground: var(--muted-foreground)`
+  - `sidebar: var(--sidebar)`
+  - `sidebar-foreground: var(--sidebar-foreground)`
+- Components should prefer semantic classes such as `bg-background`, `bg-surface`, `text-foreground`, `bg-primary`, `text-primary-foreground`, `border-border`, `text-muted-foreground`, `bg-sidebar`, and `text-sidebar-foreground`.
+- Avoid hardcoded repeated hex colors in components/pages. Hex values should live in the CSS variable definitions.
+- Do not copy standalone prototype HTML, generated embedded CSS, or bundled scripts.
+
+If implementation uses Tailwind CSS v4-style CSS-first configuration instead of a full config file, document the chosen setup in the implementation PR and keep the same semantic CSS variable contract.
+
+## 4. Design token plan
 
 Create `frontend/src/app/globals.css` with:
 
 - CSS reset/base box sizing.
-- `body` background `#F6F8FB`, text `#0B1220`, 14px base font, system/Inter-style font stack.
-- CSS variables for primary, accent, background, surface, text, success, warning, danger, border, muted text, focus ring, spacing, radius, and shadow.
-- Dark Navy sidebar variables:
-  - sidebar background `#0B1220`;
-  - sidebar foreground `#CBD5E1`;
-  - active background `#1D4ED8`;
-  - hover background `#1E293B`.
+- Tailwind base import/directives appropriate for the Tailwind version selected during implementation.
+- `body` background through `var(--background)`, text through `var(--foreground)`, 14px base font, system/Inter-style font stack.
+- Semantic Navy CSS variables:
+  - `--background`
+  - `--surface`
+  - `--foreground`
+  - `--primary`
+  - `--primary-foreground`
+  - `--accent`
+  - `--accent-foreground`
+  - `--success`
+  - `--warning`
+  - `--danger`
+  - `--border`
+  - `--muted`
+  - `--muted-foreground`
+  - `--sidebar`
+  - `--sidebar-foreground`
+- Optional supporting CSS variables for hover states, focus ring, spacing, radius, and shadow.
 - Accessible `:focus-visible` styles.
-- Utility-free component class styles owned by each component or global semantic classes, depending on existing style direction chosen during implementation.
+- Component styling should primarily live in Tailwind utility classes on local primitives, not global one-off page CSS.
+
+Suggested token values derived from the prototype visual direction:
+
+```css
+:root {
+  --background: #F6F8FB;
+  --surface: #FFFFFF;
+  --foreground: #0B1220;
+  --primary: #1D4ED8;
+  --primary-foreground: #FFFFFF;
+  --accent: #38BDF8;
+  --accent-foreground: #0B1220;
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --border: #E2E8F0;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --sidebar: #0B1220;
+  --sidebar-foreground: #CBD5E1;
+}
+```
 
 Do not copy the standalone prototype HTML or generated script output.
 
-## 4. API/auth client plan
+## 5. shadcn/Radix-style shared UI primitive plan
+
+Use "shadcn/Radix-style" as the architecture direction, not as a CLI requirement.
+
+Shared primitive rules:
+
+- Components live under `frontend/src/shared/ui/` unless they contain product-context behavior or copy.
+- Components use Tailwind utility classes backed by semantic CSS variables.
+- Components expose small composable APIs and preserve native semantics.
+- Components accept `className` overrides for composition.
+- Components use variant-based styling for repeated visual states.
+- Components use `forwardRef` where appropriate, especially native controls and focusable primitives.
+- Components do not duplicate one-off markup across pages.
+- Components do not know about IdentityAccess use cases, API errors, tokens, or routing.
+
+Dependency rules:
+
+- Do not require the full shadcn CLI unless the repo explicitly adopts it later.
+- Do not add Radix packages for simple local primitives.
+- Use local Tailwind components for `Button`, `Input`, `Card`, `Badge`, and `Skeleton`.
+- Add Radix only when a component genuinely needs interaction/accessibility behavior that native markup does not handle well, and only after confirming compatibility with the frontend setup.
+- Do not add `class-variance-authority`, `clsx`, or `tailwind-merge` by default. Add a small local class helper or variant helper only if repeated variant composition becomes noisy.
+
+Planned primitives:
+
+- `Button`
+- `Input`
+- `PasswordInput`
+- `FormField`
+- `Alert`
+- `Card`
+- `Badge`
+- `Skeleton`
+- `EmptyState`
+- `PageHeader`
+- `SidebarNav`
+- `AppShell`
+
+## 6. API/auth client plan
 
 Keep raw `fetch` centralized in `frontend/src/shared/api/http-client.ts`.
 
@@ -133,7 +266,7 @@ Update `AuthHttpGateway` contracts:
 - `RegisterResponse` should match current backend `accountId` and `status`, or implementation must first confirm backend has changed.
 - Remove or defer `/api/auth/me` usage unless a backend route exists.
 
-## 5. Session/auth state plan
+## 7. Session/auth state plan
 
 Keep `AuthMemoryStore` as the only access-token storage.
 
@@ -158,7 +291,7 @@ Bootstrap:
 - If refresh fails with invalid refresh token/401, clear memory and redirect to `/login`.
 - Use `/auth/session-loading` for a full-page loading state where navigation needs it.
 
-## 6. Routing/protection plan
+## 8. Routing/protection plan
 
 Routes:
 
@@ -176,7 +309,7 @@ Protection:
 - It should redirect unauthenticated users to `/login`.
 - It should avoid protected content flash before bootstrap completes.
 
-## 7. Component plan
+## 9. Component plan
 
 Button:
 
@@ -184,18 +317,24 @@ Button:
 - Sizes suitable for 14px SaaS density.
 - Disabled/loading state.
 - Native button semantics preserved.
+- Tailwind classes should read from semantic tokens, for example `bg-primary`, `text-primary-foreground`, `border-border`, and `text-muted-foreground`.
+- Accept `className`.
+- Use `forwardRef<HTMLButtonElement, ...>` if the component wraps a native button.
 
 Input:
 
 - Generic text input with forwarded standard input props.
 - Visible focus state, disabled state, invalid state.
 - Does not own labels by itself.
+- Accept `className`.
+- Use `forwardRef<HTMLInputElement, ...>`.
 
 PasswordInput:
 
 - Wraps `Input` with show/hide control.
 - Button must have accessible label.
 - Does not store password beyond React form state.
+- Implement locally with native input/button behavior; no Radix package needed.
 
 FormField:
 
@@ -211,6 +350,7 @@ Card:
 
 - Generic contained surface for auth forms and repeated dashboard placeholders.
 - Radius should stay restrained, around 8px.
+- Use `bg-surface`, `border-border`, and semantic shadow/radius values.
 
 Badge:
 
@@ -243,8 +383,9 @@ AppShell:
 - Dark sidebar, main content area, header/account area, logout placement.
 - Responsive layout with mobile-safe navigation.
 - Used by `/app/dashboard`.
+- Use `bg-sidebar` and `text-sidebar-foreground` for dark Navy navigation.
 
-## 8. Page plan
+## 10. Page plan
 
 `/login`:
 
@@ -283,7 +424,7 @@ AppShell:
 - Shows simple dashboard overview/empty state only.
 - Avoid Projects, Boards, Tasks, Reports, Admin approval, analytics, automation, or future issue-management UI.
 
-## 9. Logout behavior plan
+## 11. Logout behavior plan
 
 Logout flow:
 
@@ -299,7 +440,7 @@ Failure policy:
 - Do not reveal whether a refresh token was present, valid, expired, revoked, or unknown.
 - Optionally show a generic message only if redirect is blocked.
 
-## 10. Accessibility checklist
+## 12. Accessibility checklist
 
 - Every input has a visible `<label>`.
 - Form errors are associated with fields through `aria-describedby`.
@@ -314,7 +455,7 @@ Failure policy:
 - Layout works at mobile and desktop widths without overlapping text.
 - Pages use semantic landmarks: `main`, `nav`, `header` where appropriate.
 
-## 11. Testing plan
+## 13. Testing plan
 
 Current repo support:
 
@@ -354,7 +495,7 @@ Manual verification checklist:
 - No detailed Projects/Boards/Tasks/Admin UI appears.
 - Keyboard navigation and focus rings work.
 
-## 12. Focused verification commands for later
+## 14. Focused verification commands for later
 
 Run from `frontend/` after implementation:
 
@@ -372,10 +513,12 @@ php ./vendor/bin/phpunit tests/Boardly/IdentityAccess/Interfaces/Http/Controller
 
 No full verification is required during this planning-only task.
 
-## 13. Open questions/blockers
+## 15. Open questions/blockers
 
 - Should issue #49 adapt frontend to current backend login response with embedded `account`, or should backend add `/api/auth/me` first in a separate issue?
 - Should the current `/dashboard` route redirect to `/app/dashboard` for compatibility, or be removed during implementation?
 - Should frontend test tooling be introduced in issue #49, or deferred to keep package/config changes smaller?
-- Should Navy tokens live directly on `:root`, or under a `.boardly` root class for future embedding/isolation?
+- Should Navy tokens live directly on `:root`, or under a `.boardly` root class for future embedding/isolation? Recommended for this product app: `:root`.
 - Should logout clear local memory state even if the backend logout request fails? Recommended: yes, with backend logout treated as best effort.
+- Should Tailwind be configured with a traditional `tailwind.config.*` theme mapping or a CSS-first setup if the installed Tailwind version supports it? Recommended: choose the minimal setup compatible with the Next.js version at implementation time while preserving the semantic CSS variable contract.
+- Should a class composition helper be added? Recommended: defer until repeated primitive variants make it worthwhile.
