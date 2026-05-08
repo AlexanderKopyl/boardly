@@ -29,6 +29,7 @@ framework:
 
         routing:
             App\Boardly\IdentityAccess\Infrastructure\Message\AccountRegisteredMessage: async
+            App\Boardly\IdentityAccess\Infrastructure\Message\AccountApprovedMessage: async
 
 when@test:
     framework:
