@@ -16,12 +16,17 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { bootstrap() }, [])
 
+  useEffect(() => {
+    if (!isLoading && session === null) {
+      router.replace('/login')
+    }
+  }, [isLoading, session, router])
+
   if (isLoading) {
     return <p>Loading…</p>
   }
 
   if (session === null) {
-    router.replace('/login')
     return null
   }
 
