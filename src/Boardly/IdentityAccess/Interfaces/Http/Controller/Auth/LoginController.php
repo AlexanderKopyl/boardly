@@ -8,6 +8,7 @@ use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccou
 use App\Boardly\IdentityAccess\Application\AuthenticateAccount\AuthenticateAccountResult;
 use App\Boardly\IdentityAccess\Interfaces\Http\Request\LoginRequestDto;
 use App\Shared\Application\Bus\CommandBusInterface;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +25,44 @@ final readonly class LoginController
     }
 
     #[Route('/api/auth/login', name: 'api_auth_login', methods: ['POST'], format: 'json')]
+    #[OA\Post(
+        path: '/api/auth/login',
+        operationId: 'loginAccount',
+        summary: 'Authenticate and receive an access token',
+        description: 'Validates credentials and issues a JWT access token. Sets an HttpOnly refresh_token cookie that is managed by the browser automatically. The refresh token is never returned in the JSON response.',
+        tags: ['Auth'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/LoginRequest'),
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Login successful. Sets refresh_token cookie (HttpOnly, Secure, SameSite=Lax).',
+                content: new OA\JsonContent(ref: '#/components/schemas/LoginResponse'),
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Malformed or unreadable request body.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ErrorEnvelope'),
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Invalid credentials.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ErrorEnvelope'),
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Account exists but is not active (pending_approval, rejected, or disabled).',
+                content: new OA\JsonContent(ref: '#/components/schemas/ErrorEnvelope'),
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Request payload is invalid (validation failed).',
+                content: new OA\JsonContent(ref: '#/components/schemas/ValidationErrorEnvelope'),
+            ),
+        ],
+    )]
     public function __invoke(
         #[MapRequestPayload] LoginRequestDto $requestDto,
         Request $request,
