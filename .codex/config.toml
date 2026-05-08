@@ -5,6 +5,7 @@
 # - PHP 8.2+, DDD, Hexagonal Architecture, EDA, modular monolith.
 # - Relational DB is the source of truth.
 # - Redis and OpenSearch/Elasticsearch are infrastructure projections/cache only.
+# - Frontend uses Next.js + TypeScript with context-based hexagonal architecture per ADR-0006.
 #
 # Security posture:
 # - Use the restrictive `boardly-safe` permission profile by default.
@@ -19,7 +20,7 @@
 # - Shared skill usage rules are defined in .codex/agents/instructions/_skill-usage.md.
 # - Reusable skills are registered explicitly in [[skills.config]] below.
 # - Subagents should use skills as execution playbooks instead of duplicating workflow logic.
-# - Do not assume existing Symfony files, Doctrine entities, controllers, or module structure until they are explicitly created.
+# - Do not assume existing Symfony files, Doctrine entities, controllers, frontend contexts, or module structure until they are explicitly created.
 
 include_permissions_instructions = true
 approvals_reviewer = "user"
@@ -85,6 +86,30 @@ enabled = true
 path = "skills/graphify-knowledge-map/SKILL.md"
 enabled = true
 
+[[skills.config]]
+path = "skills/frontend-context-architecture/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-use-case-flow/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-api-integration/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-auth-session/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-ui-composition/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-review-checklist/SKILL.md"
+enabled = true
+
 [permissions.boardly-safe.filesystem]
 glob_scan_max_depth = 8
 ":minimal" = "read"
@@ -103,7 +128,7 @@ glob_scan_max_depth = 8
 ".pypirc" = "none"
 "**/.pypirc" = "none"
 
-# Symfony/application secrets and private local state.
+# Symfony/application/frontend secrets and private local state.
 "config/secrets/**" = "none"
 "var/private/**" = "none"
 "var/backups/**" = "none"
@@ -111,6 +136,8 @@ glob_scan_max_depth = 8
 "storage/private/**" = "none"
 "storage/backups/**" = "none"
 "storage/dumps/**" = "none"
+"frontend/.env*" = "none"
+"frontend/**/.env*" = "none"
 
 # Database dumps, SQL exports, and local database files.
 "*.sql" = "none"
@@ -198,6 +225,26 @@ nickname_candidates = ["OpsArchitect", "ADRWriter"]
 description = "Reviews the current branch against main with architecture-first focus: DDD/Hexagonal boundaries, Symfony integration, permissions, transactions, tests, and production risks."
 config_file = "agents/branch-architecture-reviewer.toml"
 nickname_candidates = ["BranchReviewer", "ArchitectureReviewer", "MergeReviewer"]
+
+[agents.frontend-context-architect]
+description = "Designs Boardly Next.js frontend context-based hexagonal architecture from ADR-0006: contexts, layers, import boundaries, and frontend ownership rules."
+config_file = "agents/frontend-context-architect.toml"
+nickname_candidates = ["FrontendArchitect", "ContextArchitect"]
+
+[agents.frontend-identity-access]
+description = "Designs Boardly frontend IdentityAccess context: auth use cases, memory-only access token, HttpOnly refresh cookie, gateways, session bootstrap, and protected routes."
+config_file = "agents/frontend-identity-access.toml"
+nickname_candidates = ["FrontendAuth", "IdentityFrontend"]
+
+[agents.frontend-ui-composition]
+description = "Designs Next.js and React presentation composition: app routes, providers, pages, shared UI, context components, hooks, guards, and forms."
+config_file = "agents/frontend-ui-composition.toml"
+nickname_candidates = ["UIComposer", "NextComposer"]
+
+[agents.frontend-reviewer]
+description = "Reviews frontend changes against ADR-0006 with focus on context/layer boundaries, auth safety, API integration, UI composition, imports, and tests."
+config_file = "agents/frontend-reviewer.toml"
+nickname_candidates = ["FrontendReviewer", "ADR0006Reviewer"]
 
 [mcp_servers.sequentialthinking]
 command = "docker"
