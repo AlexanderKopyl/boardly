@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { HTMLAttributes, ReactElement, ReactNode } from 'react'
 
 import { cn } from '@/shared/lib/cn'
@@ -28,7 +29,7 @@ export function SidebarNav({
       <ul className="ui-sidebar-nav__list">
         {items.map((item, index) => (
           <li key={`${item.href}-${index}`}>
-            <a
+            <Link
               href={item.href}
               aria-current={item.current ? 'page' : undefined}
               data-current={item.current || undefined}
@@ -42,7 +43,7 @@ export function SidebarNav({
                 ) : null}
               </span>
               {item.badge ? <span className="ui-sidebar-nav__badge">{item.badge}</span> : null}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>

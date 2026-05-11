@@ -24,8 +24,10 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  type LoginFieldName = 'email' | 'plainPassword'
+
   function mapValidationErrors(details: unknown) {
-    const nextFieldErrors: { email?: string; plainPassword?: string } = {}
+    const nextFieldErrors: Partial<Record<LoginFieldName, string>> = {}
 
     if (!Array.isArray(details)) {
       return nextFieldErrors
@@ -41,7 +43,8 @@ export function LoginForm() {
         typeof violation.message === 'string'
       ) {
         if (violation.field === 'email' || violation.field === 'plainPassword') {
-          nextFieldErrors[violation.field] = violation.message
+          const field = violation.field as LoginFieldName
+          nextFieldErrors[field] = violation.message
         }
       }
     }

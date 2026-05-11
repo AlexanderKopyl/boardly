@@ -118,24 +118,24 @@ Do not mark implementation items complete during planning. Check items only when
 - [x] Add accessible navigation landmark.
 - [x] Mark current nav item with `aria-current="page"`.
 - [x] Include only MVP-safe navigation entries.
-- [ ] Do not implement detailed Projects UI.
-- [ ] Do not implement detailed Boards UI.
-- [ ] Do not implement detailed Tasks UI.
-- [ ] Do not implement Admin approval UI.
+- [x] Do not implement detailed Projects UI.
+- [x] Do not implement detailed Boards UI.
+- [x] Do not implement detailed Tasks UI.
+- [x] Do not implement Admin approval UI.
 - [x] Add account/logout area without token details.
 - [ ] Verify layout at mobile and desktop widths.
 
 ## 10. Accessibility
 
 - [x] Every input has a visible label.
-- [ ] Field errors are associated with fields.
+- [x] Field errors are associated with fields.
 - [x] Form-level errors use `role="alert"` or `aria-live`.
 - [x] Password visibility toggle has an accessible name.
-- [ ] Focus states are visible on light and Navy surfaces.
+- [x] Focus states are visible on light and Navy surfaces.
 - [ ] Color contrast is suitable for text and controls.
-- [ ] Loading states do not trap focus.
-- [ ] Buttons do not resize unexpectedly when loading.
-- [ ] Text does not overlap or overflow on mobile.
+- [x] Loading states do not trap focus.
+- [x] Buttons do not resize unexpectedly when loading.
+- [x] Text does not overlap or overflow on mobile.
 - [x] Pages use semantic `main`, `nav`, and `header` where appropriate.
 
 ## 11. Verification

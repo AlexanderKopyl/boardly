@@ -26,12 +26,10 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  type RegisterFieldName = 'name' | 'email' | 'plainPassword'
+
   function mapValidationErrors(details: unknown) {
-    const nextFieldErrors: {
-      name?: string
-      email?: string
-      plainPassword?: string
-    } = {}
+    const nextFieldErrors: Partial<Record<RegisterFieldName, string>> = {}
 
     if (!Array.isArray(details)) {
       return nextFieldErrors
@@ -51,7 +49,8 @@ export function RegisterForm() {
           violation.field === 'email' ||
           violation.field === 'plainPassword'
         ) {
-          nextFieldErrors[violation.field] = violation.message
+          const field = violation.field as RegisterFieldName
+          nextFieldErrors[field] = violation.message
         }
       }
     }
