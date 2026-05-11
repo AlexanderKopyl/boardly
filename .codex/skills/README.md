@@ -12,6 +12,31 @@ To avoid duplicated behavior:
 - keep subagent files focused on role, scope, and skill selection;
 - when a request matches a skill, the subagent should follow the skill workflow instead of reinventing the response structure.
 
+## Required guidance loading
+
+Backend planning, analysis, implementation, and review must consider:
+
+```text
+AGENTS.md
+docs/development/backend/boardly-symfony-developer-rules.md
+relevant docs/adr/*
+relevant docs/architecture/*
+```
+
+Frontend planning, analysis, implementation, and review must consider:
+
+```text
+AGENTS.md
+docs/development/frontend/boardly-frontend-developer-rules.md
+docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md
+docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md when auth/session is involved
+docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md
+docs/adr/0007-use-tailwind-css-with-css-variables-and-shadcn-radix-primitives.md when UI/styling/shared primitives are involved
+docs/development/backend/boardly-symfony-developer-rules.md when API/auth/backend contract behavior matters
+```
+
+Skills do not replace accepted ADRs or developer rulebooks.
+
 ## Task lifecycle skills
 
 | Skill | Use for |
@@ -22,6 +47,14 @@ To avoid duplicated behavior:
 | `task-implementation` | execute checkbox plan task-by-task, select subagents per task, update checklist |
 | `verification-evidence` | record exact commands, actual results, not-run reasons, final verification status |
 | `context-compaction` | create resumable memo for long/noisy sessions and handoffs |
+
+## Frontend lifecycle skills
+
+| Skill | Use for |
+| --- | --- |
+| `frontend-task-planning` | create `<task-folder>/frontend-planning.md` using ADR-0004/0005/0006/0007 and frontend rules |
+| `frontend-task-analysis` | create `<task-folder>/frontend-analysis.md` with context/API/auth/UI/style/test risks |
+| `frontend-task-implementation` | execute frontend checklist task-by-task and update frontend artifacts |
 
 ## Backend / platform skills
 
@@ -47,7 +80,8 @@ To avoid duplicated behavior:
 | `frontend-api-integration` | HTTP gateways, API contracts, error normalization, mapping |
 | `frontend-auth-session` | memory-only access token, HttpOnly refresh cookie, bootstrap, logout, protected routes |
 | `frontend-ui-composition` | Next.js pages, layouts, providers, React components, hooks, guards, forms |
-| `frontend-review-checklist` | ADR-0006 frontend review, auth safety, API/UI boundary checks |
+| `frontend-style-system` | ADR-0007 Tailwind, CSS variables, shadcn-style primitives, Radix, tokens, variants |
+| `frontend-review-checklist` | ADR-0006/0007 frontend review, auth safety, API/UI/style boundary checks |
 
 ## Output modifier skills
 
@@ -58,15 +92,21 @@ To avoid duplicated behavior:
 
 ## Task lifecycle rules
 
-Use the full lifecycle for managed task folders:
+Use the full lifecycle for managed backend/mixed task folders:
 
 ```text
 repo-onboarding -> task-planning -> task-analysis -> task-implementation -> verification-evidence
 ```
 
+Use the frontend lifecycle for managed frontend task folders:
+
+```text
+repo-onboarding -> frontend-task-planning -> frontend-task-analysis -> frontend-task-implementation -> verification-evidence
+```
+
 Add `context-compaction` when the session is long, noisy, or needs handoff/resume.
 
-Artifacts:
+Backend/mixed artifacts:
 
 ```text
 <task-folder>/onboarding.md
@@ -75,6 +115,18 @@ Artifacts:
 <task-folder>/checklist.md
 <task-folder>/implementation.md
 <task-folder>/verification.md
+<task-folder>/compaction.md
+```
+
+Frontend artifacts:
+
+```text
+<task-folder>/onboarding.md
+<task-folder>/frontend-planning.md
+<task-folder>/frontend-analysis.md
+<task-folder>/frontend-checklist.md
+<task-folder>/frontend-implementation.md
+<task-folder>/frontend-verification.md
 <task-folder>/compaction.md
 ```
 
@@ -118,6 +170,11 @@ Do not use MemPalace for simple repo discovery such as class location, route/con
 - Frontend context domain models are not backend aggregates.
 - Frontend access token must be memory-only.
 - Frontend refresh token must be HttpOnly and unreadable by JavaScript.
+- Tailwind CSS is the default frontend styling system.
+- CSS variables own theme-level semantic design tokens.
+- Shared UI primitives must remain generic and context-free.
+- shadcn-style components are project-owned code.
+- Radix should be used for accessibility-sensitive primitives when needed.
 - Commands represent user intentions.
 - Queries do not mutate state.
 - Domain events represent business facts.
@@ -126,5 +183,5 @@ Do not use MemPalace for simple repo discovery such as class location, route/con
 - Controllers stay thin.
 - Domain logic must not be hidden in Doctrine listeners.
 - Permissions and auditability must be designed early.
-- Compact output must not hide important security, permission, source-of-truth, or transaction-boundary risks.
+- Compact output must not hide important security, permission, source-of-truth, frontend-auth, frontend-style, or transaction-boundary risks.
 - Knowledge graphs must preserve direction and relationship labels.
