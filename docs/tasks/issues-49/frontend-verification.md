@@ -64,3 +64,134 @@ Deferred manual checks:
 - End-to-end refresh bootstrap with real HttpOnly refresh cookie behavior.
 - End-to-end logout cookie clearing.
 - Browser storage inspection after runtime login/refresh.
+
+## Pass 2: Session Safety, Auth Boundaries, and Initial Routes
+
+Date: 2026-05-11
+
+## Required Commands
+
+Run from `frontend/`:
+
+```bash
+npm run typecheck
+```
+
+Result: passed.
+
+```bash
+npm run lint
+```
+
+Result: passed.
+
+```bash
+npm run build
+```
+
+Result: passed.
+
+Build output showed these routes:
+
+```text
+/
+/_not-found
+/app/dashboard
+/auth/session-loading
+/dashboard
+/login
+/pending-approval
+/register
+```
+
+Note: the build output reported `Environments: .env`; this was emitted by Next.js during the required build command. No `.env*` file was manually opened or inspected during this pass.
+
+## Targeted Source Checks
+
+Storage/cookie/token scan:
+
+```bash
+rg -n "localStorage|sessionStorage|indexedDB|document\\.cookie|refreshToken|refresh_token|accessToken|NEXT_PUBLIC_" frontend/src frontend/package.json frontend/tsconfig.json
+```
+
+Evidence:
+
+- No `localStorage`, `sessionStorage`, `indexedDB`, or `document.cookie` references were found.
+- No `refreshToken` or `refresh_token` references were found.
+- `accessToken` references are limited to in-memory auth/session types, use cases, infrastructure contract mapping, and shared HTTP `Authorization` attachment.
+- The only `NEXT_PUBLIC_*` reference is `NEXT_PUBLIC_API_URL`; no token env var exists in source.
+
+Raw HTTP and removed current-account dependency scan:
+
+```bash
+rg -n "fetch\\(|XMLHttpRequest|axios|auth/me|getMe|MeResponse" frontend/src
+```
+
+Evidence:
+
+- The only raw `fetch` call is `frontend/src/shared/api/http-client.ts`.
+- No `auth/me`, `getMe`, or `MeResponse` references were found.
+
+Shared/app boundary scan:
+
+```bash
+rg -n "from '@/contexts/identity-access|from \"@/contexts/identity-access|contexts/identity-access" frontend/src/shared frontend/src/app
+```
+
+Evidence:
+
+- `frontend/src/shared` has no IdentityAccess imports.
+- `frontend/src/app` imports only IdentityAccess presentation components/provider for route composition.
+
+URL/persistent state/logging scan:
+
+```bash
+rg -n "URLSearchParams|searchParams|window\\.location|location\\.href|router\\.push\\([^)]*accessToken|console\\.|localStorage|sessionStorage|indexedDB|document\\.cookie" frontend/src frontend/package.json
+```
+
+Result: no matches.
+
+Persisted React state library scan:
+
+```bash
+rg -n "zustand|redux|persist|localStorage|sessionStorage|indexedDB" frontend/package.json frontend/src
+```
+
+Result: no matches.
+
+Route/auth behavior scan:
+
+```bash
+rg -n "X-CSRF-Intent|credentials: 'include'|Authorization|plainPassword|/app/dashboard|pending-approval|session-loading" frontend/src
+```
+
+Evidence:
+
+- `httpRequest` still sends `credentials: 'include'`.
+- Protected requests still attach `Authorization: Bearer <accessToken>` when a caller supplies an access token.
+- Login/register still use `plainPassword`.
+- Refresh/logout still include `X-CSRF-Intent: auth-refresh`.
+- Login success routes to `/app/dashboard`.
+- Register success routes to `/pending-approval`.
+- `/dashboard` redirects to `/app/dashboard`.
+
+## Code Behavior Verified By Inspection
+
+- `logoutUseCase()` clears `AuthMemoryStore` in `finally`, so local memory is cleared even if backend logout fails.
+- `AuthHttpGateway.refreshSession()` maps 401 refresh failures to `AuthError('invalid_refresh_token')`.
+- `bootstrapSessionUseCase()` clears memory and returns `null` for `invalid_refresh_token`.
+- `ProtectedRoute` waits for bootstrap completion before redirecting unauthenticated users and returns `null` rather than protected children after an unauthenticated bootstrap.
+- Refresh still creates a token-only session with `account: null`, matching the current backend refresh contract.
+
+## Manual Verification Not Run
+
+Browser/API manual flows were not run in this pass because no frontend dev server or backend API was started. The required static verification commands and targeted source checks passed.
+
+Deferred manual checks:
+
+- End-to-end login against a running backend.
+- End-to-end register redirect against a running backend.
+- End-to-end refresh bootstrap with a real HttpOnly refresh cookie.
+- End-to-end invalid refresh redirect behavior in a browser.
+- End-to-end logout cookie clearing and local-session clearing after backend failure.
+- Browser storage inspection after runtime login/refresh.

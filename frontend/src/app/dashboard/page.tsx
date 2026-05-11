@@ -1,14 +1,5 @@
-import { ProtectedRoute } from '@/contexts/identity-access/presentation/guards/ProtectedRoute'
-import { LogoutButton } from '@/contexts/identity-access/presentation/ui/LogoutButton'
+import { redirect } from 'next/navigation'
 
 export default function DashboardPage() {
-  return (
-    <ProtectedRoute>
-      <main>
-        <h1>Dashboard</h1>
-        <p>Dashboard placeholder</p>
-        <LogoutButton />
-      </main>
-    </ProtectedRoute>
-  )
+  redirect('/app/dashboard')
 }

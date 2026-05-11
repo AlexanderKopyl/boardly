@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Input'
@@ -8,12 +9,12 @@ import { useAuth } from '../hooks/useAuth'
 
 export function RegisterForm() {
   const { register } = useAuth()
+  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [plainPassword, setPlainPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,16 +22,12 @@ export function RegisterForm() {
     setLoading(true)
     try {
       await register(email, plainPassword, name)
-      setSubmitted(true)
+      router.push('/pending-approval')
     } catch {
       setError('Registration failed. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
-
-  if (submitted) {
-    return <p>Your account is pending approval. You will be notified once it is activated.</p>
   }
 
   return (

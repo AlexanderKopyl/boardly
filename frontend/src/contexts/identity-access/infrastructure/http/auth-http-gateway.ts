@@ -1,4 +1,5 @@
 import { httpRequest } from '@/shared/api/http-client'
+import { ApiError } from '@/shared/api/api-error'
 
 import type {
   AuthGateway,
@@ -6,7 +7,16 @@ import type {
   RefreshSessionResult,
   RegisterResult,
 } from '../../application/ports/auth-gateway'
+import { AuthError } from '../../domain/auth-error'
 import type { AccessTokenResponse, LoginResponse, RegisterResponse } from './auth-api-contracts'
+
+function toAuthError(error: unknown): Error {
+  if (error instanceof ApiError && error.statusCode === 401) {
+    return new AuthError('invalid_refresh_token')
+  }
+
+  return error instanceof Error ? error : new Error('Unexpected authentication error')
+}
 
 export class AuthHttpGateway implements AuthGateway {
   async login(email: string, plainPassword: string): Promise<LoginResult> {
@@ -38,10 +48,16 @@ export class AuthHttpGateway implements AuthGateway {
   }
 
   async refreshSession(): Promise<RefreshSessionResult> {
-    const data = await httpRequest<AccessTokenResponse>('/api/auth/refresh', {
-      method: 'POST',
-      headers: { 'X-CSRF-Intent': 'auth-refresh' },
-    })
+    let data: AccessTokenResponse
+    try {
+      data = await httpRequest<AccessTokenResponse>('/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'X-CSRF-Intent': 'auth-refresh' },
+      })
+    } catch (error) {
+      throw toAuthError(error)
+    }
+
     return {
       accessToken: data.accessToken,
       expiresIn: data.expiresIn,

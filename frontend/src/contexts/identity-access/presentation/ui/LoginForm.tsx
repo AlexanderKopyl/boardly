@@ -21,7 +21,7 @@ export function LoginForm() {
     setLoading(true)
     try {
       await login(email, plainPassword)
-      router.push('/dashboard')
+      router.push('/app/dashboard')
     } catch {
       setError('Invalid credentials. Please try again.')
     } finally {

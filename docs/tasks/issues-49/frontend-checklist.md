@@ -28,43 +28,43 @@ Do not mark implementation items complete during planning. Check items only when
 
 ## 3. Session Safety
 
-- [ ] Keep access token in memory only.
-- [ ] Do not store access token in `localStorage`.
-- [ ] Do not store access token in `sessionStorage`.
-- [ ] Do not store access token in IndexedDB.
-- [ ] Do not store access token in readable cookies.
-- [ ] Do not put access token in URL params.
-- [ ] Do not put access token in persisted React state libraries.
-- [ ] Do not put access token in `NEXT_PUBLIC_*` env vars.
-- [ ] Never read or store the refresh token in frontend code.
-- [ ] Do not inspect `document.cookie` for auth token values.
-- [ ] Clear memory session on invalid refresh.
-- [ ] Clear local memory session on logout even if backend logout fails.
-- [ ] Do not log passwords, access tokens, refresh tokens, or cookie values.
+- [x] Keep access token in memory only.
+- [x] Do not store access token in `localStorage`.
+- [x] Do not store access token in `sessionStorage`.
+- [x] Do not store access token in IndexedDB.
+- [x] Do not store access token in readable cookies.
+- [x] Do not put access token in URL params.
+- [x] Do not put access token in persisted React state libraries.
+- [x] Do not put access token in `NEXT_PUBLIC_*` env vars.
+- [x] Never read or store the refresh token in frontend code.
+- [x] Do not inspect `document.cookie` for auth token values.
+- [x] Clear memory session on invalid refresh.
+- [x] Clear local memory session on logout even if backend logout fails.
+- [x] Do not log passwords, access tokens, refresh tokens, or cookie values.
 
 ## 4. Auth State and Boundaries
 
-- [ ] Keep raw HTTP calls out of pages and React components.
-- [ ] Keep backend contract mapping in IdentityAccess infrastructure.
-- [ ] Keep token refresh/bootstrap algorithms out of presentation components.
-- [ ] Ensure application use cases depend on ports, not concrete HTTP clients.
-- [ ] Ensure shared UI does not import IdentityAccess code.
-- [ ] Ensure `app/` routes compose components rather than owning API logic.
-- [ ] Improve shared auth React state if needed so guard, forms, shell, and logout stay consistent.
+- [x] Keep raw HTTP calls out of pages and React components.
+- [x] Keep backend contract mapping in IdentityAccess infrastructure.
+- [x] Keep token refresh/bootstrap algorithms out of presentation components.
+- [x] Ensure application use cases depend on ports, not concrete HTTP clients.
+- [x] Ensure shared UI does not import IdentityAccess code.
+- [x] Ensure `app/` routes compose components rather than owning API logic.
+- [x] Improve shared auth React state if needed so guard, forms, shell, and logout stay consistent.
 
 ## 5. Routes
 
-- [ ] Keep `/` redirecting to `/login`.
-- [ ] Keep `/login` public.
-- [ ] Keep `/register` public.
-- [ ] Add `/pending-approval`.
-- [ ] Add `/auth/session-loading`.
-- [ ] Add protected `/app/dashboard`.
-- [ ] Redirect old `/dashboard` to `/app/dashboard` unless safely removed.
-- [ ] Update login success destination from `/dashboard` to `/app/dashboard`.
-- [ ] Update register success destination to `/pending-approval`.
-- [ ] Ensure unauthenticated `/app/dashboard` access redirects to `/login`.
-- [ ] Ensure protected content does not flash before bootstrap finishes.
+- [x] Keep `/` redirecting to `/login`.
+- [x] Keep `/login` public.
+- [x] Keep `/register` public.
+- [x] Add `/pending-approval`.
+- [x] Add `/auth/session-loading`.
+- [x] Add protected `/app/dashboard`.
+- [x] Redirect old `/dashboard` to `/app/dashboard` unless safely removed.
+- [x] Update login success destination from `/dashboard` to `/app/dashboard`.
+- [x] Update register success destination to `/pending-approval`.
+- [x] Ensure unauthenticated `/app/dashboard` access redirects to `/login`.
+- [x] Ensure protected content does not flash before bootstrap finishes.
 
 ## 6. Tailwind and Tokens
 
@@ -140,18 +140,18 @@ Do not mark implementation items complete during planning. Check items only when
 
 ## 11. Verification
 
-- [ ] Run `npm run typecheck` from `frontend/`.
-- [ ] Run `npm run lint` from `frontend/`.
-- [ ] Run `npm run build` from `frontend/`.
-- [ ] Manually verify login payload uses `plainPassword`.
-- [ ] Manually verify register payload uses `plainPassword`.
-- [ ] Manually verify refresh/logout include `X-CSRF-Intent: auth-refresh`.
-- [ ] Manually verify requests include `credentials: 'include'`.
+- [x] Run `npm run typecheck` from `frontend/`.
+- [x] Run `npm run lint` from `frontend/`.
+- [x] Run `npm run build` from `frontend/`.
+- [x] Manually verify login payload uses `plainPassword`.
+- [x] Manually verify register payload uses `plainPassword`.
+- [x] Manually verify refresh/logout include `X-CSRF-Intent: auth-refresh`.
+- [x] Manually verify requests include `credentials: 'include'`.
 - [ ] Manually verify access token is not in browser storage.
-- [ ] Manually verify refresh token is never read by frontend JavaScript.
-- [ ] Manually verify `/login` success routes to `/app/dashboard`.
-- [ ] Manually verify `/register` success routes to `/pending-approval`.
-- [ ] Manually verify unauthenticated `/app/dashboard` routes to `/login`.
+- [x] Manually verify refresh token is never read by frontend JavaScript.
+- [x] Manually verify `/login` success routes to `/app/dashboard`.
+- [x] Manually verify `/register` success routes to `/pending-approval`.
+- [x] Manually verify unauthenticated `/app/dashboard` routes to `/login`.
 - [ ] Manually verify logout clears local state and routes to `/login`.
 - [ ] Manually verify no detailed Projects/Boards/Tasks/Admin UI appears.
 

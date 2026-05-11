@@ -10,20 +10,24 @@ export interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { session, isLoading, bootstrap } = useAuth()
+  const { session, isLoading, hasBootstrapped, bootstrap } = useAuth()
   const router = useRouter()
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { bootstrap() }, [])
 
   useEffect(() => {
-    if (!isLoading && session === null) {
+    if (hasBootstrapped && !isLoading && session === null) {
       router.replace('/login')
     }
-  }, [isLoading, session, router])
+  }, [hasBootstrapped, isLoading, session, router])
 
-  if (isLoading) {
-    return <p>Loading…</p>
+  if (isLoading || (!hasBootstrapped && session === null)) {
+    return (
+      <main aria-busy="true">
+        <p>Checking your session...</p>
+      </main>
+    )
   }
 
   if (session === null) {
