@@ -18,6 +18,7 @@
 # - Role-specific config layers live in .codex/agents/*.toml.
 # - Role instructions are defined in .codex/agents/instructions/*.md.
 # - Shared skill usage rules are defined in .codex/agents/instructions/_skill-usage.md.
+# - Shared MemPalace usage rules are defined in .codex/agents/instructions/_mempalace-usage.md.
 # - Reusable skills are registered explicitly in [[skills.config]] below.
 # - Subagents should use skills as execution playbooks instead of duplicating workflow logic.
 # - Do not assume existing Symfony files, Doctrine entities, controllers, frontend contexts, or module structure until they are explicitly created.
@@ -108,6 +109,18 @@ enabled = true
 
 [[skills.config]]
 path = "skills/frontend-review-checklist/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/task-planning/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/task-analysis/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/task-implementation/SKILL.md"
 enabled = true
 
 [permissions.boardly-safe.filesystem]
