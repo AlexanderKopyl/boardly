@@ -16,9 +16,12 @@ To avoid duplicated behavior:
 
 | Skill | Use for |
 | --- | --- |
+| `repo-onboarding` | deterministic narrow discovery, candidate files, durable guidance, diff/search-first reads |
 | `task-planning` | create `<task-folder>/planning.md` with scoped checkbox implementation plan |
 | `task-analysis` | create `<task-folder>/analysis.md` with architecture/security/test analysis |
 | `task-implementation` | execute checkbox plan task-by-task, select subagents per task, update checklist |
+| `verification-evidence` | record exact commands, actual results, not-run reasons, final verification status |
+| `context-compaction` | create resumable memo for long/noisy sessions and handoffs |
 
 ## Backend / platform skills
 
@@ -55,13 +58,37 @@ To avoid duplicated behavior:
 
 ## Task lifecycle rules
 
+Use the full lifecycle for managed task folders:
+
+```text
+repo-onboarding -> task-planning -> task-analysis -> task-implementation -> verification-evidence
+```
+
+Add `context-compaction` when the session is long, noisy, or needs handoff/resume.
+
+Artifacts:
+
+```text
+<task-folder>/onboarding.md
+<task-folder>/planning.md
+<task-folder>/analysis.md
+<task-folder>/checklist.md
+<task-folder>/implementation.md
+<task-folder>/verification.md
+<task-folder>/compaction.md
+```
+
+Implementation rules:
+
 - Planning saves an artifact to the specified task folder.
 - Analysis saves an artifact to the specified task folder.
 - Implementation creates or updates a checklist from the plan.
 - Implementation must use checkbox syntax.
 - Implementation must run task-by-task, not as one untracked bulk change.
 - Implementation must select relevant subagent(s) per checkbox task.
+- Implementation must record verification evidence before marking a task done.
 - Implementation marks `- [x]` only after implementation and verification/documentation.
+- `task-verifier` should audit completion before closing important tasks.
 
 ## MemPalace rules
 
