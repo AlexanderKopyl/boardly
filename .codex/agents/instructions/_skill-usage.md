@@ -12,9 +12,12 @@ Also follow `.codex/agents/instructions/_mempalace-usage.md` before using MemPal
 
 | User need | Use skill |
 | --- | --- |
+| New session, unknown area, branch review discovery, candidate files | `repo-onboarding` |
 | Create a durable task plan in a specified task folder | `task-planning` |
 | Analyze a task and save analysis artifact into a task folder | `task-analysis` |
 | Implement a checkbox plan task-by-task and update checklist | `task-implementation` |
+| Record exact verification commands, results, not-run reasons, final status | `verification-evidence` |
+| Compact long-running session state into resumable memo | `context-compaction` |
 | Aggregate, invariant, value object, domain event, repository, transaction boundary | `domain-modeling` |
 | End-to-end backend architecture for a feature/use case | `feature-architecture` |
 | Statuses, transitions, guards, validators, workflow rules | `workflow-design` |
@@ -38,17 +41,33 @@ Also follow `.codex/agents/instructions/_mempalace-usage.md` before using MemPal
 
 Use these when the user works through a task folder:
 
+0. `repo-onboarding` creates `<task-folder>/onboarding.md` when scope/files are unclear.
 1. `task-planning` creates `<task-folder>/planning.md`.
 2. `task-analysis` creates `<task-folder>/analysis.md`.
 3. `task-implementation` creates or updates `<task-folder>/checklist.md` and appends `<task-folder>/implementation.md`.
+4. `verification-evidence` creates or updates `<task-folder>/verification.md`.
+5. `context-compaction` creates or updates `<task-folder>/compaction.md` when the session becomes long/noisy or needs handoff.
 
 Implementation must be task-by-task:
 
 - use checkbox syntax;
 - select relevant subagent(s) for each checkbox task;
 - implement one task at a time;
+- record verification evidence before marking a task done;
 - mark `- [x]` only after implementation and verification/documentation;
 - do not implement the whole plan in one untracked pass.
+
+## Verification gate
+
+Use `task-verifier` or `verification-evidence` when the user asks whether work is done, when implementation claims completion, or before closing a task.
+
+Checklist items are not done unless all are true:
+
+1. Code/docs/config change exists or item is explicitly non-code.
+2. Changed files match the task scope.
+3. Verification command or manual check is recorded.
+4. Failures and not-run checks are disclosed.
+5. Architecture/security/source-of-truth/frontend-auth risks are addressed or documented.
 
 ## Multi-skill requests
 
@@ -61,16 +80,20 @@ Examples:
 - `GetProjectBoard` usually needs `feature-architecture`, `search-indexing` or read-model reasoning, `permission-modeling`, `cache-performance`, and `observability-operations`.
 - Frontend IdentityAccess usually needs `frontend-context-architecture`, `frontend-auth-session`, `frontend-use-case-flow`, `frontend-api-integration`, `frontend-ui-composition`, and `testing-strategy`.
 - Frontend review usually needs `frontend-review-checklist`, `frontend-context-architecture`, `frontend-auth-session`, `frontend-api-integration`, and `frontend-ui-composition`.
+- Long-running implementation should add `context-compaction` after major milestones or before handoff.
 - A compact answer to a previously analyzed feature can add `caveman-response` as the final output layer.
 - A compact structural map can add `graphify-knowledge-map` after the relevant architecture/domain/frontend skill.
 
 ## Priority rule
 
-If this is a managed task folder workflow, start with lifecycle skills:
+If this is a managed task folder workflow, use the full lifecycle:
 
-1. `task-planning`
-2. `task-analysis`
-3. `task-implementation`
+1. `repo-onboarding` when scope/files are unclear
+2. `task-planning`
+3. `task-analysis`
+4. `task-implementation`
+5. `verification-evidence`
+6. `context-compaction` when needed
 
 If several backend skills apply, start with the business architecture skill, then add specialized skills:
 
