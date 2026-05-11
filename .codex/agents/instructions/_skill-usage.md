@@ -6,10 +6,15 @@ Subagents define responsibility and judgment. Skills define repeatable execution
 
 When a user request matches a skill, the subagent must follow that skill instead of duplicating the workflow in its own answer.
 
+Also follow `.codex/agents/instructions/_mempalace-usage.md` before using MemPalace.
+
 ## How to choose a skill
 
 | User need | Use skill |
 | --- | --- |
+| Create a durable task plan in a specified task folder | `task-planning` |
+| Analyze a task and save analysis artifact into a task folder | `task-analysis` |
+| Implement a checkbox plan task-by-task and update checklist | `task-implementation` |
 | Aggregate, invariant, value object, domain event, repository, transaction boundary | `domain-modeling` |
 | End-to-end backend architecture for a feature/use case | `feature-architecture` |
 | Statuses, transitions, guards, validators, workflow rules | `workflow-design` |
@@ -29,6 +34,22 @@ When a user request matches a skill, the subagent must follow that skill instead
 | Next.js pages, providers, React components, hooks, forms, guards | `frontend-ui-composition` |
 | Frontend ADR-0006 review, auth safety, UI/API boundary review | `frontend-review-checklist` |
 
+## Task lifecycle skills
+
+Use these when the user works through a task folder:
+
+1. `task-planning` creates `<task-folder>/planning.md`.
+2. `task-analysis` creates `<task-folder>/analysis.md`.
+3. `task-implementation` creates or updates `<task-folder>/checklist.md` and appends `<task-folder>/implementation.md`.
+
+Implementation must be task-by-task:
+
+- use checkbox syntax;
+- select relevant subagent(s) for each checkbox task;
+- implement one task at a time;
+- mark `- [x]` only after implementation and verification/documentation;
+- do not implement the whole plan in one untracked pass.
+
 ## Multi-skill requests
 
 Use multiple skills when the request crosses boundaries.
@@ -44,6 +65,12 @@ Examples:
 - A compact structural map can add `graphify-knowledge-map` after the relevant architecture/domain/frontend skill.
 
 ## Priority rule
+
+If this is a managed task folder workflow, start with lifecycle skills:
+
+1. `task-planning`
+2. `task-analysis`
+3. `task-implementation`
 
 If several backend skills apply, start with the business architecture skill, then add specialized skills:
 
@@ -68,6 +95,20 @@ Final output modifiers:
 
 - Use `graphify-knowledge-map` when the user asks for graph output.
 - Use `caveman-response` only as a final compression layer when the user asks for short output.
+
+## MemPalace quick rule
+
+Use MemPalace only when memory can materially change the decision:
+
+- previous DEV ticket context;
+- architectural decisions;
+- previously selected/rejected approaches;
+- known risks/regressions;
+- cross-feature context;
+- previously discussed business logic;
+- repeated integration nuances.
+
+Do not use MemPalace for simple repo discovery such as class locations, routes, payload builders, `dataLayer.push`, or flow-related file lists.
 
 ## Global constraints
 
