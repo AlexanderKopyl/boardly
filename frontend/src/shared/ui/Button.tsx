@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactElement, ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactElement, type ReactNode } from 'react'
 
 import { cn } from '@/shared/lib/cn'
 
@@ -19,23 +19,28 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   className?: string
 }
 
-export function Button({
-  type = 'button',
-  disabled,
-  isLoading = false,
-  variant = 'primary',
-  size = 'md',
-  className,
-  children,
-  ...props
-}: ButtonProps): ReactElement {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    type = 'button',
+    disabled,
+    isLoading = false,
+    variant = 'primary',
+    size = 'md',
+    className,
+    children,
+    ...props
+  },
+  ref,
+): ReactElement {
   const isDisabled = disabled || isLoading
 
   return (
     <button
+      ref={ref}
       type={type}
       disabled={isDisabled}
       aria-busy={isLoading || undefined}
+      data-loading={isLoading || undefined}
       data-variant={variant}
       data-size={size}
       className={cn('ui-button', className)}
@@ -44,4 +49,4 @@ export function Button({
       {children}
     </button>
   )
-}
+})

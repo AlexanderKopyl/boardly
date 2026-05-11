@@ -292,3 +292,151 @@ VERIFIED
 
 - The Tailwind config scaffold is present for future utility-class usage, but the current slice relies on the shared CSS token sheet and primitives.
 - Button loading behavior is now supported by props, but no screen-level loading-copy redesign was made in this slice.
+
+## Pass 4: Remaining Shared UI Primitives
+
+Date: 2026-05-11
+
+## Required Commands
+
+Run from `frontend/`:
+
+```bash
+npm run typecheck
+```
+
+Result: passed.
+
+```bash
+npm run lint
+```
+
+Result: passed.
+
+```bash
+npm run build
+```
+
+Result: passed.
+
+Build output showed these routes:
+
+```text
+/
+/_not-found
+/app/dashboard
+/auth/session-loading
+/dashboard
+/login
+/pending-approval
+/register
+```
+
+## Targeted Source Checks
+
+Shared boundary scan:
+
+```bash
+rg -n "from '@/contexts/identity-access|from \"@/contexts/identity-access|contexts/identity-access" frontend/src/shared frontend/src/shared/ui
+```
+
+Result: no matches.
+
+Dependency scan:
+
+```bash
+rg -n "@radix-ui|radix|shadcn" frontend/package.json frontend/package-lock.json frontend/src frontend/tailwind.config.ts frontend/postcss.config.mjs
+```
+
+Result: no matches.
+
+Accessibility wiring scans:
+
+```bash
+rg -n "aria-label|aria-pressed|aria-controls|password-input|Hide password|Show password" frontend/src/shared/ui/PasswordInput.tsx
+```
+
+Evidence:
+
+- `PasswordInput` exposes an accessible toggle label and ties the toggle to the input with `aria-controls`.
+
+```bash
+rg -n "aria-describedby|descriptionId|errorId|aria-invalid|data-invalid" frontend/src/shared/ui/FormField.tsx
+```
+
+Evidence:
+
+- `FormField` computes `aria-describedby` from existing control text plus description and error ids.
+- `FormField` sets invalid semantics only when an error is present.
+
+```bash
+rg -n "aria-current|SidebarNav|ui-sidebar-nav|nav aria-label" frontend/src/shared/ui/SidebarNav.tsx
+```
+
+Evidence:
+
+- `SidebarNav` renders a `nav` landmark.
+- `SidebarNav` maps the active item to `aria-current="page"`.
+
+```bash
+rg -n "accessToken|refreshToken|refresh_token|document.cookie|localStorage|sessionStorage|NEXT_PUBLIC_" frontend/src/shared/ui/AppShell.tsx frontend/src/shared/ui frontend/src/app
+```
+
+Result: no matches attributable to the new shell primitives.
+
+## Manual Checks
+
+- Shared UI remains under `frontend/src/shared/ui/`.
+- No IdentityAccess imports were added to shared UI.
+- No token/session details were introduced into `AppShell`.
+
+## Failures
+
+None.
+
+## Not run
+
+| Command | Reason |
+| --- | --- |
+| Browser runtime UI smoke test | The required static checks passed and the task scope was limited to shared primitives. |
+
+## Final verification status
+
+VERIFIED
+
+## Remaining risks
+
+- The new primitives are unadopted by the login/register/dashboard screens for now, so the updated accessibility and shell structure still need screen-level integration work in the next slice.
+
+## Pass 5: Screen Integration and Auth Shell Adoption
+
+Date: 2026-05-11
+
+## Command Verification
+
+Attempted from `frontend/`:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Result: not run in this sandbox because `npm` is not available on `PATH`.
+
+## Source Verification
+
+Source inspection confirmed the following updates:
+
+- `/login` now uses labeled fields, `FormField`, `PasswordInput`, and `Alert`.
+- Login redirects `account_not_active` users to `/pending-approval`.
+- `/register` now uses labeled fields, `FormField`, and `PasswordInput`.
+- `LogoutButton` now has loading/disabled behavior.
+- `/auth/session-loading` now uses `EmptyState` and `Skeleton`.
+- `/app/dashboard` now uses `AppShell`, `SidebarNav`, `PageHeader`, and `EmptyState`.
+- `/pending-approval` now uses `EmptyState` with a login return link.
+
+## Remaining risks
+
+- The newest UI slice is source-inspected only in this environment.
+- Frontend command verification should be rerun once a Node/npm toolchain is available.

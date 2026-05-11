@@ -83,60 +83,60 @@ Do not mark implementation items complete during planning. Check items only when
 
 - [x] Update `Button` with variants, sizes, disabled/loading state, `className`, and native semantics.
 - [x] Update `Input` with invalid/disabled/focus states, `className`, and native semantics.
-- [ ] Add `PasswordInput` with accessible show/hide control.
-- [ ] Add `FormField` with label, description, error, and `aria-describedby` wiring.
+- [x] Add `PasswordInput` with accessible show/hide control.
+- [x] Add `FormField` with label, description, error, and `aria-describedby` wiring.
 - [x] Add `Alert` with safe status/error variants.
 - [x] Add `Card` with restrained radius and semantic surface styling.
 - [x] Add `Badge` for simple statuses.
 - [x] Add `Skeleton` for loading states.
-- [ ] Add `EmptyState` for dashboard placeholder content.
-- [ ] Add `PageHeader` for app content pages.
-- [ ] Add `SidebarNav` for the app shell.
-- [ ] Add `AppShell` for authenticated pages.
+- [x] Add `EmptyState` for dashboard placeholder content.
+- [x] Add `PageHeader` for app content pages.
+- [x] Add `SidebarNav` for the app shell.
+- [x] Add `AppShell` for authenticated pages.
 - [x] Do not add Radix packages unless a component genuinely needs them.
 - [x] Do not introduce shadcn CLI setup in this issue.
 
 ## 8. Screens
 
-- [ ] Rework `/login` with labeled email/password fields.
-- [ ] Show generic invalid credentials errors.
-- [ ] Handle `account_not_active` by routing or linking to `/pending-approval`.
-- [ ] Rework `/register` with name/email/password fields.
-- [ ] Show safe validation/conflict errors.
-- [ ] Ensure registration does not create an authenticated session.
-- [ ] Implement `/pending-approval` with login return path.
-- [ ] Ensure `/pending-approval` has no admin controls.
-- [ ] Implement `/auth/session-loading` with safe loading copy/skeleton.
-- [ ] Implement `/app/dashboard` as a protected placeholder only.
-- [ ] Ensure `/app/dashboard` uses `AppShell`.
-- [ ] Ensure logout has loading/disabled behavior.
-- [ ] Ensure logout does not reveal refresh token validity.
+- [x] Rework `/login` with labeled email/password fields.
+- [x] Show generic invalid credentials errors.
+- [x] Handle `account_not_active` by routing or linking to `/pending-approval`.
+- [x] Rework `/register` with name/email/password fields.
+- [x] Show safe validation/conflict errors.
+- [x] Ensure registration does not create an authenticated session.
+- [x] Implement `/pending-approval` with login return path.
+- [x] Ensure `/pending-approval` has no admin controls.
+- [x] Implement `/auth/session-loading` with safe loading copy/skeleton.
+- [x] Implement `/app/dashboard` as a protected placeholder only.
+- [x] Ensure `/app/dashboard` uses `AppShell`.
+- [x] Ensure logout has loading/disabled behavior.
+- [x] Ensure logout does not reveal refresh token validity.
 
 ## 9. App Shell
 
-- [ ] Add dark Navy sidebar.
-- [ ] Add accessible navigation landmark.
-- [ ] Mark current nav item with `aria-current="page"`.
-- [ ] Include only MVP-safe navigation entries.
+- [x] Add dark Navy sidebar.
+- [x] Add accessible navigation landmark.
+- [x] Mark current nav item with `aria-current="page"`.
+- [x] Include only MVP-safe navigation entries.
 - [ ] Do not implement detailed Projects UI.
 - [ ] Do not implement detailed Boards UI.
 - [ ] Do not implement detailed Tasks UI.
 - [ ] Do not implement Admin approval UI.
-- [ ] Add account/logout area without token details.
+- [x] Add account/logout area without token details.
 - [ ] Verify layout at mobile and desktop widths.
 
 ## 10. Accessibility
 
-- [ ] Every input has a visible label.
+- [x] Every input has a visible label.
 - [ ] Field errors are associated with fields.
-- [ ] Form-level errors use `role="alert"` or `aria-live`.
-- [ ] Password visibility toggle has an accessible name.
+- [x] Form-level errors use `role="alert"` or `aria-live`.
+- [x] Password visibility toggle has an accessible name.
 - [ ] Focus states are visible on light and Navy surfaces.
 - [ ] Color contrast is suitable for text and controls.
 - [ ] Loading states do not trap focus.
 - [ ] Buttons do not resize unexpectedly when loading.
 - [ ] Text does not overlap or overflow on mobile.
-- [ ] Pages use semantic `main`, `nav`, and `header` where appropriate.
+- [x] Pages use semantic `main`, `nav`, and `header` where appropriate.
 
 ## 11. Verification
 

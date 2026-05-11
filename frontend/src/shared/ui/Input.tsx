@@ -1,8 +1,5 @@
-import type {
-  HTMLInputTypeAttribute,
-  InputHTMLAttributes,
-  ReactElement,
-} from 'react'
+import { forwardRef, type InputHTMLAttributes, type ReactElement } from 'react'
+import type { HTMLInputTypeAttribute } from 'react'
 
 import { cn } from '@/shared/lib/cn'
 
@@ -17,16 +14,20 @@ export type InputProps = Omit<
   className?: string
 }
 
-export function Input({
-  type = 'text',
-  value,
-  onChange,
-  invalid = false,
-  className,
-  ...props
-}: InputProps): ReactElement {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  {
+    type = 'text',
+    value,
+    onChange,
+    invalid = false,
+    className,
+    ...props
+  },
+  ref,
+): ReactElement {
   return (
     <input
+      ref={ref}
       type={type}
       value={value}
       onChange={(event) => onChange(event.target.value)}
@@ -36,4 +37,4 @@ export function Input({
       {...props}
     />
   )
-}
+})

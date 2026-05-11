@@ -10,6 +10,24 @@ import type {
 import { AuthError } from '../../domain/auth-error'
 import type { AccessTokenResponse, LoginResponse, RegisterResponse } from './auth-api-contracts'
 
+function toLoginAuthError(error: unknown): Error {
+  if (error instanceof ApiError) {
+    if (error.errorCode === 'invalid_credentials' || error.statusCode === 401) {
+      return new AuthError('invalid_credentials')
+    }
+
+    if (error.errorCode === 'account_not_active' || error.statusCode === 403) {
+      return new AuthError('account_not_active')
+    }
+
+    if (error.errorCode === 'too_many_login_attempts' || error.statusCode === 429) {
+      return new AuthError('too_many_login_attempts')
+    }
+  }
+
+  return error instanceof Error ? error : new Error('Unexpected authentication error')
+}
+
 function toAuthError(error: unknown): Error {
   if (error instanceof ApiError && error.statusCode === 401) {
     return new AuthError('invalid_refresh_token')
@@ -20,10 +38,16 @@ function toAuthError(error: unknown): Error {
 
 export class AuthHttpGateway implements AuthGateway {
   async login(email: string, plainPassword: string): Promise<LoginResult> {
-    const data = await httpRequest<LoginResponse>('/api/auth/login', {
-      method: 'POST',
-      body: { email, plainPassword },
-    })
+    let data: LoginResponse
+    try {
+      data = await httpRequest<LoginResponse>('/api/auth/login', {
+        method: 'POST',
+        body: { email, plainPassword },
+      })
+    } catch (error) {
+      throw toLoginAuthError(error)
+    }
+
     return {
       accessToken: data.accessToken,
       expiresIn: data.expiresIn,

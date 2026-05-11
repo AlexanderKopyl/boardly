@@ -221,6 +221,15 @@ No backend code or context-specific UI screens were rewritten in this pass.
 - `npm run typecheck` from `frontend/`
 - `npm run lint` from `frontend/`
 - `npm run build` from `frontend/`
+- targeted `rg` scans for shared UI identity-access imports, radix/shadcn references, PasswordInput accessibility wiring, FormField described-by wiring, SidebarNav `aria-current`, and AppShell token leakage
+
+## Risks / follow-up
+
+- The primitives are present, but the login/register/dashboard screens still need to adopt them in the next slice before the full UX can be assessed end-to-end.
+
+- `npm run typecheck` from `frontend/`
+- `npm run lint` from `frontend/`
+- `npm run build` from `frontend/`
 - targeted `rg` scans for identity-access imports in `frontend/src/shared`
 - targeted `rg` scan for accidental `radix` / `shadcn` references
 - targeted `rg` scan for `:focus-visible` in `frontend/src/app/globals.css`
@@ -231,3 +240,144 @@ No backend code or context-specific UI screens were rewritten in this pass.
 
 - The Tailwind scaffold is present, but the current frontend still relies on the shared CSS token sheet rather than Tailwind utility classes. That is deliberate for this slice.
 - Later screen and app-shell work should continue to consume these primitives instead of duplicating styling.
+
+## Pass 4: Remaining Shared UI Primitives
+
+Date: 2026-05-11
+
+## Scope
+
+This pass completed the remaining shared UI primitives requested by issue #49:
+
+- `PasswordInput`
+- `FormField`
+- `EmptyState`
+- `PageHeader`
+- `SidebarNav`
+- `AppShell`
+
+No IdentityAccess screen rewrites were made in this pass beyond preserving existing compile-safe imports.
+
+## Skills and Subagents Used
+
+- Skills: `frontend-task-implementation`, `frontend-ui-composition`, `frontend-style-system`, `verification-evidence`.
+- Subagents: `shared_ui_probe` and `ui_placement_probe` were used to confirm there were no existing shared UI or app-shell patterns to preserve for these primitives.
+
+## Relevant Memory Found
+
+- Shared UI primitives must remain generic and context-free.
+- Accessibility-sensitive controls should use native markup first and only add extra behavior where needed.
+- The app shell should stay layout-only and not leak auth token or session details.
+
+## Current Code Facts
+
+- `PasswordInput` forwards a ref to the underlying input, keeps the toggle accessible, and uses the shared `Button`/`cn` helpers.
+- `FormField` generates stable ids, wires label/description/error semantics, and populates `aria-describedby` correctly.
+- `EmptyState` and `PageHeader` are generic content primitives that stay suitable for dashboard and auth-adjacent pages.
+- `SidebarNav` renders an accessible `nav` landmark and supports `aria-current="page"`.
+- `AppShell` renders a dark Navy sidebar, content region, and generic account/logout slots without exposing session/token details.
+- All new primitives live under `frontend/src/shared/ui/` and do not import IdentityAccess code.
+
+## Files Changed
+
+- `frontend/src/app/globals.css`
+- `frontend/src/shared/ui/PasswordInput.tsx`
+- `frontend/src/shared/ui/FormField.tsx`
+- `frontend/src/shared/ui/EmptyState.tsx`
+- `frontend/src/shared/ui/PageHeader.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `frontend/src/shared/ui/AppShell.tsx`
+- `docs/tasks/issues-49/frontend-checklist.md`
+- `docs/tasks/issues-49/frontend-implementation.md`
+- `docs/tasks/issues-49/frontend-verification.md`
+- `docs/tasks/issues-49/verification.md`
+
+## Summary
+
+- Added the remaining shared UI primitives requested by the task.
+- Kept the components generic and context-free.
+- Added the minimal CSS surface needed for labels, field feedback, empty states, page headers, sidebar navigation, and the authenticated app shell.
+
+## Verification
+
+- `npm run typecheck` from `frontend/`
+- `npm run lint` from `frontend/`
+- `npm run build` from `frontend/`
+- targeted `rg` scans for shared UI identity-access imports, radix/shadcn references, PasswordInput accessibility wiring, FormField described-by wiring, SidebarNav `aria-current`, and AppShell token leakage
+
+## Risks / follow-up
+
+- The primitives are present, but the login/register/dashboard screens still need to adopt them in the next slice before the full UX can be assessed end-to-end.
+
+## Pass 5: Screen Integration and Auth Shell Adoption
+
+Date: 2026-05-11
+
+## Scope
+
+This pass wired the newly added shared UI primitives into the visible auth and app shell screens:
+
+- login form labeling and password reveal control;
+- inactive-account routing to `/pending-approval`;
+- register form labeling and safe error handling;
+- pending approval and session-loading placeholder screens;
+- protected dashboard shell composition with `AppShell`, `SidebarNav`, `PageHeader`, `EmptyState`, and logout actions;
+- logout loading/disabled behavior.
+
+No backend behavior changed in this pass.
+
+## Skills and Subagents Used
+
+- Skills: `frontend-ui-composition`, `frontend-style-system`, `frontend-auth-session`, `verification-evidence`.
+
+## Relevant Memory Found
+
+- Shared UI must stay generic and context-free.
+- Auth screens should keep business/session decisions in the IdentityAccess layer, not in shared primitives.
+- Protected pages should compose shell/presentation pieces rather than building raw markup in route files.
+
+## Current Code Facts
+
+- `LoginForm` now uses `FormField` and `PasswordInput` for labeled inputs and routes `account_not_active` users to `/pending-approval`.
+- `RegisterForm` now uses `FormField`, `Input`, and `PasswordInput` with safe inline error handling.
+- `LogoutButton` now tracks pending state and disables the button while logout is in flight.
+- `/auth/session-loading` now uses `EmptyState` plus `Skeleton` instead of a bare text page.
+- `/app/dashboard` now uses `AppShell` with a dark Navy sidebar, an accessible `nav` landmark, a current `aria-current="page"` item, a `PageHeader`, and an `EmptyState` placeholder.
+- `/pending-approval` now uses `EmptyState` with a login return link.
+- Shared UI primitives remain under `frontend/src/shared/ui/` and do not import IdentityAccess code.
+
+## Files Changed
+
+- `frontend/src/app/app/dashboard/page.tsx`
+- `frontend/src/app/auth/session-loading/page.tsx`
+- `frontend/src/app/globals.css`
+- `frontend/src/app/login/page.tsx`
+- `frontend/src/app/pending-approval/page.tsx`
+- `frontend/src/app/register/page.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/LoginForm.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/LogoutButton.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/RegisterForm.tsx`
+- `frontend/src/shared/ui/AppShell.tsx`
+- `frontend/src/shared/ui/EmptyState.tsx`
+- `frontend/src/shared/ui/FormField.tsx`
+- `frontend/src/shared/ui/PageHeader.tsx`
+- `frontend/src/shared/ui/PasswordInput.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `docs/tasks/issues-49/frontend-checklist.md`
+- `docs/tasks/issues-49/frontend-verification.md`
+
+## Summary
+
+- Adopted the remaining shared primitives in the actual auth and dashboard screens.
+- Kept the app shell generic while giving the current protected dashboard a concrete, accessible placeholder composition.
+- Added safe inactive-account and logout loading behavior.
+
+## Verification
+
+- Command verification for this pass could not be rerun in the current sandbox because `npm` is not available on `PATH`.
+- Source inspection confirmed the new screen composition and auth flow wiring.
+
+## Risks / follow-up
+
+- The newest UI slice is source-inspected but not command-verified in this environment.
+- Browser-level smoke testing is still needed once the frontend toolchain is available.
