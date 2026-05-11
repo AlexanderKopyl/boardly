@@ -123,6 +123,18 @@ enabled = true
 path = "skills/task-implementation/SKILL.md"
 enabled = true
 
+[[skills.config]]
+path = "skills/repo-onboarding/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/context-compaction/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/verification-evidence/SKILL.md"
+enabled = true
+
 [permissions.boardly-safe.filesystem]
 glob_scan_max_depth = 8
 ":minimal" = "read"
