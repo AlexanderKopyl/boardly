@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { ApiError } from '@/shared/api/api-error'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
@@ -17,17 +18,67 @@ export function RegisterForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [plainPassword, setPlainPassword] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string
+    email?: string
+    plainPassword?: string
+  }>({})
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  function mapValidationErrors(details: unknown) {
+    const nextFieldErrors: {
+      name?: string
+      email?: string
+      plainPassword?: string
+    } = {}
+
+    if (!Array.isArray(details)) {
+      return nextFieldErrors
+    }
+
+    for (const violation of details) {
+      if (
+        violation !== null &&
+        typeof violation === 'object' &&
+        'field' in violation &&
+        'message' in violation &&
+        typeof violation.field === 'string' &&
+        typeof violation.message === 'string'
+      ) {
+        if (
+          violation.field === 'name' ||
+          violation.field === 'email' ||
+          violation.field === 'plainPassword'
+        ) {
+          nextFieldErrors[violation.field] = violation.message
+        }
+      }
+    }
+
+    return nextFieldErrors
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    setFieldErrors({})
     setLoading(true)
     try {
       await register(email, plainPassword, name)
       router.push('/pending-approval')
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError && error.errorCode === 'email_already_registered') {
+        setError('An account with this email already exists.')
+        return
+      }
+
+      if (error instanceof ApiError && error.errorCode === 'validation_failed') {
+        setFieldErrors(mapValidationErrors(error.details))
+        setError('Check the highlighted fields and try again.')
+        return
+      }
+
       setError('Registration failed. Please try again.')
     } finally {
       setLoading(false)
@@ -40,6 +91,7 @@ export function RegisterForm() {
         label="Full name"
         description="Use the name your teammates will recognize."
         required
+        error={fieldErrors.name}
       >
         {({ inputId, describedBy, invalid, required }) => (
           <Input
@@ -50,14 +102,14 @@ export function RegisterForm() {
             onChange={setName}
             autoComplete="name"
             aria-describedby={describedBy}
-            aria-invalid={invalid || undefined}
+            invalid={invalid}
             required={required}
             disabled={loading}
           />
         )}
       </FormField>
 
-      <FormField label="Email" required>
+      <FormField label="Email" required error={fieldErrors.email}>
         {({ inputId, describedBy, invalid, required }) => (
           <Input
             id={inputId}
@@ -67,7 +119,7 @@ export function RegisterForm() {
             onChange={setEmail}
             autoComplete="email"
             aria-describedby={describedBy}
-            aria-invalid={invalid || undefined}
+            invalid={invalid}
             required={required}
             disabled={loading}
           />
@@ -78,6 +130,7 @@ export function RegisterForm() {
         label="Password"
         description="Choose a password you do not use elsewhere."
         required
+        error={fieldErrors.plainPassword}
       >
         {({ inputId, describedBy, invalid, required }) => (
           <PasswordInput
