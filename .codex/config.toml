@@ -6,6 +6,7 @@
 # - Relational DB is the source of truth.
 # - Redis and OpenSearch/Elasticsearch are infrastructure projections/cache only.
 # - Frontend uses Next.js + TypeScript with context-based hexagonal architecture per ADR-0006.
+# - Frontend styling uses Tailwind CSS, CSS variables, shadcn-style project-owned primitives, and Radix per ADR-0007.
 #
 # Security posture:
 # - Use the restrictive `boardly-safe` permission profile by default.
@@ -18,6 +19,7 @@
 # - Role-specific config layers live in .codex/agents/*.toml.
 # - Role instructions are defined in .codex/agents/instructions/*.md.
 # - Shared skill usage rules are defined in .codex/agents/instructions/_skill-usage.md.
+# - Shared MemPalace usage rules are defined in .codex/agents/instructions/_mempalace-usage.md.
 # - Reusable skills are registered explicitly in [[skills.config]] below.
 # - Subagents should use skills as execution playbooks instead of duplicating workflow logic.
 # - Do not assume existing Symfony files, Doctrine entities, controllers, frontend contexts, or module structure until they are explicitly created.
@@ -108,6 +110,46 @@ enabled = true
 
 [[skills.config]]
 path = "skills/frontend-review-checklist/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-style-system/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-task-planning/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-task-analysis/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-task-implementation/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/task-planning/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/task-analysis/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/task-implementation/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/repo-onboarding/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/context-compaction/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/verification-evidence/SKILL.md"
 enabled = true
 
 [permissions.boardly-safe.filesystem]
@@ -245,6 +287,11 @@ nickname_candidates = ["UIComposer", "NextComposer"]
 description = "Reviews frontend changes against ADR-0006 with focus on context/layer boundaries, auth safety, API integration, UI composition, imports, and tests."
 config_file = "agents/frontend-reviewer.toml"
 nickname_candidates = ["FrontendReviewer", "ADR0006Reviewer"]
+
+[agents.task-verifier]
+description = "Verifies task completion evidence against planning, analysis, checklist, implementation, verification artifacts, diffs, and command results."
+config_file = "agents/task-verifier.toml"
+nickname_candidates = ["TaskVerifier", "EvidenceVerifier", "ChecklistVerifier"]
 
 [mcp_servers.sequentialthinking]
 command = "docker"
