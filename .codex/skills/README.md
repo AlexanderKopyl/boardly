@@ -3,6 +3,7 @@
 Project skills are reusable execution playbooks for Boardly subagents.
 
 ## Rule
+
 Agents define roles. Skills define repeatable workflows.
 
 To avoid duplicated behavior:
@@ -10,6 +11,14 @@ To avoid duplicated behavior:
 - keep product/architecture procedures inside `.codex/skills/*/SKILL.md`;
 - keep subagent files focused on role, scope, and skill selection;
 - when a request matches a skill, the subagent should follow the skill workflow instead of reinventing the response structure.
+
+## Task lifecycle skills
+
+| Skill | Use for |
+| --- | --- |
+| `task-planning` | create `<task-folder>/planning.md` with scoped checkbox implementation plan |
+| `task-analysis` | create `<task-folder>/analysis.md` with architecture/security/test analysis |
+| `task-implementation` | execute checkbox plan task-by-task, select subagents per task, update checklist |
 
 ## Backend / platform skills
 
@@ -43,6 +52,30 @@ To avoid duplicated behavior:
 | --- | --- |
 | `caveman-response` | short, direct, low-token answers when explicitly requested |
 | `graphify-knowledge-map` | compact knowledge graphs, dependency maps, architecture maps |
+
+## Task lifecycle rules
+
+- Planning saves an artifact to the specified task folder.
+- Analysis saves an artifact to the specified task folder.
+- Implementation creates or updates a checklist from the plan.
+- Implementation must use checkbox syntax.
+- Implementation must run task-by-task, not as one untracked bulk change.
+- Implementation must select relevant subagent(s) per checkbox task.
+- Implementation marks `- [x]` only after implementation and verification/documentation.
+
+## MemPalace rules
+
+Use MemPalace only if remembered context can materially change the decision:
+
+- previous DEV ticket context;
+- architectural decisions;
+- why previous approaches were selected/rejected;
+- known risks/regressions;
+- cross-feature context;
+- business logic already discussed;
+- repeated integration nuances.
+
+Do not use MemPalace for simple repo discovery such as class location, route/controller lookup, payload builder lookup, `dataLayer.push` lookup, or file lists connected to a flow.
 
 ## Global Boardly rules
 
