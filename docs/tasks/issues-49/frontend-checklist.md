@@ -4,27 +4,27 @@ Do not mark implementation items complete during planning. Check items only when
 
 ## 1. Pre-Implementation
 
-- [ ] Read `docs/tasks/issues-49/analysis.md`.
-- [ ] Read `docs/tasks/issues-49/frontend-planning.md`.
-- [ ] Confirm issue #49 implementation is frontend-only.
-- [ ] Confirm no secrets, `.env*`, dumps, local DB files, private keys, logs, `vendor/`, `node_modules/`, `.next/`, or build artifacts are inspected.
-- [ ] Confirm current backend auth response shapes before editing frontend contracts.
-- [ ] Confirm whether `/dashboard` should redirect to `/app/dashboard` or be removed after reference cleanup.
+- [x] Read `docs/tasks/issues-49/analysis.md`.
+- [x] Read `docs/tasks/issues-49/frontend-planning.md`.
+- [x] Confirm issue #49 implementation is frontend-only.
+- [x] Confirm no secrets, `.env*`, dumps, local DB files, private keys, logs, `vendor/`, `node_modules/`, `.next/`, or build artifacts are inspected.
+- [x] Confirm current backend auth response shapes before editing frontend contracts.
+- [x] Confirm whether `/dashboard` should redirect to `/app/dashboard` or be removed after reference cleanup.
 
 ## 2. Auth Contracts First
 
-- [ ] Update frontend login response contract to match current backend.
-- [ ] Build login session without relying on missing `/api/auth/me`.
-- [ ] Update refresh/session bootstrap so it does not depend on missing `/api/auth/me`.
-- [ ] Remove, isolate, or defer `getMe()` usage unless backend support exists.
-- [ ] Update register response contract to current backend `accountId` and `status`.
-- [ ] Keep login request body as `{ email, plainPassword }`.
-- [ ] Keep register request body as `{ email, plainPassword, name }`.
-- [ ] Keep refresh request body empty.
-- [ ] Keep logout request body empty.
-- [ ] Keep refresh/logout header `X-CSRF-Intent: auth-refresh`.
-- [ ] Preserve `credentials: 'include'` on cookie-dependent requests.
-- [ ] Preserve `Authorization: Bearer <accessToken>` for protected requests.
+- [x] Update frontend login response contract to match current backend.
+- [x] Build login session without relying on missing `/api/auth/me`.
+- [x] Update refresh/session bootstrap so it does not depend on missing `/api/auth/me`.
+- [x] Remove, isolate, or defer `getMe()` usage unless backend support exists.
+- [x] Update register response contract to current backend `accountId` and `status`.
+- [x] Keep login request body as `{ email, plainPassword }`.
+- [x] Keep register request body as `{ email, plainPassword, name }`.
+- [x] Keep refresh request body empty.
+- [x] Keep logout request body empty.
+- [x] Keep refresh/logout header `X-CSRF-Intent: auth-refresh`.
+- [x] Preserve `credentials: 'include'` on cookie-dependent requests.
+- [x] Preserve `Authorization: Bearer <accessToken>` for protected requests.
 
 ## 3. Session Safety
 

@@ -20,12 +20,11 @@ export async function loginUseCase(
   const now = deps.now ?? (() => new Date())
 
   const loginResult = await deps.gateway.login(input.email, input.plainPassword)
-  const account = await deps.gateway.getMe(loginResult.accessToken)
 
   const session: AuthSession = {
     accessToken: loginResult.accessToken,
     expiresAt: new Date(now().getTime() + loginResult.expiresIn * 1000),
-    account,
+    account: loginResult.account,
   }
 
   deps.store.save(session)

@@ -3,19 +3,22 @@ import type { Account } from '../../domain/account'
 export interface LoginResult {
   accessToken: string
   expiresIn: number
+  account: Account
 }
 
 export interface RegisterResult {
-  id: string
-  email: string
-  name: string
+  accountId: string
   status: 'pending_approval'
+}
+
+export interface RefreshSessionResult {
+  accessToken: string
+  expiresIn: number
 }
 
 export interface AuthGateway {
   login(email: string, plainPassword: string): Promise<LoginResult>
   register(email: string, plainPassword: string, name: string): Promise<RegisterResult>
-  refreshSession(): Promise<LoginResult>
+  refreshSession(): Promise<RefreshSessionResult>
   logout(): Promise<void>
-  getMe(accessToken: string): Promise<Account>
 }
