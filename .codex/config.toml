@@ -271,6 +271,11 @@ description = "Reviews frontend changes against ADR-0006 with focus on context/l
 config_file = "agents/frontend-reviewer.toml"
 nickname_candidates = ["FrontendReviewer", "ADR0006Reviewer"]
 
+[agents.task-verifier]
+description = "Verifies task completion evidence against planning, analysis, checklist, implementation, verification artifacts, diffs, and command results."
+config_file = "agents/task-verifier.toml"
+nickname_candidates = ["TaskVerifier", "EvidenceVerifier", "ChecklistVerifier"]
+
 [mcp_servers.sequentialthinking]
 command = "docker"
 args = ["run", "--rm", "-i", "mcp/sequentialthinking"]
