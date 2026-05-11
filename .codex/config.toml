@@ -6,6 +6,7 @@
 # - Relational DB is the source of truth.
 # - Redis and OpenSearch/Elasticsearch are infrastructure projections/cache only.
 # - Frontend uses Next.js + TypeScript with context-based hexagonal architecture per ADR-0006.
+# - Frontend styling uses Tailwind CSS, CSS variables, shadcn-style project-owned primitives, and Radix per ADR-0007.
 #
 # Security posture:
 # - Use the restrictive `boardly-safe` permission profile by default.
@@ -109,6 +110,22 @@ enabled = true
 
 [[skills.config]]
 path = "skills/frontend-review-checklist/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-style-system/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-task-planning/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-task-analysis/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-task-implementation/SKILL.md"
 enabled = true
 
 [[skills.config]]
