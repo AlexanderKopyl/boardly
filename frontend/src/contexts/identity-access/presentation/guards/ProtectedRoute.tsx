@@ -4,6 +4,7 @@ import { type ReactNode, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useAuth } from '../hooks/useAuth'
+import { SessionLoadingState } from '../ui/SessionLoadingState'
 
 export interface ProtectedRouteProps {
   children: ReactNode
@@ -23,11 +24,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [hasBootstrapped, isLoading, session, router])
 
   if (isLoading || (!hasBootstrapped && session === null)) {
-    return (
-      <main aria-busy="true">
-        <p>Checking your session...</p>
-      </main>
-    )
+    return <SessionLoadingState />
   }
 
   if (session === null) {

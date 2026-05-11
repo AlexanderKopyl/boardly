@@ -50,8 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await bootstrapSessionUseCase({ gateway, store })
       setSession(result)
-      setHasBootstrapped(true)
+    } catch {
+      store.clear()
+      setSession(null)
     } finally {
+      setHasBootstrapped(true)
       setIsLoading(false)
     }
   }, [])

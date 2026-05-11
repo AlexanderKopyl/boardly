@@ -432,7 +432,7 @@ Source inspection confirmed the following updates:
 - Login redirects `account_not_active` users to `/pending-approval`.
 - `/register` now uses labeled fields, `FormField`, and `PasswordInput`.
 - `LogoutButton` now has loading/disabled behavior.
-- `/auth/session-loading` now uses `EmptyState` and `Skeleton`.
+- `/auth/session-loading` now uses `SessionLoadingState` and `Skeleton`.
 - `/app/dashboard` now uses `AppShell`, `SidebarNav`, `PageHeader`, and `EmptyState`.
 - `/pending-approval` now uses `EmptyState` with a login return link.
 
@@ -440,3 +440,61 @@ Source inspection confirmed the following updates:
 
 - The newest UI slice is source-inspected only in this environment.
 - Frontend command verification should be rerun once a Node/npm toolchain is available.
+
+## Pass 6: Screen Integration and Auth Shell Adoption
+
+Date: 2026-05-11
+
+## Command Verification
+
+Run from `frontend/` with `/opt/homebrew/bin/npm`:
+
+```bash
+/opt/homebrew/bin/npm run typecheck
+```
+
+Result: passed.
+
+```bash
+/opt/homebrew/bin/npm run lint
+```
+
+Result: passed.
+
+```bash
+/opt/homebrew/bin/npm run build
+```
+
+Result: passed.
+
+Build output reported these routes:
+
+```text
+/
+/_not-found
+/app/dashboard
+/auth/session-loading
+/dashboard
+/login
+/pending-approval
+/register
+```
+
+## Source Verification
+
+Targeted source checks confirmed:
+
+- `/login` uses labeled inputs, `FormField`, `PasswordInput`, and `Alert`.
+- `/register` uses labeled inputs, `FormField`, `PasswordInput`, and safe field-level validation mapping.
+- `LoginForm` routes `account_not_active` users to `/pending-approval`.
+- `ProtectedRoute` uses the shared `SessionLoadingState` instead of a bare text loading block.
+- `/app/dashboard` composes `AppShell`, `SidebarNav`, `PageHeader`, and `EmptyState`, and keeps the nav limited to the dashboard entry.
+- `/pending-approval` remains a simple return-to-login page with no admin controls.
+- `SidebarNav` uses `aria-current="page"` for the active item.
+- `Button` loading state uses the new loading marker without changing the button label text.
+- `FormField` wires `aria-describedby` to description and error ids.
+
+## Remaining risks
+
+- Browser-level smoke testing is still needed for responsive auth pages and the protected shell.
+- The refreshed session path still restores `account: null` because the current backend refresh response does not include account data.

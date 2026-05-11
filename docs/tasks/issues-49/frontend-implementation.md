@@ -341,7 +341,7 @@ No backend behavior changed in this pass.
 - `LoginForm` now uses `FormField` and `PasswordInput` for labeled inputs and routes `account_not_active` users to `/pending-approval`.
 - `RegisterForm` now uses `FormField`, `Input`, and `PasswordInput` with safe inline error handling.
 - `LogoutButton` now tracks pending state and disables the button while logout is in flight.
-- `/auth/session-loading` now uses `EmptyState` plus `Skeleton` instead of a bare text page.
+- `/auth/session-loading` now uses `SessionLoadingState` with `Skeleton` instead of a bare text page.
 - `/app/dashboard` now uses `AppShell` with a dark Navy sidebar, an accessible `nav` landmark, a current `aria-current="page"` item, a `PageHeader`, and an `EmptyState` placeholder.
 - `/pending-approval` now uses `EmptyState` with a login return link.
 - Shared UI primitives remain under `frontend/src/shared/ui/` and do not import IdentityAccess code.
@@ -354,9 +354,13 @@ No backend behavior changed in this pass.
 - `frontend/src/app/login/page.tsx`
 - `frontend/src/app/pending-approval/page.tsx`
 - `frontend/src/app/register/page.tsx`
+- `frontend/src/contexts/identity-access/infrastructure/http/auth-http-gateway.ts`
+- `frontend/src/contexts/identity-access/presentation/guards/ProtectedRoute.tsx`
+- `frontend/src/contexts/identity-access/presentation/hooks/useAuth.tsx`
 - `frontend/src/contexts/identity-access/presentation/ui/LoginForm.tsx`
 - `frontend/src/contexts/identity-access/presentation/ui/LogoutButton.tsx`
 - `frontend/src/contexts/identity-access/presentation/ui/RegisterForm.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/SessionLoadingState.tsx`
 - `frontend/src/shared/ui/AppShell.tsx`
 - `frontend/src/shared/ui/EmptyState.tsx`
 - `frontend/src/shared/ui/FormField.tsx`
@@ -374,10 +378,19 @@ No backend behavior changed in this pass.
 
 ## Verification
 
-- Command verification for this pass could not be rerun in the current sandbox because `npm` is not available on `PATH`.
+- `npm run typecheck` from `frontend/` passed.
+- `npm run lint` from `frontend/` passed.
+- `npm run build` from `frontend/` passed and reported these routes:
+  - `/`
+  - `/_not-found`
+  - `/app/dashboard`
+  - `/auth/session-loading`
+  - `/dashboard`
+  - `/login`
+  - `/pending-approval`
+  - `/register`
 - Source inspection confirmed the new screen composition and auth flow wiring.
 
 ## Risks / follow-up
 
-- The newest UI slice is source-inspected but not command-verified in this environment.
-- Browser-level smoke testing is still needed once the frontend toolchain is available.
+- Browser-level smoke testing is still needed for the responsive shell and auth flows.
