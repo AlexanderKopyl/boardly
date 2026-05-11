@@ -195,3 +195,100 @@ Deferred manual checks:
 - End-to-end invalid refresh redirect behavior in a browser.
 - End-to-end logout cookie clearing and local-session clearing after backend failure.
 - Browser storage inspection after runtime login/refresh.
+
+## Pass 3: Tailwind and Tokens, Shared Primitives
+
+Date: 2026-05-11
+
+## Required Commands
+
+Run from `frontend/`:
+
+```bash
+npm run typecheck
+```
+
+Result: passed.
+
+```bash
+npm run lint
+```
+
+Result: passed.
+
+```bash
+npm run build
+```
+
+Result: passed.
+
+Build output showed these routes:
+
+```text
+/
+/_not-found
+/app/dashboard
+/auth/session-loading
+/dashboard
+/login
+/pending-approval
+/register
+```
+
+## Targeted Source Checks
+
+IdentityAccess import boundary check:
+
+```bash
+rg -n "from '@/contexts/identity-access|from \\\"@/contexts/identity-access|contexts/identity-access" frontend/src/shared
+```
+
+Result: no matches.
+
+Radix/shadcn dependency check:
+
+```bash
+rg -n "radix|shadcn" frontend/package.json frontend/package-lock.json frontend/src
+```
+
+Result: no matches.
+
+Focus-visible check:
+
+```bash
+rg -n ":focus-visible" frontend/src/app/globals.css
+```
+
+Evidence:
+
+- `:focus-visible` is defined globally in `frontend/src/app/globals.css`.
+- `.ui-input:focus-visible` also adds a component-level ring and border state.
+
+Navy hex centralization check:
+
+```bash
+rg -n "#[0-9a-fA-F]{6}" frontend/src/shared frontend/src/app --glob '!frontend/src/app/globals.css'
+```
+
+Result: no matches.
+
+Prototype/no-HTML check:
+
+```bash
+rg --files frontend | rg '\\.(html|htm)$'
+```
+
+Result: no matches.
+
+## Manual Verification Not Run
+
+No browser runtime checks were run for this slice. The requested static verification commands and targeted scans passed.
+
+## Final verification status
+
+VERIFIED
+
+## Remaining risks
+
+- The Tailwind config scaffold is present for future utility-class usage, but the current slice relies on the shared CSS token sheet and primitives.
+- Button loading behavior is now supported by props, but no screen-level loading-copy redesign was made in this slice.

@@ -68,33 +68,33 @@ Do not mark implementation items complete during planning. Check items only when
 
 ## 6. Tailwind and Tokens
 
-- [ ] Add minimal Tailwind/PostCSS setup if still absent.
-- [ ] Add `frontend/src/app/globals.css`.
-- [ ] Import global CSS from `frontend/src/app/layout.tsx`.
-- [ ] Define Navy semantic CSS variables in one place.
-- [ ] Map Tailwind theme colors to CSS variables if a config is introduced.
-- [ ] Use semantic classes/tokens in components.
-- [ ] Avoid repeated hardcoded Navy hex values in pages/components.
-- [ ] Do not copy standalone prototype HTML, bundled scripts, or generated CSS.
-- [ ] Add visible `:focus-visible` styling.
-- [ ] Keep body typography around the intended SaaS density.
+- [x] Add minimal Tailwind/PostCSS setup if still absent.
+- [x] Add `frontend/src/app/globals.css`.
+- [x] Import global CSS from `frontend/src/app/layout.tsx`.
+- [x] Define Navy semantic CSS variables in one place.
+- [x] Map Tailwind theme colors to CSS variables if a config is introduced.
+- [x] Use semantic classes/tokens in components.
+- [x] Avoid repeated hardcoded Navy hex values in pages/components.
+- [x] Do not copy standalone prototype HTML, bundled scripts, or generated CSS.
+- [x] Add visible `:focus-visible` styling.
+- [x] Keep body typography around the intended SaaS density.
 
 ## 7. Shared UI Primitives
 
-- [ ] Update `Button` with variants, sizes, disabled/loading state, `className`, and native semantics.
-- [ ] Update `Input` with invalid/disabled/focus states, `className`, and native semantics.
+- [x] Update `Button` with variants, sizes, disabled/loading state, `className`, and native semantics.
+- [x] Update `Input` with invalid/disabled/focus states, `className`, and native semantics.
 - [ ] Add `PasswordInput` with accessible show/hide control.
 - [ ] Add `FormField` with label, description, error, and `aria-describedby` wiring.
-- [ ] Add `Alert` with safe status/error variants.
-- [ ] Add `Card` with restrained radius and semantic surface styling.
-- [ ] Add `Badge` for simple statuses.
-- [ ] Add `Skeleton` for loading states.
+- [x] Add `Alert` with safe status/error variants.
+- [x] Add `Card` with restrained radius and semantic surface styling.
+- [x] Add `Badge` for simple statuses.
+- [x] Add `Skeleton` for loading states.
 - [ ] Add `EmptyState` for dashboard placeholder content.
 - [ ] Add `PageHeader` for app content pages.
 - [ ] Add `SidebarNav` for the app shell.
 - [ ] Add `AppShell` for authenticated pages.
-- [ ] Do not add Radix packages unless a component genuinely needs them.
-- [ ] Do not introduce shadcn CLI setup in this issue.
+- [x] Do not add Radix packages unless a component genuinely needs them.
+- [x] Do not introduce shadcn CLI setup in this issue.
 
 ## 8. Screens
 

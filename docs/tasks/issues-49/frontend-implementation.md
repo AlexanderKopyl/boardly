@@ -157,3 +157,77 @@ No backend code, Tailwind/design-token setup, shared visual primitive work, or d
 - Screen visual/accessibility upgrades remain unchecked except for the route existence and redirect behavior handled here.
 - App shell work remains unchecked; `/app/dashboard` is intentionally still a minimal protected placeholder.
 - Browser/API runtime verification with a live backend remains deferred.
+
+## Pass 3: Tailwind and Tokens, Shared Primitives
+
+Date: 2026-05-11
+
+## Scope
+
+This pass completed the Tailwind/tokens slice and the first shared UI primitive slice:
+
+- minimal frontend styling scaffold;
+- global CSS token sheet and base density/focus rules;
+- shared UI helper `cn`;
+- `Button`, `Input`, `Card`, `Alert`, `Badge`, and `Skeleton`.
+
+No backend code or context-specific UI screens were rewritten in this pass.
+
+## Skills and Subagents Used
+
+- Skills: `frontend-task-implementation`, `frontend-style-system`, `verification-evidence`.
+- Subagents: `style_setup_explorer` was used to confirm the current frontend style setup before editing.
+
+## Relevant Memory Found
+
+- Boardly styling should use Tailwind-style semantic tokens and shared primitives, but generic shared UI must remain context-free.
+- Focus-visible styling and 14px SaaS density are required for the frontend shell and primitives.
+
+## Current Code Facts
+
+- `frontend/src/app/globals.css` now centralizes Navy semantic color variables, semantic surface tokens, focus-visible styling, and base density rules.
+- `frontend/src/app/layout.tsx` imports the global stylesheet.
+- `frontend/tailwind.config.ts` maps semantic Tailwind color names to CSS variables for future utility-class usage.
+- `frontend/postcss.config.mjs` exists as the minimal frontend PostCSS scaffold.
+- `frontend/src/shared/lib/cn.ts` now provides class merging for shared UI.
+- `Button`, `Input`, `Card`, `Alert`, `Badge`, and `Skeleton` are now generic, context-free primitives with semantic styling hooks.
+
+## Files Changed
+
+- `frontend/src/app/globals.css`
+- `frontend/src/app/layout.tsx`
+- `frontend/postcss.config.mjs`
+- `frontend/tailwind.config.ts`
+- `frontend/src/shared/lib/cn.ts`
+- `frontend/src/shared/ui/Button.tsx`
+- `frontend/src/shared/ui/Input.tsx`
+- `frontend/src/shared/ui/Card.tsx`
+- `frontend/src/shared/ui/Alert.tsx`
+- `frontend/src/shared/ui/Badge.tsx`
+- `frontend/src/shared/ui/Skeleton.tsx`
+- `docs/tasks/issues-49/frontend-checklist.md`
+- `docs/tasks/issues-49/frontend-implementation.md`
+- `docs/tasks/issues-49/frontend-verification.md`
+
+## Summary
+
+- Added a centralized Navy token sheet in `globals.css` and imported it from the root layout.
+- Added the shared semantic styling surface for buttons, inputs, cards, alerts, badges, and skeletons.
+- Kept shared UI generic and context-free.
+- Kept the 14px layout density and visible focus-visible styling in the base layer.
+
+## Verification
+
+- `npm run typecheck` from `frontend/`
+- `npm run lint` from `frontend/`
+- `npm run build` from `frontend/`
+- targeted `rg` scans for identity-access imports in `frontend/src/shared`
+- targeted `rg` scan for accidental `radix` / `shadcn` references
+- targeted `rg` scan for `:focus-visible` in `frontend/src/app/globals.css`
+- targeted `rg` scan for hardcoded Navy hex values outside `frontend/src/app/globals.css`
+- targeted `rg --files frontend | rg '\\.(html|htm)$'` to confirm no standalone prototype HTML files were added
+
+## Risks / follow-up
+
+- The Tailwind scaffold is present, but the current frontend still relies on the shared CSS token sheet rather than Tailwind utility classes. That is deliberate for this slice.
+- Later screen and app-shell work should continue to consume these primitives instead of duplicating styling.

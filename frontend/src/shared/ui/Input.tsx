@@ -1,25 +1,39 @@
-import type { HTMLInputTypeAttribute } from 'react';
+import type {
+  HTMLInputTypeAttribute,
+  InputHTMLAttributes,
+  ReactElement,
+} from 'react'
 
-export type InputProps = {
-  type?: HTMLInputTypeAttribute;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  required?: boolean;
-  name?: string;
-};
+import { cn } from '@/shared/lib/cn'
 
-export function Input({ type = 'text', value, onChange, placeholder, disabled, required, name }: InputProps) {
+export type InputProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'value' | 'onChange'
+> & {
+  type?: HTMLInputTypeAttribute
+  value: string
+  onChange: (value: string) => void
+  invalid?: boolean
+  className?: string
+}
+
+export function Input({
+  type = 'text',
+  value,
+  onChange,
+  invalid = false,
+  className,
+  ...props
+}: InputProps): ReactElement {
   return (
     <input
       type={type}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-      name={name}
+      onChange={(event) => onChange(event.target.value)}
+      aria-invalid={invalid || undefined}
+      data-invalid={invalid || undefined}
+      className={cn('ui-input', className)}
+      {...props}
     />
-  );
+  )
 }
