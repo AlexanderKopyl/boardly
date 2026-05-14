@@ -69,3 +69,48 @@ Focused verification still pending for the new controller file. The next step is
 
 - `AuthenticationExceptionMapper` still maps `AccountNotActive` to `403`, so if future tests expect a generic `401` for stale current-account data, that policy will need to be resolved deliberately.
 - OpenAPI docs, controller tests, and remaining checklist items are still open.
+
+## 2026-05-14 - Task: Step 9 OpenAPI docs for GET /api/auth/me
+
+### Subagents used
+
+- `explorer` subagent to confirm the repo's OpenAPI pattern and whether a dedicated current-account schema was preferable.
+
+### Skills used
+
+`task-implementation`
+
+### Files changed
+
+- `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountController.php`
+- `src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/CurrentAccountResponse.php`
+- `docs/tasks/issues-50/checklist.md`
+- `docs/tasks/issues-50/implementation.md`
+
+### Summary
+
+Added OpenAPI documentation for `GET /api/auth/me` on the existing controller using the repo's auth-controller attribute style:
+
+- `#[OA\Get(...)]` with `bearerAuth` security
+- `200` response referencing a dedicated `CurrentAccountResponse` schema
+- `401` response referencing the existing `ErrorEnvelope`
+
+Created a dedicated `CurrentAccountResponse` schema with the same safe fields already used by the login account schema:
+
+- `id`
+- `email`
+- `name`
+- `status`
+
+### Verification
+
+- `php -l src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountController.php`
+- `php -l src/Boardly/IdentityAccess/Interfaces/Http/OpenApi/Schema/CurrentAccountResponse.php`
+- `php bin/console debug:router api_auth_me`
+- `php bin/console debug:container --tag=nelmio_api_doc.describer`
+- `php bin/console nelmio:apidoc:dump --format=json | /opt/homebrew/bin/rg -n '"'"'"/api/auth/me"|\"CurrentAccountResponse\"|\"bearerAuth\"'"'"'`
+
+### Risks / follow-up
+
+- Application and HTTP/security tests are still open in the checklist.
+- The known unrelated `RefreshAuthenticationControllerTest` baseline failure remains unresolved and was intentionally not addressed.
