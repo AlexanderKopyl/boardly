@@ -33,3 +33,39 @@ Result:
 
 - The known unrelated refresh-token baseline failure remains present and does not block this issue.
 - Shell startup still references a missing Xcode Command Line Tools path; direct absolute commands avoid the problem for now.
+
+## 2026-05-14 - Task: Steps 2-8 Current Account Query and Controller
+
+### Subagents used
+
+Worker requested for the controller file, but the workspace did not surface a separate completed agent result. I completed the controller change directly after confirming the existing application-layer files already satisfied the earlier checklist items.
+
+### Skills used
+
+`task-implementation`
+
+### Files changed
+
+- `src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountController.php`
+- `docs/tasks/issues-50/checklist.md`
+
+### Summary
+
+Confirmed the query/result/handler implementation for `GetCurrentAccount` was already present in the repository and matched the checklist items for Steps 2-6.
+
+Added the protected `GET /api/auth/me` controller that:
+
+- reads the authenticated principal from `TokenStorageInterface`;
+- requires `AuthenticatedAccountUser`;
+- creates `GetCurrentAccountQuery` from `accountId()`;
+- asks the query bus;
+- maps `GetCurrentAccountResult` to a safe JSON response with `id`, `email`, `name`, and `status`.
+
+### Verification
+
+Focused verification still pending for the new controller file. The next step is syntax/routing validation plus the remaining controller/OpenAPI/test steps.
+
+### Risks / follow-up
+
+- `AuthenticationExceptionMapper` still maps `AccountNotActive` to `403`, so if future tests expect a generic `401` for stale current-account data, that policy will need to be resolved deliberately.
+- OpenAPI docs, controller tests, and remaining checklist items are still open.
