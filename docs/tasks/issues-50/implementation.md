@@ -151,3 +151,47 @@ Result:
 
 - Step 11 HTTP/security coverage is still open.
 - The unrelated refresh-controller baseline failure remains present outside this focused slice.
+
+## 2026-05-14 - Task: Step 11 HTTP/security tests for `GET /api/auth/me`
+
+### Subagents used
+
+- `explorer` to confirm the most focused endpoint test placement and contract.
+
+### Skills used
+
+`task-implementation`
+
+### Files changed
+
+- `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountControllerTest.php`
+- `docs/tasks/issues-50/checklist.md`
+- `docs/tasks/issues-50/implementation.md`
+
+### Summary
+
+Added dedicated functional coverage for `GET /api/auth/me` that exercises:
+
+- missing bearer token -> generic `401`
+- invalid bearer token -> generic `401`
+- expired bearer token -> generic `401`
+- token for a missing account -> generic `401`
+- token for a non-active account -> generic `401`
+- valid active account -> `200` with only `id`, `email`, `name`, `status`
+- sensitive-field absence in the successful JSON response
+
+The test file uses the real Symfony firewall/authenticator flow and persists accounts through the repository to keep the endpoint coverage close to production behavior.
+
+### Verification
+
+- `php -l tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountControllerTest.php`
+
+Result:
+
+- `OK (6 tests, 63 assertions)`
+
+### Risks / follow-up
+
+- Step 12 focused syntax/routing/container/OpenAPI checks are still open.
+- Step 13 implementation notes remain open until the planned verification pass is completed.
