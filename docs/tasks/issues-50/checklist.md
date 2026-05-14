@@ -11,5 +11,5 @@
 - [x] Step 9: Add OpenAPI attributes/schema for `GET /api/auth/me` using the existing issue #46 OpenAPI conventions and `bearerAuth`; document 200 and 401 responses.
 - [x] Step 10: Add application tests for successful active account lookup, missing account controlled failure, and non-active account rejection if the use case performs the active check.
 - [x] Step 11: Add HTTP/security tests for missing bearer token, invalid token, expired token, token for missing account, token for non-active account, valid active account, and sensitive-field absence.
-- [ ] Step 12: Run focused syntax, routing, firewall, PHPUnit, OpenAPI/container, and lint checks listed in the plan.
-- [ ] Step 13: Update implementation notes with exact behavior decisions, especially missing-account and non-active-account mapping.
+- [x] Step 12: Run focused syntax, routing, firewall, PHPUnit, OpenAPI/container, and lint checks listed in the plan.
+- [x] Step 13: Update implementation notes with exact behavior decisions, especially missing-account and non-active-account mapping.

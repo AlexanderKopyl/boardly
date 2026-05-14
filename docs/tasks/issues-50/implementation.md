@@ -195,3 +195,62 @@ Result:
 
 - Step 12 focused syntax/routing/container/OpenAPI checks are still open.
 - Step 13 implementation notes remain open until the planned verification pass is completed.
+
+## 2026-05-14 - Task: Steps 12-13 Verification and Implementation Notes
+
+### Subagents used
+
+None.
+
+### Skills used
+
+`task-implementation`
+
+### Files changed
+
+- `docs/tasks/issues-50/checklist.md`
+- `docs/tasks/issues-50/implementation.md`
+
+### Summary
+
+Completed the planned focused verification for the current-account endpoint slice and recorded the behavior decisions in the task notes.
+
+Verified:
+
+- syntax for `GetCurrentAccountQuery`, `GetCurrentAccountHandler`, `GetCurrentAccountResult`, and `GetCurrentAccountController`
+- route registration for `GET /api/auth/me`
+- `api` firewall protection
+- focused application tests for `GetCurrentAccount`
+- focused HTTP/security tests for `GetCurrentAccountController`
+- full `tests/Boardly/IdentityAccess` suite to confirm there were no new regressions in the broader slice
+- container lint
+- OpenAPI route exposure for `/api/doc`
+
+Behavior recorded:
+
+- missing account and non-active account are handled through the existing generic auth-failure policy, not as a leaked not-found or lifecycle-specific response
+- the controller remains thin and only maps the authenticated principal to the application query/result flow
+- the response stays limited to `id`, `email`, `name`, and `status`
+
+### Verification
+
+- `/opt/homebrew/bin/php -l src/Boardly/IdentityAccess/Application/GetCurrentAccount/GetCurrentAccountQuery.php`
+- `/opt/homebrew/bin/php -l src/Boardly/IdentityAccess/Application/GetCurrentAccount/GetCurrentAccountHandler.php`
+- `/opt/homebrew/bin/php -l src/Boardly/IdentityAccess/Application/GetCurrentAccount/GetCurrentAccountResult.php`
+- `/opt/homebrew/bin/php -l src/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountController.php`
+- `/opt/homebrew/bin/php bin/console debug:router | grep '/api/auth/me'`
+- `/opt/homebrew/bin/php bin/console debug:firewall api`
+- `/opt/homebrew/bin/php ./vendor/bin/phpunit tests/Boardly/IdentityAccess/Application/GetCurrentAccount`
+- `/opt/homebrew/bin/php ./vendor/bin/phpunit tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountControllerTest.php`
+- `/opt/homebrew/bin/php ./vendor/bin/phpunit tests/Boardly/IdentityAccess`
+- `/opt/homebrew/bin/php bin/console lint:container`
+- `/opt/homebrew/bin/php bin/console debug:router | grep '/api/doc'`
+
+Result:
+
+- all focused current-account checks passed
+- the broader IdentityAccess suite still contains the pre-existing unrelated failure in `RefreshAuthenticationControllerTest::testReplacedTokenReuseReturns401ClearsCookieAndRevokesFamily`
+
+### Risks / follow-up
+
+- The unrelated refresh-token baseline failure remains outside issue #50 and was not changed here.
