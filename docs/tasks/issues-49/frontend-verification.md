@@ -498,3 +498,27 @@ Targeted source checks confirmed:
 
 - Browser-level smoke testing is still needed for responsive auth pages and the protected shell.
 - The refreshed session path still restores `account: null` because the current backend refresh response does not include account data.
+
+## Pass 7: Layout Width Verification
+
+Date: 2026-05-14
+
+## Manual Verification
+
+Verified the `/login` route in Chrome at desktop width and at a 400px-wide responsive viewport using Chrome device emulation.
+
+Desktop view evidence:
+
+- The page rendered as a two-column layout with the overview card on the left and the sign-in card on the right.
+- No app-content overlap or clipping was observed at the desktop width.
+
+Mobile view evidence:
+
+- Chrome device emulation was set to Responsive `400 x 452`.
+- The page stacked vertically as expected.
+- The sign-in form, primary button, and return link remained readable in the narrow viewport.
+- No app-content overlap or horizontal overflow was observed.
+
+## Remaining risks
+
+- This check was performed manually in the browser, so it depends on the current responsive layout remaining unchanged.

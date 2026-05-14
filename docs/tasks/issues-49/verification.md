@@ -89,3 +89,16 @@ VERIFIED
 ## Remaining risks
 
 - The primitives are present, but the login/register/dashboard screens still need to adopt them in the next slice before the full UX can be assessed end-to-end.
+
+## Pass 7: Layout Width Verification
+
+Date: 2026-05-14
+
+### Evidence
+
+- Verified `/login` at desktop width in Chrome; the page rendered as a two-column layout with no app-content overlap or clipping.
+- Verified `/login` in Chrome device emulation at Responsive `400 x 452`; the page stacked vertically with readable form controls and no app-content horizontal overflow.
+
+### Result
+
+PASS

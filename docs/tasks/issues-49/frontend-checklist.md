@@ -123,7 +123,7 @@ Do not mark implementation items complete during planning. Check items only when
 - [x] Do not implement detailed Tasks UI.
 - [x] Do not implement Admin approval UI.
 - [x] Add account/logout area without token details.
-- [ ] Verify layout at mobile and desktop widths.
+- [x] Verify layout at mobile and desktop widths.
 
 ## 10. Accessibility
 
