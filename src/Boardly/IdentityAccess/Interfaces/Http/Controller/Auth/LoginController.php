@@ -38,7 +38,7 @@ final readonly class LoginController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Login successful. Sets refresh_token cookie (HttpOnly, Secure, SameSite=Lax).',
+                description: 'Login successful. Sets refresh_token cookie (HttpOnly, Secure, SameSite=None).',
                 content: new OA\JsonContent(ref: '#/components/schemas/LoginResponse'),
             ),
             new OA\Response(
@@ -102,7 +102,7 @@ final readonly class LoginController
             true,
             true,
             false,
-            Cookie::SAMESITE_LAX,
+            Cookie::SAMESITE_NONE,
         ));
 
         return $response;

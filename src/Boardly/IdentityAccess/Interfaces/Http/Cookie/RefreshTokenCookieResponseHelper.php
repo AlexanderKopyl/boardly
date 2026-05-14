@@ -19,7 +19,7 @@ final class RefreshTokenCookieResponseHelper
             null,
             true,
             true,
-            Cookie::SAMESITE_LAX,
+            Cookie::SAMESITE_NONE,
         );
     }
 }

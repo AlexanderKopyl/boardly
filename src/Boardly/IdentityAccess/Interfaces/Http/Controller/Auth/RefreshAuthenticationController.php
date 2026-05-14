@@ -43,7 +43,7 @@ final readonly class RefreshAuthenticationController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Token refreshed. Rotates the refresh_token cookie (HttpOnly, Secure, SameSite=Lax).',
+                description: 'Token refreshed. Rotates the refresh_token cookie (HttpOnly, Secure, SameSite=None).',
                 content: new OA\JsonContent(ref: '#/components/schemas/AccessTokenResponse'),
             ),
             new OA\Response(
@@ -91,7 +91,7 @@ final readonly class RefreshAuthenticationController
             true,
             true,
             false,
-            Cookie::SAMESITE_LAX,
+            Cookie::SAMESITE_NONE,
         ));
 
         return $response;
@@ -109,7 +109,7 @@ final readonly class RefreshAuthenticationController
             null,
             true,
             true,
-            Cookie::SAMESITE_LAX,
+            Cookie::SAMESITE_NONE,
         );
 
         return $response;

@@ -129,13 +129,13 @@ final class LoginControllerTest extends WebTestCase
         self::assertTrue($cookie->isHttpOnly());
         self::assertTrue($cookie->isSecure());
         self::assertSame('/api/auth', $cookie->getPath());
-        self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
+        self::assertSame(Cookie::SAMESITE_NONE, $cookie->getSameSite());
         self::assertGreaterThan(time(), $cookie->getExpiresTime());
         $setCookieHeader = strtolower($this->setCookieHeader());
         self::assertStringContainsString('refresh_token=', $setCookieHeader);
         self::assertStringContainsString('httponly', $setCookieHeader);
         self::assertStringContainsString('path=/api/auth', $setCookieHeader);
-        self::assertStringContainsString('samesite=lax', $setCookieHeader);
+        self::assertStringContainsString('samesite=none', $setCookieHeader);
         self::assertNotSame($cookie->getValue(), $tokenHash);
         self::assertStringNotContainsString((string) $cookie->getValue(), (string) $this->client->getResponse()->getContent());
     }
