@@ -42,6 +42,14 @@ function toAuthError(error: unknown): Error {
   return error instanceof Error ? error : new Error('Unexpected authentication error')
 }
 
+function toCurrentAccountAuthError(error: unknown): Error {
+  if (error instanceof ApiError && error.statusCode === 401) {
+    return new AuthError('unauthenticated')
+  }
+
+  return error instanceof Error ? error : new Error('Unexpected authentication error')
+}
+
 export class AuthHttpGateway implements AuthGateway {
   async login(email: string, plainPassword: string): Promise<LoginResult> {
     let data: LoginResponse
@@ -95,9 +103,14 @@ export class AuthHttpGateway implements AuthGateway {
   }
 
   async getCurrentAccount(accessToken: string): Promise<Account> {
-    const data = await httpRequest<CurrentAccountResponse>('/api/auth/me', {
-      accessToken,
-    })
+    let data: CurrentAccountResponse
+    try {
+      data = await httpRequest<CurrentAccountResponse>('/api/auth/me', {
+        accessToken,
+      })
+    } catch (error) {
+      throw toCurrentAccountAuthError(error)
+    }
 
     return {
       id: data.id,
