@@ -132,7 +132,7 @@ Do not mark implementation items complete during planning. Check items only when
 - [x] Form-level errors use `role="alert"` or `aria-live`.
 - [x] Password visibility toggle has an accessible name.
 - [x] Focus states are visible on light and Navy surfaces.
-- [ ] Color contrast is suitable for text and controls.
+- [x] Color contrast is suitable for text and controls.
 - [x] Loading states do not trap focus.
 - [x] Buttons do not resize unexpectedly when loading.
 - [x] Text does not overlap or overflow on mobile.
@@ -147,13 +147,13 @@ Do not mark implementation items complete during planning. Check items only when
 - [x] Manually verify register payload uses `plainPassword`.
 - [x] Manually verify refresh/logout include `X-CSRF-Intent: auth-refresh`.
 - [x] Manually verify requests include `credentials: 'include'`.
-- [ ] Manually verify access token is not in browser storage.
+- [x] Manually verify access token is not in browser storage.
 - [x] Manually verify refresh token is never read by frontend JavaScript.
 - [x] Manually verify `/login` success routes to `/app/dashboard`.
 - [x] Manually verify `/register` success routes to `/pending-approval`.
 - [x] Manually verify unauthenticated `/app/dashboard` routes to `/login`.
-- [ ] Manually verify logout clears local state and routes to `/login`.
-- [ ] Manually verify no detailed Projects/Boards/Tasks/Admin UI appears.
+- [x] Manually verify logout clears local state and routes to `/login`.
+- [x] Manually verify no detailed Projects/Boards/Tasks/Admin UI appears.
 
 ## 12. Optional Tests If Tooling Is Added
 

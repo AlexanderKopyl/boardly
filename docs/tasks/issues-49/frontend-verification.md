@@ -522,3 +522,59 @@ Mobile view evidence:
 ## Remaining risks
 
 - This check was performed manually in the browser, so it depends on the current responsive layout remaining unchanged.
+
+## Pass 8: Accessibility and Verification Cleanup
+
+Date: 2026-05-14
+
+## Source Verification
+
+Contrast checks were reviewed against the current CSS tokens and component surfaces.
+
+Computed contrast ratios for the relevant text/control pairs:
+
+- `--foreground` on `--background`: `17.74`
+- `--primary-foreground` on `--primary`: `9.98`
+- `--muted-foreground` on `--muted`: `5.24`
+- `--sidebar-foreground` on `--sidebar`: `15.82`
+- `--sidebar-muted` on `--sidebar`: `9.20`
+- `--accent-foreground` on `--accent`: `12.99`
+
+No failing contrast pair was found in the current shared tokens or the app-shell/auth surfaces.
+
+Source scan commands:
+
+```bash
+rg -n "localStorage|sessionStorage|indexedDB|document\\.cookie|refreshToken|refresh_token|accessToken|NEXT_PUBLIC_" frontend/src
+```
+
+Evidence:
+
+- No browser storage APIs are used in `frontend/src`.
+- `accessToken` only appears in in-memory auth/session typing and the shared HTTP `Authorization` header path.
+- No refresh token value is read by frontend JavaScript.
+
+```bash
+rg -n "router\\.push\\('/login'|logout|clear.*AuthMemoryStore|finally" frontend/src/contexts/identity-access frontend/src/app
+```
+
+Evidence:
+
+- `logoutUseCase()` clears the auth store in `finally`.
+- `LogoutButton` routes back to `/login` after logout.
+
+```bash
+rg -n "Projects|Boards|Tasks|Admin approval|Admin|detailed Projects|detailed Boards|detailed Tasks|approval UI" frontend/src/app frontend/src/shared frontend/src/contexts/identity-access
+```
+
+Evidence:
+
+- No detailed Projects, Boards, Tasks, or Admin approval UI is present in the current frontend sources.
+
+## Manual Verification Not Run
+
+Live browser checks were not needed for this cleanup pass because the remaining unchecked items were resolved by direct source inspection and token-level contrast verification.
+
+## Result
+
+PASS
