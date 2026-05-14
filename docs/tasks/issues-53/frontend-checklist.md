@@ -1,6 +1,6 @@
 # Frontend Checklist: Issue #53 integrate GET /api/auth/me
 
-- [ ] Confirm implementation branch/base is correct before code edits: expected `feature/53-integrate-frontend-auth-me-endpoint` or approved base with issue #50 backend `/api/auth/me`.
+- [x] Confirm implementation branch/base is correct before code edits: expected `feature/53-integrate-frontend-auth-me-endpoint` or approved base with issue #50 backend `/api/auth/me`.
 - [ ] Extend `AuthGateway` with `getCurrentAccount(accessToken: string): Promise<Account>`.
 - [ ] Add explicit `CurrentAccountResponse` contract for `GET /api/auth/me`.
 - [ ] Implement `AuthHttpGateway.getCurrentAccount` using bearer `accessToken` and mapping to frontend `Account`.
