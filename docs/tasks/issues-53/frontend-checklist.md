@@ -11,5 +11,5 @@
 - [x] Add focused automated tests if frontend test tooling is introduced or available; otherwise document the tooling gap and manual smoke coverage.
 - [x] Run `cd frontend && npm run typecheck`.
 - [x] Run `cd frontend && npm run lint`.
-- [ ] Run `cd frontend && npm run build`.
-- [ ] Manually verify login, protected-route reload/bootstrap with `/me`, refresh failure redirect, `/me` 401 behavior, and logout.
+- [x] Run `cd frontend && npm run build`.
+- [ ] Manually verify login, protected-route reload/bootstrap with `/me`, refresh failure redirect, `/me` 401 behavior, and logout. Blocked in this environment because the backend auth API is not running on `127.0.0.1:8080`.

@@ -103,3 +103,26 @@
 ### Result
 
 - The lint checklist item is complete.
+
+## 2026-05-14 13:42 EEST - Production build verification
+
+### Evidence
+
+- `cd frontend && npm run build` completed successfully.
+- Command output included successful TypeScript compilation and static page generation for the app routes.
+
+### Result
+
+- The production build checklist item is complete.
+
+## 2026-05-14 13:43 EEST - Manual smoke attempt blocked
+
+### Evidence
+
+- `curl -i -sS http://127.0.0.1:8080/api/auth/me` failed with `curl: (7) Failed to connect to 127.0.0.1 port 8080`.
+- The frontend dev server at `http://localhost:3000` loaded the login screen successfully.
+- Submitting the login form in Chrome did not progress to the authenticated shell because the backend auth API was unavailable in this environment.
+
+### Result
+
+- Manual end-to-end smoke for login, bootstrap refresh, `/me`, and logout could not be completed here.

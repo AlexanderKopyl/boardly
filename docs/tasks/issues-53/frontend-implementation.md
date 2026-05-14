@@ -259,6 +259,76 @@ Verified the frontend keeps the access token memory-only. `AuthMemoryStore` uses
 
 No source changes were required for this slice because the current implementation already avoids `localStorage`, `sessionStorage`, `IndexedDB`, readable cookies, URL params, persisted stores, and `NEXT_PUBLIC_*` token exposure.
 
+## 2026-05-14 13:42 EEST - Task: Run frontend production build verification
+
+### Subagents used
+
+- none
+
+### Skills used
+
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Files changed
+
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Summary
+
+Ran `cd frontend && npm run build` and confirmed the frontend builds successfully with production page generation.
+
+### Verification
+
+- `cd frontend && npm run build`
+
+### Risks / follow-up
+
+- Manual smoke remains blocked until the backend auth API is running locally on `127.0.0.1:8080`.
+
+## 2026-05-14 13:43 EEST - Task: Manual smoke verification attempt
+
+### Subagents used
+
+- none
+
+### Skills used
+
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Files changed
+
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Summary
+
+Started the frontend dev server and opened the login page in Chrome. The backend auth API at `http://127.0.0.1:8080` was not reachable in this environment, so the end-to-end login/bootstrap/logout smoke could not be completed.
+
+### Verification
+
+- `cd frontend && npm run dev`
+- Chrome navigation to `http://localhost:3000/login`
+- `curl -i -sS http://127.0.0.1:8080/api/auth/me`
+
+### Risks / follow-up
+
+- Once the backend is available locally, rerun the manual smoke to confirm login, bootstrap refresh, `/me`, refresh failure redirect, and logout.
+
 ### Verification
 
 - `rg -n "localStorage|sessionStorage|indexedDB|IndexedDB|document.cookie|persisted Zustand|persisted Redux|redux-persist|NEXT_PUBLIC_.*token|token.*localStorage|token.*sessionStorage" frontend/src frontend -g '!frontend/README.md' -g '!**/.next/**'`
