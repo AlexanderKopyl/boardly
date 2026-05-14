@@ -11,3 +11,27 @@
 ### Result
 
 - Checklist item completed and recorded as verified.
+
+## 2026-05-14 10:43 EEST - AuthGateway current-account port
+
+### Evidence
+
+- `frontend/src/contexts/identity-access/application/ports/auth-gateway.ts` now includes `getCurrentAccount(accessToken: string): Promise<Account>`.
+- `frontend/src/contexts/identity-access/infrastructure/http/auth-http-gateway.ts` now implements `getCurrentAccount` with `httpRequest('/api/auth/me', { accessToken })` and maps the response to the frontend `Account` model.
+- `cd frontend && npm run typecheck` completed successfully with `tsc --noEmit`.
+
+### Notes
+
+- `git status` and `git diff` commands hit a local `xcrun` command-line-tools path error in this environment, so file-state confirmation is limited to the applied patch and the successful typecheck run.
+
+## 2026-05-14 10:46 EEST - CurrentAccountResponse contract and gateway mapping
+
+### Evidence
+
+- `frontend/src/contexts/identity-access/infrastructure/http/auth-api-contracts.ts` now includes `CurrentAccountResponse` with the `/api/auth/me` account shape.
+- `frontend/src/contexts/identity-access/infrastructure/http/auth-http-gateway.ts` now uses `httpRequest<CurrentAccountResponse>('/api/auth/me', { accessToken })` and maps the result to `Account`.
+- `cd frontend && npm run typecheck` completed successfully with `tsc --noEmit`.
+
+### Notes
+
+- The shell environment still reports a local `xcrun` path issue for `git` commands, so file-state verification remains based on the patched files and typecheck output.
