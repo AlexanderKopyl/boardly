@@ -75,3 +75,31 @@
 ### Result
 
 - The memory-only access token requirement is already satisfied by the current implementation, so no source code change was needed for this checklist item.
+
+## 2026-05-14 13:29 EEST - Testing/tooling gap documentation
+
+### Evidence
+
+- `frontend/package.json` has no `test` script and no test runner dependencies.
+- `rg -n '"test"|vitest|jest|playwright|cypress' frontend/package.json frontend --glob '!**/.next/**'` found only the optional `@playwright/test` peer dependency mention inside `frontend/package-lock.json`.
+- `rg --files frontend | rg 'playwright|vitest|jest|cypress|test|spec'` returned no frontend test config or test files.
+
+### Result
+
+- The frontend currently has no executable automated test harness, so this checklist item was completed by documenting the tooling gap and preserving the manual smoke coverage requirement for the later validation step.
+
+## 2026-05-14 13:30 EEST - Lint verification
+
+### Evidence
+
+- `cd frontend && npm run lint` completed successfully.
+- Command output:
+
+```text
+> boardly-frontend@0.1.0 lint
+> eslint .
+```
+
+### Result
+
+- The lint checklist item is complete.

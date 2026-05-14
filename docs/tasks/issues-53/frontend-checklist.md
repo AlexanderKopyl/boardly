@@ -8,8 +8,8 @@
 - [x] Handle refresh 401 and `/me` 401 during bootstrap by clearing memory state and returning unauthenticated state without retry loops.
 - [x] Keep `useAuth`, `ProtectedRoute`, and app pages free of raw HTTP calls, backend URL construction, backend error parsing, and refresh algorithms.
 - [x] Preserve memory-only access token handling and avoid localStorage, sessionStorage, IndexedDB, readable cookies, URL params, persisted stores, or `NEXT_PUBLIC_*` token exposure.
-- [ ] Add focused automated tests if frontend test tooling is introduced or available; otherwise document the tooling gap and manual smoke coverage.
+- [x] Add focused automated tests if frontend test tooling is introduced or available; otherwise document the tooling gap and manual smoke coverage.
 - [x] Run `cd frontend && npm run typecheck`.
-- [ ] Run `cd frontend && npm run lint`.
+- [x] Run `cd frontend && npm run lint`.
 - [ ] Run `cd frontend && npm run build`.
 - [ ] Manually verify login, protected-route reload/bootstrap with `/me`, refresh failure redirect, `/me` 401 behavior, and logout.
