@@ -114,3 +114,40 @@ Created a dedicated `CurrentAccountResponse` schema with the same safe fields al
 
 - Application and HTTP/security tests are still open in the checklist.
 - The known unrelated `RefreshAuthenticationControllerTest` baseline failure remains unresolved and was intentionally not addressed.
+
+## 2026-05-14 - Task: Step 10 Application tests for GetCurrentAccount
+
+### Subagents used
+
+- `explorer` for confirming the current application test coverage and any checklist conflict.
+
+### Skills used
+
+`task-implementation`
+
+### Files changed
+
+- `docs/tasks/issues-50/checklist.md`
+- `docs/tasks/issues-50/implementation.md`
+
+### Summary
+
+Verified that `tests/Boardly/IdentityAccess/Application/GetCurrentAccount/GetCurrentAccountHandlerTest.php` already covers the Step 10 scenarios:
+
+- successful active-account lookup returns only safe identity data;
+- missing account maps to the standardized `AccountNotActive` auth failure;
+- inactive account maps to the same standardized auth failure;
+- `GetCurrentAccountResult` does not expose unsafe fields.
+
+### Verification
+
+- `/opt/homebrew/bin/php ./vendor/bin/phpunit tests/Boardly/IdentityAccess/Application/GetCurrentAccount`
+
+Result:
+
+- `OK (4 tests, 24 assertions)`
+
+### Risks / follow-up
+
+- Step 11 HTTP/security coverage is still open.
+- The unrelated refresh-controller baseline failure remains present outside this focused slice.
