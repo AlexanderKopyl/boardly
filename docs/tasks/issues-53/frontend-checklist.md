@@ -12,4 +12,6 @@
 - [x] Run `cd frontend && npm run typecheck`.
 - [x] Run `cd frontend && npm run lint`.
 - [x] Run `cd frontend && npm run build`.
+- [x] Wire the dashboard sidebar account block to authenticated `session.account` data with a minimal loading/token-only fallback.
+- [x] Fix sidebar account block overflow so long authenticated names/emails stay inside the dark navy sidebar with ellipsis truncation and a fixed-size avatar.
 - [ ] Manually verify login, protected-route reload/bootstrap with `/me`, refresh failure redirect, `/me` 401 behavior, and logout. Blocked in this environment because the backend auth API is not running on `127.0.0.1:8080`.

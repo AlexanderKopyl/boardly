@@ -924,6 +924,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 0.875rem;
+  min-width: 0;
   padding: 0.875rem;
   border-radius: 16px;
   background: rgb(255 255 255 / 6%);
@@ -934,6 +935,7 @@ a {
 .ui-app-shell__account-copy {
   display: grid;
   gap: 0.15rem;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -948,6 +950,9 @@ a {
 
 .ui-app-shell__workspace-meta,
 .ui-app-shell__account-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: rgb(226 232 240 / 0.72);
   font-size: 0.875rem;
 }

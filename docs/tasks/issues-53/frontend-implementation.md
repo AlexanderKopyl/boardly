@@ -419,3 +419,92 @@ Ran the frontend ESLint check for the current issue #53 slice. The command compl
 ### Risks / follow-up
 
 - The next unchecked checklist item is `cd frontend && npm run build`.
+
+## 2026-05-14 13:48 EEST - Task: Wire the dashboard sidebar account block to authenticated `session.account` data with a minimal loading/token-only fallback
+
+### Subagents used
+
+- `frontend-ui-composition` via `/root/sidebar_account_display`
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-ui-composition`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+
+### Files changed
+
+- `frontend/src/app/app/dashboard/page.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/SidebarAccountCard.tsx`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Summary
+
+Replaced the static dashboard sidebar account placeholder with a tiny client-side `SidebarAccountCard` that reads `session.account` through `useAuth()`.
+
+The sidebar now displays the authenticated account name and email when available, and falls back only to generic loading/restoring text when the session has not fully populated account data yet. No demo user data remains in the sidebar account block.
+
+### Verification
+
+- `cd frontend && npm run typecheck`
+- `cd frontend && npm run lint`
+
+### Risks / follow-up
+
+- The dashboard page remains a server component with a small client subcomponent for the account card, which keeps the auth boundary narrow.
+- Manual smoke verification remains blocked until the backend auth API is available on `127.0.0.1:8080`.
+
+## 2026-05-14 14:02 EEST - Task: Fix sidebar account block overflow so long authenticated names/emails stay inside the dark navy sidebar with ellipsis truncation and a fixed-size avatar
+
+### Subagents used
+
+- `frontend-reviewer` via `/root/issue53_account_card_overflow_review`
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-reviewer`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0007-use-tailwind-css-with-css-variables-and-shadcn-radix-primitives.md`
+
+### Files changed
+
+- `frontend/src/app/globals.css`
+- `frontend/src/contexts/identity-access/presentation/ui/SidebarAccountCard.tsx`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Summary
+
+Tightened the sidebar account block layout so authenticated account data stays inside the navy sidebar even when the user name or email is long.
+
+The account card now allows the text column to shrink inside the flex layout, the email line truncates with ellipsis, and the avatar remains a fixed-size flex item. I also added `title` attributes to preserve the full account name and email on hover after truncation.
+
+### Verification
+
+- `cd frontend && npm run typecheck`
+- `cd frontend && npm run lint`
+
+### Risks / follow-up
+
+- The visual fix is verified at the code and lint/typecheck level only; the full sidebar still depends on the unavailable backend auth smoke path for manual browser confirmation.

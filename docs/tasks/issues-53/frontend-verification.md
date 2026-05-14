@@ -126,3 +126,30 @@
 ### Result
 
 - Manual end-to-end smoke for login, bootstrap refresh, `/me`, and logout could not be completed here.
+
+## 2026-05-14 13:48 EEST - Dashboard sidebar account display
+
+### Evidence
+
+- `frontend/src/app/app/dashboard/page.tsx` now renders `SidebarAccountCard` instead of hardcoded `Boardly Team` / `support@boardly.local` placeholder values.
+- `frontend/src/contexts/identity-access/presentation/ui/SidebarAccountCard.tsx` reads `session.account` through `useAuth()` and renders authenticated name/email when available.
+- The component only falls back to generic loading/restoring text and does not introduce demo user data.
+- `cd frontend && npm run typecheck` completed successfully after the sidebar change.
+- `cd frontend && npm run lint` completed successfully after the sidebar change.
+
+### Result
+
+- Sidebar account display is now wired to authenticated account state.
+
+## 2026-05-14 14:02 EEST - Sidebar account overflow fix
+
+### Evidence
+
+- `frontend/src/app/globals.css` now gives the sidebar account card `min-width: 0`, lets the text column flex and shrink, and truncates the email line with ellipsis.
+- `frontend/src/contexts/identity-access/presentation/ui/SidebarAccountCard.tsx` adds `title` attributes for the account name and email so the full values remain accessible after truncation.
+- `cd frontend && npm run typecheck` completed successfully after the overflow fix.
+- `cd frontend && npm run lint` completed successfully after the overflow fix.
+
+### Result
+
+- Long authenticated account names and emails are constrained to the sidebar card instead of overflowing the dark navy shell.

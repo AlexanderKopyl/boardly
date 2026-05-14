@@ -1,4 +1,5 @@
 import { ProtectedRoute } from '@/contexts/identity-access/presentation/guards/ProtectedRoute'
+import { SidebarAccountCard } from '@/contexts/identity-access/presentation/ui/SidebarAccountCard'
 import { LogoutButton } from '@/contexts/identity-access/presentation/ui/LogoutButton'
 import { AppShell } from '@/shared/ui/AppShell'
 import { Badge } from '@/shared/ui/Badge'
@@ -219,13 +220,7 @@ export default function AppDashboardPage() {
             <SidebarNav label="Workspace navigation" sections={navigationSections} />
 
             <div className="ui-app-shell__sidebar-footer">
-              <div className="ui-app-shell__account-card">
-                <div className="ui-app-shell__account-avatar">BL</div>
-                <div className="ui-app-shell__account-copy">
-                  <div className="ui-app-shell__account-name">Boardly Team</div>
-                  <div className="ui-app-shell__account-email">support@boardly.local</div>
-                </div>
-              </div>
+              <SidebarAccountCard />
               <LogoutButton />
             </div>
           </div>
