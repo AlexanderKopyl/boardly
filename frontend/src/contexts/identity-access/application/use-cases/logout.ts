@@ -7,6 +7,11 @@ export interface LogoutDependencies {
 }
 
 export async function logoutUseCase(deps: LogoutDependencies): Promise<void> {
-  await deps.gateway.logout()
-  deps.store.clear()
+  try {
+    await deps.gateway.logout()
+  } catch {
+    // Logout is local-session-ending even when the best-effort backend call fails.
+  } finally {
+    deps.store.clear()
+  }
 }

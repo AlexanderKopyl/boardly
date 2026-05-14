@@ -76,7 +76,7 @@ final readonly class LogoutController
             null,
             true,
             true,
-            Cookie::SAMESITE_LAX,
+            Cookie::SAMESITE_NONE,
         );
 
         return $response;
@@ -94,7 +94,7 @@ final readonly class LogoutController
             null,
             true,
             true,
-            Cookie::SAMESITE_LAX,
+            Cookie::SAMESITE_NONE,
         );
 
         return $response;

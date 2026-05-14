@@ -14,6 +14,7 @@
         "firebase/php-jwt": "^7.0",
         "monolog/monolog": "^3.0",
         "nelmio/api-doc-bundle": "^5.10",
+        "nelmio/cors-bundle": "^2.6",
         "symfony/amqp-messenger": "^8.0",
         "symfony/asset": "^8.0",
         "symfony/cache": "^8.0",

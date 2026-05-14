@@ -117,7 +117,7 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
         self::assertNotSame('old-refresh-token', $cookie->getValue());
         self::assertTrue($cookie->isHttpOnly());
         self::assertTrue($cookie->isSecure());
-        self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
+        self::assertSame(Cookie::SAMESITE_NONE, $cookie->getSameSite());
         self::assertSame('/api/auth', $cookie->getPath());
         self::assertGreaterThan(time(), $cookie->getExpiresTime());
 
@@ -125,7 +125,7 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
         self::assertStringContainsString('refresh_token=', $setCookieHeader);
         self::assertStringContainsString('httponly', $setCookieHeader);
         self::assertStringContainsString('secure', $setCookieHeader);
-        self::assertStringContainsString('samesite=lax', $setCookieHeader);
+        self::assertStringContainsString('samesite=none', $setCookieHeader);
         self::assertStringContainsString('path=/api/auth', $setCookieHeader);
 
         foreach ($storedHashes as $storedHash) {
@@ -292,7 +292,7 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
                 true,
                 true,
                 false,
-                Cookie::SAMESITE_LAX,
+                Cookie::SAMESITE_NONE,
             ));
         }
 
@@ -493,7 +493,7 @@ final class RefreshAuthenticationControllerTest extends WebTestCase
         self::assertLessThanOrEqual(time(), $cookie->getExpiresTime());
         self::assertTrue($cookie->isHttpOnly());
         self::assertTrue($cookie->isSecure());
-        self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
+        self::assertSame(Cookie::SAMESITE_NONE, $cookie->getSameSite());
         self::assertSame('/api/auth', $cookie->getPath());
     }
 }

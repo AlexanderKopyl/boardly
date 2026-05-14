@@ -14,12 +14,11 @@ export async function refreshSessionUseCase(
   const now = deps.now ?? (() => new Date())
 
   const refreshResult = await deps.gateway.refreshSession()
-  const account = await deps.gateway.getMe(refreshResult.accessToken)
 
   const session: AuthSession = {
     accessToken: refreshResult.accessToken,
     expiresAt: new Date(now().getTime() + refreshResult.expiresIn * 1000),
-    account,
+    account: null,
   }
 
   deps.store.save(session)

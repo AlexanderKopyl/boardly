@@ -28,7 +28,7 @@ final class RefreshTokenExceptionMapperTest extends TestCase
         self::assertLessThanOrEqual(time(), $cookie->getExpiresTime());
         self::assertTrue($cookie->isHttpOnly());
         self::assertTrue($cookie->isSecure());
-        self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
+        self::assertSame(Cookie::SAMESITE_NONE, $cookie->getSameSite());
         self::assertSame('/api/auth', $cookie->getPath());
     }
 

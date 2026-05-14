@@ -129,10 +129,10 @@ final class LogoutControllerTest extends WebTestCase
 
         self::assertTrue($cookie->isHttpOnly());
         self::assertTrue($cookie->isSecure());
-        self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
+        self::assertSame(Cookie::SAMESITE_NONE, $cookie->getSameSite());
         self::assertStringContainsString('httponly', $setCookieHeader);
         self::assertStringContainsString('secure', $setCookieHeader);
-        self::assertStringContainsString('samesite=lax', $setCookieHeader);
+        self::assertStringContainsString('samesite=none', $setCookieHeader);
     }
 
     public function testPostLogoutWithValidCookieReturns204(): void
@@ -226,7 +226,7 @@ final class LogoutControllerTest extends WebTestCase
                 true,
                 true,
                 false,
-                Cookie::SAMESITE_LAX,
+                Cookie::SAMESITE_NONE,
             ));
         }
 
@@ -347,7 +347,7 @@ final class LogoutControllerTest extends WebTestCase
         self::assertLessThanOrEqual(time(), $cookie->getExpiresTime());
         self::assertTrue($cookie->isHttpOnly());
         self::assertTrue($cookie->isSecure());
-        self::assertSame(Cookie::SAMESITE_LAX, $cookie->getSameSite());
+        self::assertSame(Cookie::SAMESITE_NONE, $cookie->getSameSite());
         self::assertSame('/api/auth', $cookie->getPath());
     }
 }
