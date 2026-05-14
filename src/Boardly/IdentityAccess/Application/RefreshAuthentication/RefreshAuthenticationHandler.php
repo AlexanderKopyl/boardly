@@ -28,14 +28,22 @@ final readonly class RefreshAuthenticationHandler
             throw InvalidRefreshToken::create();
         }
 
-        return $this->transactional->transactional(function () use ($rawRefreshToken): RefreshAuthenticationResult {
+        $invalidRefreshToken = false;
+
+        $result = $this->transactional->transactional(function () use ($rawRefreshToken, &$invalidRefreshToken): ?RefreshAuthenticationResult {
             $accessToken = null;
-            $rotation = $this->refreshSessionRotator->rotate(
-                $rawRefreshToken,
-                function (AccountId $accountId, \DateTimeImmutable $now) use (&$accessToken): void {
-                    $accessToken = $this->accessTokenIssuer->issueForAccount($accountId, $now);
-                },
-            );
+            try {
+                $rotation = $this->refreshSessionRotator->rotate(
+                    $rawRefreshToken,
+                    function (AccountId $accountId, \DateTimeImmutable $now) use (&$accessToken): void {
+                        $accessToken = $this->accessTokenIssuer->issueForAccount($accountId, $now);
+                    },
+                );
+            } catch (InvalidRefreshToken) {
+                $invalidRefreshToken = true;
+
+                return null;
+            }
 
             if (!$accessToken instanceof AccessToken) {
                 throw new \LogicException('Access token was not issued during refresh session rotation.');
@@ -49,5 +57,15 @@ final readonly class RefreshAuthenticationHandler
                 $rotation->refreshTokenExpiresAt(),
             );
         });
+
+        if ($invalidRefreshToken) {
+            throw InvalidRefreshToken::create();
+        }
+
+        if (!$result instanceof RefreshAuthenticationResult) {
+            throw new \LogicException('Refresh authentication transaction did not return a result.');
+        }
+
+        return $result;
     }
 }
