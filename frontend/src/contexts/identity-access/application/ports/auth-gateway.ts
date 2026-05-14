@@ -20,5 +20,6 @@ export interface AuthGateway {
   login(email: string, plainPassword: string): Promise<LoginResult>
   register(email: string, plainPassword: string, name: string): Promise<RegisterResult>
   refreshSession(): Promise<RefreshSessionResult>
+  getCurrentAccount(accessToken: string): Promise<Account>
   logout(): Promise<void>
 }

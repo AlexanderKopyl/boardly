@@ -7,6 +7,13 @@ export interface AccountResponse {
   status: AccountStatus
 }
 
+export interface CurrentAccountResponse {
+  id: string
+  email: string
+  name: string
+  status: AccountStatus
+}
+
 export interface LoginResponse {
   accessToken: string
   tokenType: 'Bearer'

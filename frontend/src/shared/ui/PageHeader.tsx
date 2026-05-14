@@ -8,6 +8,7 @@ export type PageHeaderProps = HTMLAttributes<HTMLElement> & {
   description?: ReactNode
   eyebrow?: ReactNode
   actions?: ReactNode
+  compact?: boolean
   className?: string
 }
 
@@ -16,6 +17,7 @@ export function PageHeader({
   description,
   eyebrow,
   actions,
+  compact = false,
   className,
   ...props
 }: PageHeaderProps): ReactElement {
@@ -27,6 +29,7 @@ export function PageHeader({
     <header
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
+      data-compact={compact || undefined}
       className={cn('ui-page-header', className)}
       {...props}
     >

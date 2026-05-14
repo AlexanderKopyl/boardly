@@ -26,7 +26,14 @@ export function LogoutButton() {
   }
 
   return (
-    <Button onClick={handleClick} disabled={loading} isLoading={loading}>
+    <Button
+      variant="ghost"
+      size="sm"
+      className="ui-sidebar-logout-button"
+      onClick={handleClick}
+      disabled={loading}
+      isLoading={loading}
+    >
       Sign out
     </Button>
   )

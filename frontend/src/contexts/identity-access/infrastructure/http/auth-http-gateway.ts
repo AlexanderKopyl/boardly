@@ -7,8 +7,14 @@ import type {
   RefreshSessionResult,
   RegisterResult,
 } from '../../application/ports/auth-gateway'
+import type { Account } from '../../domain/account'
 import { AuthError } from '../../domain/auth-error'
-import type { AccessTokenResponse, LoginResponse, RegisterResponse } from './auth-api-contracts'
+import type {
+  AccessTokenResponse,
+  CurrentAccountResponse,
+  LoginResponse,
+  RegisterResponse,
+} from './auth-api-contracts'
 
 function toLoginAuthError(error: unknown): Error {
   if (error instanceof ApiError) {
@@ -31,6 +37,14 @@ function toLoginAuthError(error: unknown): Error {
 function toAuthError(error: unknown): Error {
   if (error instanceof ApiError && error.statusCode === 401) {
     return new AuthError('invalid_refresh_token')
+  }
+
+  return error instanceof Error ? error : new Error('Unexpected authentication error')
+}
+
+function toCurrentAccountAuthError(error: unknown): Error {
+  if (error instanceof ApiError && error.statusCode === 401) {
+    return new AuthError('unauthenticated')
   }
 
   return error instanceof Error ? error : new Error('Unexpected authentication error')
@@ -85,6 +99,24 @@ export class AuthHttpGateway implements AuthGateway {
     return {
       accessToken: data.accessToken,
       expiresIn: data.expiresIn,
+    }
+  }
+
+  async getCurrentAccount(accessToken: string): Promise<Account> {
+    let data: CurrentAccountResponse
+    try {
+      data = await httpRequest<CurrentAccountResponse>('/api/auth/me', {
+        accessToken,
+      })
+    } catch (error) {
+      throw toCurrentAccountAuthError(error)
+    }
+
+    return {
+      id: data.id,
+      email: data.email,
+      name: data.name,
+      status: data.status,
     }
   }
 
