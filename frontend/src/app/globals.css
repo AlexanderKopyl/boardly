@@ -2087,3 +2087,59 @@ a {
     align-items: flex-start;
   }
 }
+
+.ui-app-shell__sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.ui-app-shell__sidebar-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 0;
+}
+
+.ui-app-shell__sidebar-primary {
+  display: grid;
+  gap: 1.25rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  margin-right: -0.25rem;
+}
+
+.ui-app-shell__sidebar-footer {
+  display: grid;
+  gap: 0.9rem;
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+.ui-sidebar-nav {
+  min-height: 0;
+}
+
+.ui-app-shell__workspace-card,
+.ui-app-shell__account-card {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .ui-app-shell__sidebar {
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .ui-app-shell__sidebar-primary {
+    overflow: visible;
+    padding-right: 0;
+    margin-right: 0;
+  }
+}

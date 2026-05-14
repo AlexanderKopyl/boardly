@@ -140,48 +140,41 @@ function getProjectBadgeVariant(status: ProjectItem['status']) {
 
 const navigationSections: SidebarNavSection[] = [
   {
-    label: 'Overview',
+    label: 'Main',
     items: [
       {
         label: 'Dashboard',
         href: '/app/dashboard',
-        description: 'Overview and status',
         current: true,
       },
       {
         label: 'Projects',
         href: '/app/dashboard',
-        description: 'Pinned project boards',
         disabled: true,
       },
       {
         label: 'My tasks',
         href: '/app/dashboard',
-        description: 'Assigned to you',
-        badge: '3',
         disabled: true,
       },
     ],
   },
   {
-    label: 'Workspace',
+    label: 'Work',
     items: [
       {
-        label: 'Workflow',
+        label: 'Boards',
         href: '/app/dashboard',
-        description: 'Status transitions',
         disabled: true,
       },
       {
-        label: 'Reports',
+        label: 'Calendar',
         href: '/app/dashboard',
-        description: 'Metrics and trends',
         disabled: true,
       },
       {
         label: 'Settings',
         href: '/app/dashboard',
-        description: 'Workspace preferences',
         disabled: true,
       },
     ],
@@ -192,8 +185,9 @@ export default function AppDashboardPage() {
   return (
     <ProtectedRoute>
       <AppShell
-        sidebar={
-          <div className="ui-app-shell__sidebar-content">
+      sidebar={
+        <div className="ui-app-shell__sidebar-content">
+          <div className="ui-app-shell__sidebar-primary">
             <div className="ui-app-shell__sidebar-brand">
               <div className="ui-app-shell__sidebar-brand-mark">B</div>
               <div className="ui-app-shell__sidebar-brand-copy">
@@ -205,7 +199,6 @@ export default function AppDashboardPage() {
             </div>
 
             <section className="ui-app-shell__sidebar-group">
-              <p className="ui-app-shell__sidebar-section-label">Workspace</p>
               <div className="ui-app-shell__workspace-card">
                 <div className="ui-app-shell__workspace-card-copy">
                   <div className="ui-app-shell__workspace-name">Northstar Studio</div>
@@ -217,10 +210,11 @@ export default function AppDashboardPage() {
               </div>
             </section>
 
-            <SidebarNav label="Workspace navigation" sections={navigationSections} />
+            <SidebarNav label="Main navigation" sections={navigationSections} />
+          </div>
 
-            <div className="ui-app-shell__sidebar-footer">
-              <SidebarAccountCard />
+          <div className="ui-app-shell__sidebar-footer">
+            <SidebarAccountCard />
               <LogoutButton />
             </div>
           </div>

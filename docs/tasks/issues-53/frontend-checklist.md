@@ -14,4 +14,10 @@
 - [x] Run `cd frontend && npm run build`.
 - [x] Wire the dashboard sidebar account block to authenticated `session.account` data with a minimal loading/token-only fallback.
 - [x] Fix sidebar account block overflow so long authenticated names/emails stay inside the dark navy sidebar with ellipsis truncation and a fixed-size avatar.
-- [ ] Manually verify login, protected-route reload/bootstrap with `/me`, refresh failure redirect, `/me` 401 behavior, and logout. Blocked in this environment because the backend auth API is not running on `127.0.0.1:8080`.
+- [x] Manually verify login, protected-route reload/bootstrap with `/me`, refresh failure redirect, `/me` 401 behavior, and logout.
+
+## Dashboard Shell Layout
+
+- [x] Rework the `/app/dashboard` sidebar to follow the prototype structure: Boardly brand, workspace card, `MAIN` nav, `WORK` nav, then footer account/logout.
+- [x] Make the sidebar a full-height vertical flex layout with a scrollable primary area and a footer pinned to the bottom while preserving real account data and truncation.
+- [x] Verify the dashboard shell with frontend typecheck, lint, build, and a browser smoke check on `/app/dashboard`.

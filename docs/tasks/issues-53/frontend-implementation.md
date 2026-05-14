@@ -508,3 +508,58 @@ The account card now allows the text column to shrink inside the flex layout, th
 ### Risks / follow-up
 
 - The visual fix is verified at the code and lint/typecheck level only; the full sidebar still depends on the unavailable backend auth smoke path for manual browser confirmation.
+
+## 2026-05-14 15:32 EEST - Task: Rework the `/app/dashboard` sidebar shell to match the prototype structure and pin the footer
+
+### Subagents used
+
+- `frontend-ui-composition` via `/root/task_53_dashboard_shell_layout`
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-ui-composition`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+- `docs/adr/0007-use-tailwind-css-with-css-variables-and-shadcn-radix-primitives.md`
+
+### Files changed
+
+- `frontend/src/app/app/dashboard/page.tsx`
+- `frontend/src/app/globals.css`
+- `docs/tasks/issues-53/frontend-checklist.md`
+- `docs/tasks/issues-53/frontend-implementation.md`
+- `docs/tasks/issues-53/frontend-verification.md`
+
+### Summary
+
+Reworked the `/app/dashboard` sidebar structure to better match the prototype shell:
+
+- kept the Boardly brand and workspace card at the top;
+- replaced the extra sidebar labels/descriptions with the requested `MAIN` and `WORK` nav grouping;
+- kept the placeholder nav items visually simple and non-functional;
+- turned the sidebar into a full-height vertical flex layout;
+- added a scrollable primary sidebar region so the footer remains pinned to the bottom;
+- preserved the authenticated account card and logout button in the bottom footer block.
+
+The account card itself did not need a code change for this slice because it already uses real `session.account` data and truncation.
+
+### Verification
+
+- `cd frontend && npm run typecheck`
+- `cd frontend && npm run lint`
+- `cd frontend && npm run build`
+- Browser smoke in Chrome against `http://127.0.0.1:3000/app/dashboard`
+
+### Risks / follow-up
+
+- The dashboard content still includes prototype stub panels and metrics, which is acceptable for this slice but not a full prototype clone.
+- Desktop browser smoke passed; mobile/sidebar collapse was not exhaustively tested in this turn.

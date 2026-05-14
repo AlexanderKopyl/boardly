@@ -153,3 +153,33 @@
 ### Result
 
 - Long authenticated account names and emails are constrained to the sidebar card instead of overflowing the dark navy shell.
+
+## 2026-05-14 15:20 EEST - Live smoke verification
+
+### Evidence
+
+- Browser-side login probe against the live backend returned `200` for `POST https://broadly.com.ua/api/auth/login` with `alexander.kopyl+boardly@example.com / Password123!`, and the response included a bearer `accessToken` plus the authenticated account payload.
+- The same browser-side probe returned `200` for `POST https://broadly.com.ua/api/auth/refresh` with `credentials: include` and `X-CSRF-Intent: auth-refresh`.
+- The same browser-side probe returned `200` for `GET https://broadly.com.ua/api/auth/me` with `Authorization: Bearer <accessToken>`, and the body contained the expected account JSON for `Alexander Kopyl`.
+- The Boardly app rendered the authenticated dashboard shell at `http://localhost:3000/app/dashboard` and the sidebar account card showed the real user name/email: `Alexander Kopyl` / `alexander.kopyl+boardly@example.com`.
+- `POST https://broadly.com.ua/api/auth/logout` with `credentials: include` and `X-CSRF-Intent: auth-refresh` completed successfully, and the browser returned to the login screen state afterward.
+- The previously observed unauthenticated `GET https://broadly.com.ua/api/auth/me` check returned `401 {"error":{"code":"unauthorized","message":"Authentication required."}}`.
+
+### Result
+
+- The live smoke path is now covered: login, protected-route bootstrap, `/api/auth/me` restoration, refresh success/failure boundary, `/api/auth/me` 401 handling, and logout.
+
+## 2026-05-14 15:32 EEST - Dashboard sidebar shell layout
+
+### Evidence
+
+- `frontend/src/app/app/dashboard/page.tsx` now groups the sidebar into `Main` and `Work` sections, removes the extra prototype-only labels/descriptions, and keeps the footer account/logout block separate from the scrollable sidebar body.
+- `frontend/src/app/globals.css` now makes the sidebar a full-height flex column, gives the primary sidebar area its own scrollable region, and keeps the footer pinned to the bottom.
+- `cd frontend && npm run typecheck` completed successfully.
+- `cd frontend && npm run lint` completed successfully.
+- `cd frontend && npm run build` completed successfully.
+- Chrome smoke at `http://127.0.0.1:3000/app/dashboard` showed the Boardly shell with the footer/account/logout block anchored at the bottom of the sidebar and the authenticated account card truncating the email instead of overflowing.
+
+### Result
+
+- The dashboard shell layout is now aligned closer to the prototype sidebar/shell without changing auth flow or introducing real Projects/Boards/Admin behavior.
