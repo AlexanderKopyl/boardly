@@ -33,11 +33,12 @@ final class DoctrineAccountRepositoryIntegrationTest extends KernelTestCase
         $this->repository = new DoctrineAccountRepository($this->entityManager, new AccountMapper());
 
         self::assertTrue(
-            $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts']),
-            'The accounts table must exist. Run doctrine:migrations:migrate --env=test before this integration test.',
+            $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts', 'projects.projects']),
+            'The accounts and projects.projects tables must exist. Run doctrine:migrations:migrate --env=test before this integration test.',
         );
 
         $this->entityManager->clear();
+        $this->entityManager->getConnection()->executeStatement('DELETE FROM projects.projects');
         $this->entityManager->getConnection()->executeStatement('DELETE FROM accounts');
     }
 

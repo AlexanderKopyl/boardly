@@ -39,11 +39,12 @@ final class LoginControllerTest extends WebTestCase
         $this->passwordHasher = $container->get(PasswordHasherInterface::class);
 
         self::assertTrue(
-            $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts', 'refresh_sessions']),
-            'The accounts and refresh_sessions tables must exist. Run doctrine:migrations:migrate --env=test before this test.',
+            $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts', 'projects.projects', 'refresh_sessions']),
+            'The accounts, projects.projects and refresh_sessions tables must exist. Run doctrine:migrations:migrate --env=test before this test.',
         );
 
         $this->entityManager->clear();
+        $this->entityManager->getConnection()->executeStatement('DELETE FROM projects.projects');
         $this->entityManager->getConnection()->executeStatement('DELETE FROM refresh_sessions');
         $this->entityManager->getConnection()->executeStatement('DELETE FROM accounts');
     }
@@ -253,6 +254,7 @@ final class LoginControllerTest extends WebTestCase
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_USER_AGENT' => 'Boardly HTTP test',
                 'REMOTE_ADDR' => '203.0.113.10',
+                'HTTPS' => 'on',
             ],
             $content,
         );

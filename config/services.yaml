@@ -108,6 +108,30 @@ services:
         tags:
             - { name: messenger.message_handler, bus: command.bus }
 
+    App\Boardly\Projects\Application\CreateProject\CreateProjectHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\Projects\Application\DeleteProject\DeleteProjectHandler:
+        tags:
+            - { name: messenger.message_handler, bus: command.bus }
+
+    App\Boardly\Projects\Application\GetProject\GetProjectHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
+    App\Boardly\Projects\Application\ListProjects\ListProjectsHandler:
+        tags:
+            - { name: messenger.message_handler, bus: query.bus }
+
     App\Boardly\IdentityAccess\Interfaces\Http\OpenApi\SchemaDescriber:
+        tags:
+            - { name: nelmio_api_doc.describer, priority: 100 }
+
+    App\Boardly\Projects\Interfaces\Http\OpenApi\SchemaDescriber:
         tags:
             - { name: nelmio_api_doc.describer, priority: 100 }

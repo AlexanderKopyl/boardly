@@ -9,3 +9,9 @@ boardly_identity_access_controllers:
         path: ../src/Boardly/IdentityAccess/Interfaces/Http/Controller/
         namespace: App\Boardly\IdentityAccess\Interfaces\Http\Controller
     type: attribute
+
+boardly_projects_controllers:
+    resource:
+        path: ../src/Boardly/Projects/Interfaces/Http/Controller/
+        namespace: App\Boardly\Projects\Interfaces\Http\Controller
+    type: attribute
