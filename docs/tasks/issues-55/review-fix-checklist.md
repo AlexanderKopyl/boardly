@@ -14,8 +14,8 @@
 - [x] Extend `ProjectStatus` to support `active`, `archived`, and `deleted`, and update the corresponding value object tests.
 - [x] Make the soft-delete lifecycle explicit in the `Project` aggregate so `active -> archived`, `active -> deleted`, and `archived -> deleted` are allowed while `deleted` remains terminal.
 - [x] Make `Project::archive()` repeated-call behavior explicit in the domain contract and tests, instead of leaving it implicit.
-- [ ] Add `deleted_at` persistence to the Projects entity/mapper/migration, and update the status `CHECK` constraint to include `deleted`.
-- [ ] Add the `DeleteProject` application flow, including command/query-side wiring, handler, result, repository interaction, and tests.
+- [x] Add `deleted_at` persistence to the Projects entity/mapper/migration, and update the status `CHECK` constraint to include `deleted`.
+- [x] Add the `DeleteProject` application flow, including command/query-side wiring, handler, result, repository interaction, and tests.
 - [ ] Add the `ProjectDeleted` domain event and emit it from the delete flow.
 - [ ] Add `DELETE /api/projects/{projectId}` and make it return `204 No Content`.
 - [ ] Refactor `ProjectController` to use `CommandBusInterface` and `QueryBusInterface` instead of calling handlers directly.

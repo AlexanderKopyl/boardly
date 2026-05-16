@@ -4,6 +4,38 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 16:28:25 EEST - Task: Add the `DeleteProject` application flow, including command/query-side wiring, handler, result, repository interaction, and tests
+
+### Subagents used
+- `explorer` to map the existing CreateProject and ArchiveProject application patterns.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Application/DeleteProject/DeleteProjectCommand.php`
+- `src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `src/Boardly/Projects/Application/DeleteProject/DeleteProjectResult.php`
+- `tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added the delete application use case for Projects using the existing transaction and outbox pattern.
+- Reused the domain aggregate `delete()` transition and `ProjectDeleted` domain event/result that were already in place.
+- Added focused application tests for happy path, not found, and unauthorized owner access.
+
+### Verification
+- `php -l src/Boardly/Projects/Application/DeleteProject/DeleteProjectCommand.php`
+- `php -l src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/DeleteProject/DeleteProjectResult.php`
+- `php -l tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- Result: OK (3 tests, 10 assertions)
+
+### Risks / follow-up
+- API/controller wiring, HTTP contracts, and outbox serialization for `ProjectDeleted` remain in later checklist items.
+
 ## 2026-05-16 - Task: Reset the test database and rerun the focused Projects repository integration test
 
 ### Subagents used
