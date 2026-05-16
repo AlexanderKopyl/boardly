@@ -4,6 +4,35 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 18:25:00 EEST - Task: Fix the final two Projects review nits
+
+### Subagents used
+- `worker` for the migration schema-qualification slice.
+- `worker` for the project list ordering slice.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `migrations/Version20260516071731.php`
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepository.php`
+- `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `docs/tasks/issues-55/checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Qualified the `down()` index drops in the Projects migration with the `projects` schema.
+- Changed the default Projects list query to sort by `created_at DESC` so it matches the supporting index.
+- Updated the repository integration test to assert the descending order instead of sorting the result set first.
+
+### Verification
+- `php -l migrations/Version20260516071731.php`
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepository.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- The repository integration test still depends on the local PostgreSQL test database being reachable and migrated.
+
 ## 2026-05-16 18:15:00 EEST - Task: Fix the remaining Projects review points for migration/schema gaps and archive idempotency
 
 ### Subagents used

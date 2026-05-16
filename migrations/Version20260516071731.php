@@ -36,8 +36,8 @@ final class Version20260516071731 extends AbstractMigration
         $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_status_check');
         $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_name_not_blank_check');
         $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_icon_key_format_check');
-        $this->addSql('DROP INDEX idx_projects_projects_owner_created_at');
-        $this->addSql('DROP INDEX idx_projects_projects_owner_status');
+        $this->addSql('DROP INDEX projects.idx_projects_projects_owner_created_at');
+        $this->addSql('DROP INDEX projects.idx_projects_projects_owner_status');
         $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_owner_account_fk');
         $this->addSql('DROP TABLE projects.projects');
         $this->addSql('DROP SCHEMA IF EXISTS projects');

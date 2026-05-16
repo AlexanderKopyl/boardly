@@ -208,18 +208,15 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
             $found,
         );
 
-        sort($foundIds);
-        sort($foundNames);
-
         self::assertCount(2, $found);
         self::assertSame(
             [
-                $firstProject->id()->value(),
                 $secondProject->id()->value(),
+                $firstProject->id()->value(),
             ],
             $foundIds,
         );
-        self::assertSame(['First Project', 'Second Project'], $foundNames);
+        self::assertSame(['Second Project', 'First Project'], $foundNames);
     }
 
     public function testGetAccessibleByIdThrowsForDeletedProject(): void

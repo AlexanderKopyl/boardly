@@ -76,7 +76,7 @@ final readonly class DoctrineProjectRepository implements ProjectRepositoryInter
             ->from(ProjectEntity::class, 'project')
             ->andWhere('project.ownerAccountId = :ownerAccountId')
             ->andWhere('project.status = :activeStatus')
-            ->orderBy('project.createdAt', 'ASC')
+            ->orderBy('project.createdAt', 'DESC')
             ->setParameter('ownerAccountId', $ownerId->value())
             ->setParameter('activeStatus', ProjectStatus::active()->value())
             ->getQuery()
