@@ -1,0 +1,19 @@
+description = "Implement approved Boardly plan only"
+prompt = """
+Implement only the approved Boardly task plan.
+
+Required:
+1. Read the approved plan.
+2. Reuse relevant existing skills from skills/.
+3. Do not widen scope.
+4. Do not touch unrelated files.
+5. Stop if repository reality conflicts with the plan.
+6. Run agreed verification commands when possible.
+7. Return:
+   - changed files
+   - what changed
+   - verification results
+   - deviations from plan
+   - risks
+   - rollback instructions
+"""
