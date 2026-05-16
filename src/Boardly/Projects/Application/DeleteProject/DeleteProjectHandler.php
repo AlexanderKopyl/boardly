@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Boardly\Projects\Application\DeleteProject;
 
+use App\Boardly\Projects\Application\Exception\ProjectNotFound;
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
@@ -25,7 +26,7 @@ final readonly class DeleteProjectHandler
     {
         return $this->transactional->transactional(
             function () use ($command): DeleteProjectResult {
-                $id = ProjectId::fromString($command->projectId());
+                $id = $this->projectId($command->projectId());
                 $project = $this->projects->getAccessibleById(
                     $id,
                     AccountId::fromString($command->currentAccountId()),
@@ -43,5 +44,14 @@ final readonly class DeleteProjectHandler
                 );
             }
         );
+    }
+
+    private function projectId(string $projectId): ProjectId
+    {
+        try {
+            return ProjectId::fromString($projectId);
+        } catch (\InvalidArgumentException) {
+            throw ProjectNotFound::withIdentifier($projectId);
+        }
     }
 }

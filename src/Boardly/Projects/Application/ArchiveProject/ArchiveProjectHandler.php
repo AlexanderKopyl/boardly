@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Boardly\Projects\Application\ArchiveProject;
 
+use App\Boardly\Projects\Application\Exception\ProjectNotFound;
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
@@ -26,7 +27,7 @@ final readonly class ArchiveProjectHandler
     {
         return $this->transactional->transactional(
             function () use ($command): ArchiveProjectResult {
-                $id = ProjectId::fromString($command->projectId());
+                $id = $this->projectId($command->projectId());
                 $project = $this->projects->getAccessibleById(
                     $id,
                     AccountId::fromString($command->currentAccountId()),
@@ -44,5 +45,14 @@ final readonly class ArchiveProjectHandler
                 );
             }
         );
+    }
+
+    private function projectId(string $projectId): ProjectId
+    {
+        try {
+            return ProjectId::fromString($projectId);
+        } catch (\InvalidArgumentException) {
+            throw ProjectNotFound::withIdentifier($projectId);
+        }
     }
 }

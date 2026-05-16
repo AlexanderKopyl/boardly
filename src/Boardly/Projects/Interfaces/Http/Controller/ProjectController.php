@@ -165,13 +165,9 @@ final readonly class ProjectController
     )]
     public function get(string $projectId): JsonResponse
     {
-        try {
-            $result = $this->queryBus->ask(
-                new GetProjectQuery($projectId, $this->currentAccountId())
-            );
-        } catch (\InvalidArgumentException) {
-            return $this->notFoundResponse();
-        }
+        $result = $this->queryBus->ask(
+            new GetProjectQuery($projectId, $this->currentAccountId())
+        );
 
         if (!$result instanceof GetProjectResult) {
             throw new \LogicException(sprintf('Expected %s from get project handler.', GetProjectResult::class));
@@ -220,13 +216,9 @@ final readonly class ProjectController
     )]
     public function archive(string $projectId): Response
     {
-        try {
-            $result = $this->commandBus->dispatch(
-                new ArchiveProjectCommand($projectId, $this->currentAccountId())
-            );
-        } catch (\InvalidArgumentException) {
-            return $this->notFoundResponse();
-        }
+        $result = $this->commandBus->dispatch(
+            new ArchiveProjectCommand($projectId, $this->currentAccountId())
+        );
 
         if (!$result instanceof ArchiveProjectResult) {
             throw new \LogicException(sprintf('Expected %s from archive project handler.', ArchiveProjectResult::class));
@@ -273,13 +265,9 @@ final readonly class ProjectController
     )]
     public function delete(string $projectId): Response
     {
-        try {
-            $result = $this->commandBus->dispatch(
-                new DeleteProjectCommand($projectId, $this->currentAccountId())
-            );
-        } catch (\InvalidArgumentException) {
-            return $this->notFoundResponse();
-        }
+        $result = $this->commandBus->dispatch(
+            new DeleteProjectCommand($projectId, $this->currentAccountId())
+        );
 
         if (!$result instanceof DeleteProjectResult) {
             throw new \LogicException(sprintf('Expected %s from delete project handler.', DeleteProjectResult::class));
@@ -296,15 +284,5 @@ final readonly class ProjectController
         }
 
         return $user->accountId()->value();
-    }
-
-    private function notFoundResponse(): JsonResponse
-    {
-        return new JsonResponse([
-            'error' => [
-                'code' => 'project_not_found',
-                'message' => 'Project not found.',
-            ],
-        ], JsonResponse::HTTP_NOT_FOUND);
     }
 }

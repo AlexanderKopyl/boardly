@@ -54,4 +54,6 @@
 - [x] Make the default project list return only accessible active projects.
 - [x] Make get/archive/delete return non-leaky 404 behavior for deleted or inaccessible projects.
 - [x] Expand the create response contract to return the full stable project shape instead of only `id` and `status`.
-- [x] Remove any local `.env.test` workaround from the PR if it exists in the diff. No `.env.test` diff was present in the current PR, so nothing needed removal.
+- [x] Remove any local `.env.test` workaround from the PR if it exists in the diff. The local `broadly_test_test` override was restored to the shared `boardly_test` URL.
+- [x] Route malformed/invalid project IDs through the Projects application not-found flow so the controller no longer builds `project_not_found` JSON manually.
+- [x] Keep the `projects.owner_account_id -> public.accounts(id)` FK intact while ensuring the shared test cleanup clears `projects.projects` before deleting `accounts`.

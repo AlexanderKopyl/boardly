@@ -4,6 +4,46 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 17:57:00 EEST - Task: Fix the remaining Projects review blockers from the branch-architecture review
+
+### Subagents used
+- `symfony-architecture` for the Projects controller/application invalid-ID flow.
+- `default` worker for the shared test cleanup / fixture ordering review.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `.env.test`
+- `src/Boardly/Projects/Application/Exception/ProjectNotFound.php`
+- `src/Boardly/Projects/Application/GetProject/GetProjectHandler.php`
+- `src/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandler.php`
+- `src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Restored `.env.test` to the shared test database URL so the branch no longer carries the local `broadly_test_test` workaround.
+- Moved malformed project ID handling into the Projects application layer by converting `InvalidArgumentException` into the existing `ProjectNotFound` flow in the get/archive/delete handlers.
+- Removed the controller-local `notFoundResponse()` helper and the local `InvalidArgumentException` catches so the API exception subscriber and Projects mapper own the 404 envelope behavior.
+- Added a controller test covering an invalid project ID path to keep the non-leaky 404 contract explicit.
+- Verified the shared cleanup ordering already keeps `projects.projects` ahead of `accounts`; no additional FK or schema change was needed in this turn.
+
+### Verification
+- `php -l src/Boardly/Projects/Application/Exception/ProjectNotFound.php`
+- `php -l src/Boardly/Projects/Application/GetProject/GetProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/IdentityAccess --stop-on-failure`
+
+### Risks / follow-up
+- Both PHPUnit commands were blocked by the local PostgreSQL host configuration in this environment (`postgres` was not resolvable), so only syntax checks completed successfully here.
+
 ## 2026-05-16 17:16:55 EEST - Task: Resolve the remaining Projects review blockers for access-aware repository behavior and stable create response shape
 
 ### Subagents used

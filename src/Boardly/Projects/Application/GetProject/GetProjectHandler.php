@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Boardly\Projects\Application\GetProject;
 
+use App\Boardly\Projects\Application\Exception\ProjectNotFound;
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
@@ -17,7 +18,7 @@ final readonly class GetProjectHandler
 
     public function __invoke(GetProjectQuery $query): GetProjectResult
     {
-        $id = ProjectId::fromString($query->projectId());
+        $id = $this->projectId($query->projectId());
         $currentAccountId = AccountId::fromString($query->currentAccountId());
         $project = $this->projects->getAccessibleById($id, $currentAccountId);
 
@@ -30,5 +31,14 @@ final readonly class GetProjectHandler
             $project->updatedAt()->format(\DateTimeInterface::ATOM),
             $project->archivedAt()?->format(\DateTimeInterface::ATOM),
         );
+    }
+
+    private function projectId(string $projectId): ProjectId
+    {
+        try {
+            return ProjectId::fromString($projectId);
+        } catch (\InvalidArgumentException) {
+            throw ProjectNotFound::withIdentifier($projectId);
+        }
     }
 }

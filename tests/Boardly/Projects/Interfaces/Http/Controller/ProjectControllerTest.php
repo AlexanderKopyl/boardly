@@ -233,6 +233,24 @@ final class ProjectControllerTest extends WebTestCase
         );
     }
 
+    public function testGetProjectWithInvalidIdReturns404(): void
+    {
+        $account = $this->persistActiveAccount('projects-invalid-id@example.com', 'Projects Invalid Id');
+
+        $this->getJson('/api/projects/not-a-uuid', $this->validTokenFor($account->id()));
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(
+            [
+                'error' => [
+                    'code' => 'project_not_found',
+                    'message' => 'Project not found.',
+                ],
+            ],
+            $this->responseData(),
+        );
+    }
+
     public function testArchiveProjectReturnsNoContentForOwnedProject(): void
     {
         $owner = $this->persistActiveAccount('projects-archive-owner@example.com', 'Projects Archive Owner');

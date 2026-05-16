@@ -10,6 +10,11 @@ final class ProjectNotFound extends ProjectApplicationException
 {
     public static function withId(ProjectId $id): self
     {
-        return new self(sprintf('Project with ID "%s" not found.', $id->value()));
+        return self::withIdentifier($id->value());
+    }
+
+    public static function withIdentifier(string $projectId): self
+    {
+        return new self(sprintf('Project with ID "%s" not found.', $projectId));
     }
 }
