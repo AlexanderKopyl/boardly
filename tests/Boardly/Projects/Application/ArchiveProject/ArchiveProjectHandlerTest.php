@@ -66,6 +66,46 @@ final class ArchiveProjectHandlerTest extends TestCase
         $this->assertInstanceOf(ProjectArchived::class, $outbox->storedEvents[0]);
     }
 
+    public function test_it_is_idempotent_for_an_already_archived_project(): void
+    {
+        $archivedAt = new DateTimeImmutable('-1 hour');
+        $project = Project::reconstitute(
+            ProjectId::fromString(self::PROJECT_ID),
+            AccountId::fromString(self::OWNER_ID),
+            ProjectName::fromString('Archived Project'),
+            ProjectIconKey::fromString('rocket'),
+            ProjectStatus::archived(),
+            new DateTimeImmutable('-1 day'),
+            $archivedAt,
+            $archivedAt,
+            null
+        );
+
+        $repository = new FakeProjectRepository($project);
+        $outbox = new FakeOutbox();
+        $now = new DateTimeImmutable();
+
+        $handler = new ArchiveProjectHandler(
+            $repository,
+            new FakeClock($now),
+            new FakeTransactional(),
+            $outbox
+        );
+
+        $result = $handler->__invoke(new ArchiveProjectCommand(self::PROJECT_ID, self::OWNER_ID));
+
+        $this->assertInstanceOf(ArchiveProjectResult::class, $result);
+        $this->assertSame(self::PROJECT_ID, $result->projectId());
+        $this->assertSame('archived', $result->status());
+        $this->assertSame($archivedAt->format(\DateTimeInterface::ATOM), $result->archivedAt());
+
+        $this->assertTrue($project->status()->isArchived());
+        $this->assertSame($archivedAt, $project->archivedAt());
+        $this->assertSame($archivedAt, $project->updatedAt());
+
+        $this->assertCount(0, $outbox->storedEvents);
+    }
+
     public function test_it_throws_exception_if_project_is_deleted(): void
     {
         $project = Project::reconstitute(

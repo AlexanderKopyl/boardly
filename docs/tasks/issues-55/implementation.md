@@ -4,6 +4,50 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 18:15:00 EEST - Task: Fix the remaining Projects review points for migration/schema gaps and archive idempotency
+
+### Subagents used
+- `worker` for the Projects archive idempotency slice.
+- `worker` for the Projects schema/migration slice.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `migrations/Version20260516071731.php`
+- `src/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandler.php`
+- `src/Boardly/Projects/Domain/Model/Project.php`
+- `src/Boardly/Projects/Domain/Result/ProjectArchivedResult.php`
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity/ProjectEntity.php`
+- `tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+
+### Summary
+- Updated the Projects migration to add the missing `name` and `version` checks plus the owner/status and owner/created-at indexes while keeping the owner FK, icon key format check, status check, and `deleted_at` column intact.
+- Made repeated `Project::archive()` calls idempotent by returning a successful no-op archive result without emitting a second `ProjectArchived` event.
+- Adjusted the archive handler to skip outbox publication on the idempotent path while preserving the existing `204 No Content` API behavior.
+- Added focused domain, application, API, and repository assertions for the archive idempotency and schema gaps.
+
+### Verification
+- `php -l migrations/Version20260516071731.php`
+- `php -l src/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandler.php`
+- `php -l src/Boardly/Projects/Domain/Model/Project.php`
+- `php -l src/Boardly/Projects/Domain/Result/ProjectArchivedResult.php`
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity/ProjectEntity.php`
+- `php -l tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `php -l tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php --filter archive`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- The repository integration test still expects the local test database to already reflect the updated Projects schema. In this environment the live DB is still missing the new `idx_projects_projects_owner_status` index, so that assertion remains the only failing focused check until the test database is migrated to the new schema.
+
 ## 2026-05-16 17:57:00 EEST - Task: Fix the remaining Projects review blockers from the branch-architecture review
 
 ### Subagents used

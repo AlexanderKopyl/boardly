@@ -7,7 +7,6 @@ namespace App\Tests\Boardly\Projects\Domain\Model;
 use App\Boardly\Projects\Domain\Event\ProjectArchived;
 use App\Boardly\Projects\Domain\Event\ProjectCreated;
 use App\Boardly\Projects\Domain\Event\ProjectDeleted;
-use App\Boardly\Projects\Domain\Exception\ProjectAlreadyArchived;
 use App\Boardly\Projects\Domain\Exception\InvalidProjectLifecycleTransition;
 use App\Boardly\Projects\Domain\Model\Project;
 use App\Boardly\Projects\Domain\ValueObject\ProjectIconKey;
@@ -77,8 +76,9 @@ final class ProjectTest extends TestCase
         $this->assertSame($now, $event->archivedAt());
     }
 
-    public function test_it_rejects_repeated_archive_calls(): void
+    public function test_it_returns_success_for_repeated_archive_calls_without_emitting_a_second_event(): void
     {
+        $archivedAt = new \DateTimeImmutable('-1 hour');
         $project = Project::reconstitute(
             ProjectId::fromString('550e8400-e29b-41d4-a716-446655440000'),
             AccountId::fromString('550e8400-e29b-41d4-a716-446655440001'),
@@ -86,14 +86,17 @@ final class ProjectTest extends TestCase
             ProjectIconKey::fromString('rocket'),
             ProjectStatus::archived(),
             new \DateTimeImmutable('-1 day'),
-            new \DateTimeImmutable('-1 hour'),
-            new \DateTimeImmutable('-1 hour'),
+            $archivedAt,
+            $archivedAt,
             null
         );
 
-        $this->expectException(ProjectAlreadyArchived::class);
+        $result = $project->archive(new \DateTimeImmutable());
 
-        $project->archive(new \DateTimeImmutable());
+        $this->assertTrue($project->status()->isArchived());
+        $this->assertSame($archivedAt, $project->archivedAt());
+        $this->assertSame($archivedAt, $project->updatedAt());
+        $this->assertNull($result->event());
     }
 
     public function test_it_can_be_deleted_from_an_active_project(): void

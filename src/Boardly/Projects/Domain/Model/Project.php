@@ -7,7 +7,6 @@ namespace App\Boardly\Projects\Domain\Model;
 use App\Boardly\Projects\Domain\Event\ProjectArchived;
 use App\Boardly\Projects\Domain\Event\ProjectCreated;
 use App\Boardly\Projects\Domain\Event\ProjectDeleted;
-use App\Boardly\Projects\Domain\Exception\ProjectAlreadyArchived;
 use App\Boardly\Projects\Domain\Exception\InvalidProjectLifecycleTransition;
 use App\Boardly\Projects\Domain\Result\ProjectArchivedResult;
 use App\Boardly\Projects\Domain\Result\ProjectCreatedResult;
@@ -89,7 +88,7 @@ final class Project
         }
 
         if ($this->status->isArchived()) {
-            throw ProjectAlreadyArchived::create();
+            return new ProjectArchivedResult(null);
         }
 
         $this->status = ProjectStatus::archived();

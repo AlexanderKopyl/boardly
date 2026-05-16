@@ -267,6 +267,11 @@ final class ProjectControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(204);
         self::assertSame('', (string) $this->client->getResponse()->getContent());
 
+        $this->postJson('/api/projects/'.$project->id()->value().'/archive', [], $this->validTokenFor($owner->id()));
+
+        self::assertResponseStatusCodeSame(204);
+        self::assertSame('', (string) $this->client->getResponse()->getContent());
+
         $archivedProject = $this->projects->find(ProjectId::fromString($project->id()->value()));
         self::assertInstanceOf(Project::class, $archivedProject);
         self::assertTrue($archivedProject->status()->isArchived());
@@ -439,11 +444,11 @@ final class ProjectControllerTest extends WebTestCase
                 'name' => $account->name()->value(),
                 'status' => $account->status()->value(),
                 'isSystemAdmin' => $account->isSystemAdmin(),
-                'createdAt' => $account->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'updatedAt' => $account->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'approvedAt' => $account->approvedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
-                'rejectedAt' => $account->rejectedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
-                'disabledAt' => $account->disabledAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'createdAt' => $account->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sO'),
+                'updatedAt' => $account->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sO'),
+                'approvedAt' => $account->approvedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sO'),
+                'rejectedAt' => $account->rejectedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sO'),
+                'disabledAt' => $account->disabledAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sO'),
             ],
             [
                 'isSystemAdmin' => \Doctrine\DBAL\ParameterType::BOOLEAN,
@@ -477,9 +482,9 @@ final class ProjectControllerTest extends WebTestCase
                 'name' => $project->name()->value(),
                 'iconKey' => $project->iconKey()->value(),
                 'status' => $project->status()->value(),
-                'createdAt' => $project->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'updatedAt' => $project->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'archivedAt' => $project->archivedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'createdAt' => $project->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sP'),
+                'updatedAt' => $project->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sP'),
+                'archivedAt' => $project->archivedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sP'),
             ],
         );
         $this->entityManager->clear();
@@ -494,8 +499,8 @@ final class ProjectControllerTest extends WebTestCase
             [
                 'id' => $projectId,
                 'status' => 'archived',
-                'updatedAt' => $archivedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'archivedAt' => $archivedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'updatedAt' => $archivedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sP'),
+                'archivedAt' => $archivedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sP'),
             ],
         );
         $this->entityManager->clear();

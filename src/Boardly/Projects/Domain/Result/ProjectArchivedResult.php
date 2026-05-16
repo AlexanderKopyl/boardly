@@ -9,11 +9,11 @@ use App\Boardly\Projects\Domain\Event\ProjectArchived;
 final readonly class ProjectArchivedResult
 {
     public function __construct(
-        private ProjectArchived $event,
+        private ?ProjectArchived $event,
     ) {
     }
 
-    public function event(): ProjectArchived
+    public function event(): ?ProjectArchived
     {
         return $this->event;
     }

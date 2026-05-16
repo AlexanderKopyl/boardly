@@ -26,16 +26,16 @@ class ProjectEntity
     #[ORM\Column(type: 'string', length: 32)]
     private string $status;
 
-    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
+    #[ORM\Column(name: 'created_at', type: 'datetimetz_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
+    #[ORM\Column(name: 'updated_at', type: 'datetimetz_immutable')]
     private \DateTimeImmutable $updatedAt;
 
-    #[ORM\Column(name: 'archived_at', type: 'datetime_immutable', nullable: true)]
+    #[ORM\Column(name: 'archived_at', type: 'datetimetz_immutable', nullable: true)]
     private ?\DateTimeImmutable $archivedAt;
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
+    #[ORM\Column(name: 'deleted_at', type: 'datetimetz_immutable', nullable: true)]
     private ?\DateTimeImmutable $deletedAt;
 
     #[ORM\Version]

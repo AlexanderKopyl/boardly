@@ -167,7 +167,7 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
             createdAt: new \DateTimeImmutable('2026-05-05T13:05:00+00:00'),
         );
         $archivedProject = $this->createProject(
-            id: '018f3f7a-9e4c-7b2d-9c52-000000000604',
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000605',
             ownerId: $owner->id(),
             name: 'Archived Project',
             iconKey: ProjectIconKey::fromString('timeline'),
@@ -175,7 +175,7 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         );
         $archivedProject->archive(new \DateTimeImmutable('2026-05-05T13:30:00+00:00'));
         $deletedProject = $this->createProject(
-            id: '018f3f7a-9e4c-7b2d-9c52-000000000605',
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000606',
             ownerId: $owner->id(),
             name: 'Deleted Project',
             iconKey: ProjectIconKey::fromString('folder'),
@@ -183,7 +183,7 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         );
         $deletedProject->delete(new \DateTimeImmutable('2026-05-05T13:35:00+00:00'));
         $foreignProject = $this->createProject(
-            id: '018f3f7a-9e4c-7b2d-9c52-000000000606',
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000607',
             ownerId: $otherOwner->id(),
             name: 'Foreign Project',
             iconKey: ProjectIconKey::fromString('timeline'),
@@ -245,8 +245,10 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
     public function testProjectDoctrineMappingUsesScalarOwnerAccountIdAndSchemaQualifiedTable(): void
     {
         $metadata = $this->entityManager->getClassMetadata(ProjectEntity::class);
-        $columns = $this->entityManager->getConnection()->createSchemaManager()->listTableColumns('projects.projects');
+        $schemaManager = $this->entityManager->getConnection()->createSchemaManager();
+        $columns = $schemaManager->listTableColumns('projects.projects');
         $foreignKeys = $this->entityManager->getConnection()->createSchemaManager()->listTableForeignKeys('projects.projects');
+        $indexes = $schemaManager->listTableIndexes('projects.projects');
 
         self::assertSame(
             ['id', 'ownerAccountId', 'name', 'iconKey', 'status', 'createdAt', 'updatedAt', 'archivedAt', 'deletedAt', 'version'],
@@ -256,11 +258,40 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         self::assertArrayHasKey('owner_account_id', $columns);
         self::assertArrayHasKey('icon_key', $columns);
         self::assertArrayHasKey('deleted_at', $columns);
+        self::assertSame(100, $columns['name']->getLength());
         self::assertSame('folder', $columns['icon_key']->getDefault());
+        self::assertArrayHasKey('idx_projects_projects_owner_status', $indexes);
+        self::assertArrayHasKey('idx_projects_projects_owner_created_at', $indexes);
         self::assertCount(1, $foreignKeys);
         self::assertSame(['owner_account_id'], $foreignKeys[0]->getLocalColumns());
         self::assertSame(['id'], $foreignKeys[0]->getForeignColumns());
         self::assertSame('accounts', $foreignKeys[0]->getForeignTableName());
+        self::assertFalse(
+            array_reduce(
+                $indexes,
+                static fn (bool $carry, \Doctrine\DBAL\Schema\Index $index): bool => $carry || str_contains((string) $index->getName(), 'icon_key'),
+                false,
+            ),
+            'The projects table must not have an icon_key index.',
+        );
+
+        $checkConstraintNames = $this->entityManager->getConnection()->fetchFirstColumn(
+            <<<'SQL'
+SELECT con.conname
+FROM pg_constraint con
+JOIN pg_class rel ON rel.oid = con.conrelid
+JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+WHERE nsp.nspname = 'projects'
+  AND rel.relname = 'projects'
+  AND con.contype = 'c'
+ORDER BY con.conname
+SQL
+        );
+
+        self::assertContains('projects_projects_icon_key_format_check', $checkConstraintNames);
+        self::assertContains('projects_projects_name_not_blank_check', $checkConstraintNames);
+        self::assertContains('projects_projects_status_check', $checkConstraintNames);
+        self::assertContains('projects_projects_version_positive_check', $checkConstraintNames);
     }
 
     private function persistAccount(string $idSuffix, string $email): Account
@@ -282,11 +313,11 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
                 'name' => $account->name()->value(),
                 'status' => $account->status()->value(),
                 'isSystemAdmin' => $account->isSystemAdmin(),
-                'createdAt' => $account->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'updatedAt' => $account->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
-                'approvedAt' => $account->approvedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
-                'rejectedAt' => $account->rejectedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
-                'disabledAt' => $account->disabledAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'createdAt' => $account->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sP'),
+                'updatedAt' => $account->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:sP'),
+                'approvedAt' => $account->approvedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sP'),
+                'rejectedAt' => $account->rejectedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sP'),
+                'disabledAt' => $account->disabledAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:sP'),
             ],
             [
                 'isSystemAdmin' => \Doctrine\DBAL\ParameterType::BOOLEAN,

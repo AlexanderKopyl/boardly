@@ -11,7 +11,6 @@ use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
 use App\Shared\Application\Outbox\OutboxInterface;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Transaction\TransactionalInterface;
-use DateTimeInterface;
 
 final readonly class ArchiveProjectHandler
 {
@@ -34,14 +33,19 @@ final readonly class ArchiveProjectHandler
                 );
 
                 $domainResult = $project->archive($this->clock->now());
+                $archivedAt = $project->archivedAt() ?? $this->clock->now();
+                $event = $domainResult->event();
 
-                $this->projects->save($project);
-                $this->outbox->store([$domainResult->event()]);
+                if (null !== $event) {
+                    $this->projects->save($project);
+                    $this->outbox->store([$event]);
+                    $archivedAt = $event->archivedAt();
+                }
 
                 return new ArchiveProjectResult(
                     $project->id()->value(),
                     $project->status()->value(),
-                    $domainResult->event()->archivedAt()->format(DateTimeInterface::ATOM),
+                    $archivedAt->format(\DateTimeInterface::ATOM),
                 );
             }
         );
