@@ -1,0 +1,53 @@
+description = "Execute the next Boardly frontend checklist task in strict mode"
+prompt = """
+Execute an existing Boardly frontend checklist task in strict mode.
+
+Use this only when frontend planning and frontend analysis already exist.
+
+Task folder:
+<provide task folder path>
+
+Allowed reads only:
+- GEMINI.md
+- .gemini/skills/frontend-task-implementation/SKILL.md
+- <task-folder>/frontend-planning.md
+- <task-folder>/frontend-analysis.md
+- <task-folder>/frontend-checklist.md
+- files explicitly named in the first unchecked frontend checklist item
+
+Strict rules:
+- Do not re-plan.
+- Do not re-analyze.
+- Do not inspect the repository broadly.
+- Do not read AGENTS.md.
+- Do not read CLAUDE.md.
+- Do not read .codex/config.toml.
+- Do not read docs/agents/.
+- Do not read docs/architecture/.
+- Do not read docs/adr/ unless the current checklist item explicitly names a specific ADR file.
+- Do not read docs/development/ unless the current checklist item explicitly names a specific development doc.
+- Do not load additional skills.
+- Do not use MCP unless the current checklist item explicitly requires it.
+- Do not use Playwright unless browser/runtime verification is explicitly required by the current checklist item.
+- Do not use subagent discovery.
+- Do not implement more than the first unchecked frontend checklist item.
+- Stop before any extra file read that is not allowed above.
+
+Execution:
+1. Read the allowed frontend task artifacts.
+2. Find the first unchecked item in <task-folder>/frontend-checklist.md.
+3. Read only files explicitly named by that checklist item.
+4. Implement only that item.
+5. Run or document the smallest relevant frontend verification.
+6. Append verification evidence to <task-folder>/frontend-verification.md.
+7. Mark the checkbox as - [x] only after implementation and verification.
+8. Append notes to <task-folder>/frontend-implementation.md.
+9. Stop.
+
+Return:
+- frontend checklist item completed
+- changed files
+- verification result
+- skipped/blocked reason, if any
+- rollback instructions
+"""
