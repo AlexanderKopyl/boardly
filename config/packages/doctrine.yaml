@@ -15,6 +15,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Boardly/IdentityAccess/Infrastructure/Persistence/Doctrine/Entity'
                 prefix: 'App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Entity'
                 alias: BoardlyIdentityAccess
+            BoardlyProjects:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity'
+                prefix: 'App\Boardly\Projects\Infrastructure\Persistence\Doctrine\Entity'
+                alias: BoardlyProjects
 
 when@test:
     doctrine:

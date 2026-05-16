@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260516071731 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return 'Create projects schema and projects table for Projects context.';
+    }
+
+    public function up(Schema $schema): void
+    {
+        $this->addSql('CREATE SCHEMA IF NOT EXISTS projects');
+        $this->addSql('CREATE TABLE projects.projects (id VARCHAR(36) NOT NULL, owner_account_id VARCHAR(36) NOT NULL, name VARCHAR(100) NOT NULL, icon_key VARCHAR(64) DEFAULT \'folder\' NOT NULL, status VARCHAR(255) NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, archived_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, version INT DEFAULT 1 NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('ALTER TABLE projects.projects ADD CONSTRAINT projects_projects_icon_key_format_check CHECK (icon_key ~ \'^[a-z][a-z0-9_-]{0,63}$\')');
+    }
+
+    public function down(Schema $schema): void
+    {
+        $this->addSql('DROP TABLE projects.projects');
+        $this->addSql('DROP SCHEMA IF EXISTS projects');
+    }
+}
