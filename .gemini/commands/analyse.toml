@@ -3,14 +3,15 @@ prompt = """
 Perform read-only analysis for a Boardly task.
 
 Required:
-1. Read GEMINI.md, AGENTS.md, CLAUDE.md, and relevant existing skills from skills/.
-2. Inspect only task-relevant files.
-3. Do not edit files.
-4. Do not invent project facts.
-5. Return:
+1. Use GEMINI.md as the default rule map.
+2. Load only task-relevant docs or skills listed in GEMINI.md.
+3. Inspect only task-relevant files.
+4. Do not edit files.
+5. Do not invent project facts.
+6. Return:
    - current facts
    - affected files/modules
-   - relevant rules/skills
+   - relevant rules/skills loaded
    - risks
    - unknowns
    - recommended planning scope
