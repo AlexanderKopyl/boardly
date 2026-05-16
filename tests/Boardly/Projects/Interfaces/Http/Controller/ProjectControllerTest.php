@@ -17,6 +17,8 @@ use App\Boardly\Projects\Domain\ValueObject\ProjectIconKey;
 use App\Boardly\Projects\Domain\ValueObject\ProjectName;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
+use App\Shared\Application\Bus\CommandBusInterface;
+use App\Shared\Application\Bus\QueryBusInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -81,11 +83,11 @@ final class ProjectControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
 
         $data = $this->responseData();
-        self::assertSame(['projectId', 'status'], array_keys($data));
+        self::assertSame(['id', 'status'], array_keys($data));
         self::assertSame('active', $data['status']);
-        self::assertMatchesRegularExpression('/^[0-9a-f-]{36}$/', $data['projectId']);
+        self::assertMatchesRegularExpression('/^[0-9a-f-]{36}$/', $data['id']);
 
-        $project = $this->projects->find(ProjectId::fromString($data['projectId']));
+        $project = $this->projects->find(ProjectId::fromString($data['id']));
         self::assertInstanceOf(Project::class, $project);
         self::assertSame($account->id()->value(), $project->ownerAccountId()->value());
         self::assertSame('Created Project', $project->name()->value());
@@ -177,7 +179,7 @@ final class ProjectControllerTest extends WebTestCase
         );
 
         self::assertResponseStatusCodeSame(201);
-        $projectId = $this->responseData()['projectId'];
+        $projectId = $this->responseData()['id'];
 
         $this->getJson('/api/projects/'.$projectId, $this->validTokenFor($owner->id()));
 
@@ -229,7 +231,7 @@ final class ProjectControllerTest extends WebTestCase
         );
     }
 
-    public function testArchiveProjectReturnsArchivedPayloadForOwnedProject(): void
+    public function testArchiveProjectReturnsNoContentForOwnedProject(): void
     {
         $owner = $this->persistActiveAccount('projects-archive-owner@example.com', 'Projects Archive Owner');
         $project = $this->persistProject(
@@ -242,14 +244,13 @@ final class ProjectControllerTest extends WebTestCase
 
         $this->postJson('/api/projects/'.$project->id()->value().'/archive', [], $this->validTokenFor($owner->id()));
 
-        self::assertResponseStatusCodeSame(200);
-        $data = $this->responseData();
+        self::assertResponseStatusCodeSame(204);
+        self::assertSame('', (string) $this->client->getResponse()->getContent());
 
-        self::assertSame($project->id()->value(), $data['projectId']);
-        self::assertSame('archived', $data['status']);
-        self::assertIsString($data['archivedAt']);
-        self::assertNotEmpty($data['archivedAt']);
-        self::assertInstanceOf(\DateTimeImmutable::class, new \DateTimeImmutable($data['archivedAt']));
+        $archivedProject = $this->projects->find(ProjectId::fromString($project->id()->value()));
+        self::assertInstanceOf(Project::class, $archivedProject);
+        self::assertTrue($archivedProject->status()->isArchived());
+        self::assertNotNull($archivedProject->archivedAt());
     }
 
     public function testArchiveProjectForAnotherAccountReturns404(): void
@@ -276,6 +277,80 @@ final class ProjectControllerTest extends WebTestCase
             ],
             $this->responseData(),
         );
+    }
+
+    public function testDeleteProjectReturnsNoContentForOwnedProject(): void
+    {
+        $owner = $this->persistActiveAccount('projects-delete-owner@example.com', 'Projects Delete Owner');
+        $this->postJson(
+            '/api/projects',
+            [
+                'name' => 'Deletable Project',
+                'iconKey' => 'board',
+            ],
+            $this->validTokenFor($owner->id()),
+        );
+
+        self::assertResponseStatusCodeSame(201);
+        $projectId = $this->responseData()['id'];
+        $createdProject = $this->projects->find(ProjectId::fromString($projectId));
+        self::assertInstanceOf(Project::class, $createdProject);
+        self::assertTrue($createdProject->status()->isActive());
+
+        $this->deleteJson('/api/projects/'.$projectId, $this->validTokenFor($owner->id()));
+
+        self::assertResponseStatusCodeSame(204);
+        self::assertSame('', (string) $this->client->getResponse()->getContent());
+
+        $deletedProject = $this->projects->find(ProjectId::fromString($projectId));
+        self::assertInstanceOf(Project::class, $deletedProject);
+        self::assertTrue($deletedProject->status()->isDeleted());
+        self::assertNotNull($deletedProject->deletedAt());
+    }
+
+    public function testDeleteProjectForAnotherAccountReturns404(): void
+    {
+        $owner = $this->persistActiveAccount('projects-delete-foreign-owner@example.com', 'Projects Delete Owner');
+        $otherAccount = $this->persistActiveAccount('projects-delete-foreign@example.com', 'Projects Delete Foreign');
+        $this->postJson(
+            '/api/projects',
+            [
+                'name' => 'Hidden Delete Project',
+                'iconKey' => 'folder',
+            ],
+            $this->validTokenFor($owner->id()),
+        );
+
+        self::assertResponseStatusCodeSame(201);
+        $projectId = $this->responseData()['id'];
+
+        $this->deleteJson('/api/projects/'.$projectId, $this->validTokenFor($otherAccount->id()));
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(
+            [
+                'error' => [
+                    'code' => 'project_not_found',
+                    'message' => 'Project not found.',
+                ],
+            ],
+            $this->responseData(),
+        );
+    }
+
+    public function testControllerUsesCommandAndQueryBusInterfaces(): void
+    {
+        $constructor = new \ReflectionMethod(
+            \App\Boardly\Projects\Interfaces\Http\Controller\ProjectController::class,
+            '__construct',
+        );
+
+        $parameters = $constructor->getParameters();
+
+        self::assertCount(3, $parameters);
+        self::assertSame(\Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface::class, (string) $parameters[0]->getType());
+        self::assertSame(CommandBusInterface::class, (string) $parameters[1]->getType());
+        self::assertSame(QueryBusInterface::class, (string) $parameters[2]->getType());
     }
 
     private function setRequiredTestSecrets(): void
@@ -373,6 +448,11 @@ final class ProjectControllerTest extends WebTestCase
             $this->serverVariables($token),
             json_encode($payload, JSON_THROW_ON_ERROR),
         );
+    }
+
+    private function deleteJson(string $uri, ?string $token = null): void
+    {
+        $this->client->request('DELETE', $uri, [], [], $this->serverVariables($token));
     }
 
     private function getJson(string $uri, ?string $token = null): void

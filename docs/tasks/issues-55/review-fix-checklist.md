@@ -16,15 +16,15 @@
 - [x] Make `Project::archive()` repeated-call behavior explicit in the domain contract and tests, instead of leaving it implicit.
 - [x] Add `deleted_at` persistence to the Projects entity/mapper/migration, and update the status `CHECK` constraint to include `deleted`.
 - [x] Add the `DeleteProject` application flow, including command/query-side wiring, handler, result, repository interaction, and tests.
-- [ ] Add the `ProjectDeleted` domain event and emit it from the delete flow.
-- [ ] Add `DELETE /api/projects/{projectId}` and make it return `204 No Content`.
-- [ ] Refactor `ProjectController` to use `CommandBusInterface` and `QueryBusInterface` instead of calling handlers directly.
-- [ ] Move `ProjectNotFound` HTTP response mapping out of `ProjectController` and into the Projects API exception mapper.
-- [ ] Fix the create response contract to return the stable project shape with `id` instead of `projectId`, and update the OpenAPI schema/tests.
-- [ ] Fix the archive response contract to return `204 No Content`, and remove the archived payload body from the API contract.
-- [ ] Complete the Projects outbox chain for create/archive/delete: add message mappers, message classes, and message handlers for the new project events.
-- [ ] Fix the migration/schema gaps from review while preserving the accepted scalar `ownerAccountId` + DB FK decision and keeping `doctrine:schema:validate --skip-sync` as the mapping gate.
-- [ ] Add or update the domain, application, infrastructure, API, outbox, and migration tests named in review so each fix is independently verified.
+- [x] Add the `ProjectDeleted` domain event and emit it from the delete flow.
+- [x] Add `DELETE /api/projects/{projectId}` and make it return `204 No Content`.
+- [x] Refactor `ProjectController` to use `CommandBusInterface` and `QueryBusInterface` instead of calling handlers directly.
+- [x] Move `ProjectNotFound` HTTP response mapping out of `ProjectController` and into the Projects API exception mapper.
+- [x] Fix the create response contract to return the stable project shape with `id` instead of `projectId`, and update the OpenAPI schema/tests.
+- [x] Fix the archive response contract to return `204 No Content`, and remove the archived payload body from the API contract.
+- [x] Complete the Projects outbox chain for create/archive/delete: add message mappers, message classes, and message handlers for the new project events.
+- [x] Fix the migration/schema gaps from review while preserving the accepted scalar `ownerAccountId` + DB FK decision and keeping `doctrine:schema:validate --skip-sync` as the mapping gate.
+- [x] Add or update the domain, application, infrastructure, API, outbox, and migration tests named in review so each fix is independently verified.
 
 ## Proposed implementation order
 1. Extend domain status/lifecycle rules and make `Project::archive()` behavior explicit.
@@ -42,8 +42,8 @@
 - The review-thread fetch returned no GitHub thread records in this environment, so this checklist is based on the request-changes items provided in the task brief.
 
 ## Verification plan
-- [ ] `php bin/console doctrine:schema:validate --skip-sync`
-- [ ] Focused domain tests for `ProjectStatus` and `Project`
-- [ ] Focused application tests for create, archive, and delete flows
-- [ ] Focused Projects API functional tests for create, get, archive, and delete contracts
-- [ ] Focused outbox/integration tests for the new project event chain
+- [x] `php bin/console doctrine:schema:validate --skip-sync`
+- [x] Focused domain tests for `ProjectStatus` and `Project`
+- [x] Focused application tests for create, archive, and delete flows
+- [x] Focused Projects API functional tests for create, get, archive, and delete contracts
+- [x] Focused outbox/integration tests for the new project event chain

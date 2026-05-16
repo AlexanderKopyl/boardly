@@ -9,7 +9,7 @@ use App\Boardly\Projects\Application\CreateProject\CreateProjectResult;
 final readonly class CreateProjectResponseDto
 {
     public function __construct(
-        public string $projectId,
+        public string $id,
         public string $status,
     ) {
     }
@@ -23,12 +23,12 @@ final readonly class CreateProjectResponseDto
     }
 
     /**
-     * @return array{projectId: string, status: string}
+     * @return array{id: string, status: string}
      */
     public function toArray(): array
     {
         return [
-            'projectId' => $this->projectId,
+            'id' => $this->id,
             'status' => $this->status,
         ];
     }

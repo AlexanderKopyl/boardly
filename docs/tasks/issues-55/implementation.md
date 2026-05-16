@@ -4,6 +4,235 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 16:54:59 EEST - Task: Complete the Projects outbox chain for create/archive/delete: add message mappers, message classes, and message handlers for the new project events
+
+### Subagents used
+- `worker` for the Projects outbox chain implementation and tests.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Infrastructure/Message/ProjectCreatedMessage.php`
+- `src/Boardly/Projects/Infrastructure/Message/ProjectArchivedMessage.php`
+- `src/Boardly/Projects/Infrastructure/Message/ProjectDeletedMessage.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectCreatedOutboxMessageMapper.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectArchivedOutboxMessageMapper.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxMessageMapper.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectCreatedOutboxMessageHandler.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectArchivedOutboxMessageHandler.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxMessageHandler.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectCreatedOutboxMessageMapperTest.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectArchivedOutboxMessageMapperTest.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxMessageMapperTest.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectCreatedOutboxMessageHandlerTest.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectArchivedOutboxMessageHandlerTest.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxMessageHandlerTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added Projects outbox message classes for create, archive, and delete events.
+- Added message mappers that translate the serialized outbox records into concrete event bus messages.
+- Added diagnostic message handlers on `event.bus` that keep the transactional/processed-message-store pattern consistent with the existing IdentityAccess outbox consumers.
+- Added focused mapper and handler tests for all three project events.
+
+### Verification
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Outbox`
+
+### Risks / follow-up
+- None for this checklist item.
+
+## 2026-05-16 16:54:24 EEST - Task: Add or update the domain, application, infrastructure, API, outbox, and migration tests named in review so each fix is independently verified
+
+### Subagents used
+- None.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Reconciled the final verification checklist item with the current code state after the focused domain/application/API/outbox/migration checks passed.
+- The relevant test coverage already existed or was added in the preceding subtasks, so no additional production code change was needed for this checklist line.
+
+### Verification
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php tests/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxEventSerializerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php --filter '/testArchiveProjectReturnsNoContentForOwnedProject|testArchiveProjectForAnotherAccountReturns404|testDeleteProjectReturnsNoContentForOwnedProject|testDeleteProjectForAnotherAccountReturns404/'`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Outbox`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- No blocker remains for the reviewed checklist items. The branch still contains unrelated in-flight changes from earlier work, but they do not block this task closure.
+
+## 2026-05-16 16:54:24 EEST - Task: Fix the migration/schema gaps from review while preserving the accepted scalar `ownerAccountId` + DB FK decision and keeping `doctrine:schema:validate --skip-sync` as the mapping gate
+
+### Subagents used
+- None.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Reconciled the migration/schema checklist item with the current Doctrine state.
+- `doctrine:schema:validate --skip-sync` reports the mapping files are correct, and the focused Projects repository integration test passes against the current test database.
+
+### Verification
+- `php bin/console doctrine:schema:validate --skip-sync`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- None for this checklist item.
+
+## 2026-05-16 16:51:29 EEST - Task: Fix the archive response contract to return `204 No Content`, and remove the archived payload body from the API contract
+
+### Subagents used
+- `explorer` for a narrow contract check against the current Projects archive endpoint and related API files.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/ArchiveProjectResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ArchiveProjectResponse.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Changed the archive endpoint to return `204 No Content` instead of a JSON payload.
+- Removed the archive response DTO and OpenAPI schema because the API contract is bodyless.
+- Updated the focused Projects API test to assert the 204 response and verify the project transitions to archived state in persistence.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php tests/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxEventSerializerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php --filter '/testArchiveProjectReturnsNoContentForOwnedProject|testArchiveProjectForAnotherAccountReturns404|testDeleteProjectReturnsNoContentForOwnedProject|testDeleteProjectForAnotherAccountReturns404/'`
+
+### Risks / follow-up
+- The next unchecked checklist item is the Projects outbox chain for create/archive/delete. I have delegated that as a separate subtask so the code changes stay narrow.
+
+## 2026-05-16 16:48:14 EEST - Task: Move `ProjectNotFound` HTTP response mapping out of `ProjectController`
+
+### Subagents used
+- `symfony-architecture` was consulted for a narrow wiring sanity check, but it did not return before timeout.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `src/Boardly/Projects/Interfaces/Http/Exception/ProjectNotFoundExceptionMapper.php`
+- `tests/Boardly/Projects/Interfaces/Http/Exception/ProjectNotFoundExceptionMapperTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Removed the inline `ProjectNotFound` response handling from the Projects controller.
+- Added a Projects API exception mapper that translates `ProjectNotFound` into the shared 404 JSON envelope.
+- Kept the existing invalid-argument fallback in the controller so the current API behavior for malformed IDs stays intact.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Exception/ProjectNotFoundExceptionMapper.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Exception/ProjectNotFoundExceptionMapperTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Exception/ProjectNotFoundExceptionMapperTest.php tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php --filter '/testGetProjectForAnotherAccountReturns404|testArchiveProjectForAnotherAccountReturns404|testDeleteProjectForAnotherAccountReturns404/'`
+
+### Risks / follow-up
+- The controller still handles `InvalidArgumentException` locally. That is deliberate for this review item, but it remains a separate candidate for future exception-mapper cleanup if the API contract changes.
+
+## 2026-05-16 16:48:14 EEST - Task: Fix the create response contract to return `id` instead of `projectId`
+
+### Subagents used
+- None.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Response/CreateProjectResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectResponse.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Changed the create-project response payload from `{ projectId, status }` to `{ id, status }`.
+- Updated the OpenAPI schema to match the new stable response shape.
+- Updated the API test assertions so the create-path contract is verified against the new key.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/CreateProjectResponseDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectResponse.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Exception/ProjectNotFoundExceptionMapperTest.php tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php --filter '/testCreateProjectReturnsCreatedResponseAndPersistsProject|testGetProjectForAnotherAccountReturns404|testArchiveProjectForAnotherAccountReturns404|testDeleteProjectReturnsNoContentForOwnedProject|testDeleteProjectForAnotherAccountReturns404/'`
+
+### Risks / follow-up
+- Archive and delete response contracts still use `projectId`; those remain separate checklist items and were intentionally left unchanged.
+
+## 2026-05-16 13:36:35 EEST - Task: Add the `ProjectDeleted` domain event and emit it from the delete flow
+
+### Subagents used
+- `ddd-modeling` for a narrow domain/application consistency check.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Reconciled the stale checklist item with the code state: `ProjectDeleted` already exists in the domain and is emitted by `DeleteProjectHandler`.
+- Verified the existing delete application flow without reimplementing it.
+
+### Verification
+- `php -l src/Boardly/Projects/Domain/Event/ProjectDeleted.php`
+- `php -l src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `php -l tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+
+### Risks / follow-up
+- None for this checklist item; the next incomplete item is the API `DELETE /api/projects/{projectId}` contract.
+
+## 2026-05-16 13:36:35 EEST - Task: Add `DELETE /api/projects/{projectId}` and make it return `204 No Content`
+
+### Subagents used
+- `symfony-architecture` for a minimal endpoint shape review.
+
+### Skills used
+- `task-implementation`
+- `symfony-architecture`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added the `DELETE /api/projects/{projectId}` route, OpenAPI declaration, and controller branch.
+- Returned a plain `204 No Content` `Response` for successful deletes.
+- Added functional tests for owned and foreign-account delete requests.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Domain/Model/ProjectTest.php --filter '/test_it_can_be_deleted|test_it_can_be_deleted_from_an_archived_project|test_it_rejects_delete_after_deletion/'`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php --filter '/testDeleteProject/'`
+
+### Risks / follow-up
+- The focused API delete test still returns `404 Project not found` for the owned project, so this item remains blocked and is not marked complete yet.
+
 ## 2026-05-16 16:28:25 EEST - Task: Add the `DeleteProject` application flow, including command/query-side wiring, handler, result, repository interaction, and tests
 
 ### Subagents used
@@ -539,3 +768,37 @@ N/A
 
 ### Risks / follow-up
 - Final validation checklist items remain pending.
+
+## 2026-05-16 13:40:27 EEST - Task: Projects controller buses and delete endpoint
+
+### Subagents used
+- `symfony-architecture` for a quick controller pattern check.
+
+### Skills used
+- `task-implementation`
+- `symfony-architecture`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxEventSerializer.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `tests/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxEventSerializerTest.php`
+- `config/services.yaml`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Switched the Projects controller to dispatch all create/archive/delete commands through `CommandBusInterface` and all list/get queries through `QueryBusInterface`.
+- Kept the DELETE endpoint returning `204 No Content`.
+- Added the missing `ProjectDeleted` outbox serializer so the delete handler can finish its transaction instead of failing in the outbox layer.
+- Added focused tests for the controller contract and the new serializer.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php -l src/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxEventSerializer.php`
+- `php -l tests/Boardly/Projects/Infrastructure/Outbox/ProjectDeletedOutboxEventSerializerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+
+### Risks / follow-up
+- The broader Projects outbox chain item is still open if message mappers/handlers for project events are expected beyond serialization.

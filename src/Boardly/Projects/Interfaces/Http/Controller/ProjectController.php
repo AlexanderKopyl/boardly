@@ -6,25 +6,24 @@ namespace App\Boardly\Projects\Interfaces\Http\Controller;
 
 use App\Boardly\IdentityAccess\Infrastructure\Security\AuthenticatedAccountUser;
 use App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectCommand;
-use App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectHandler;
 use App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectResult;
 use App\Boardly\Projects\Application\CreateProject\CreateProjectCommand;
-use App\Boardly\Projects\Application\CreateProject\CreateProjectHandler;
 use App\Boardly\Projects\Application\CreateProject\CreateProjectResult;
-use App\Boardly\Projects\Application\Exception\ProjectNotFound;
-use App\Boardly\Projects\Application\GetProject\GetProjectHandler;
+use App\Boardly\Projects\Application\DeleteProject\DeleteProjectCommand;
+use App\Boardly\Projects\Application\DeleteProject\DeleteProjectResult;
 use App\Boardly\Projects\Application\GetProject\GetProjectQuery;
 use App\Boardly\Projects\Application\GetProject\GetProjectResult;
-use App\Boardly\Projects\Application\ListProjects\ListProjectsHandler;
 use App\Boardly\Projects\Application\ListProjects\ListProjectsQuery;
 use App\Boardly\Projects\Application\ListProjects\ListProjectsResult;
 use App\Boardly\Projects\Interfaces\Http\Request\CreateProjectRequestDto;
-use App\Boardly\Projects\Interfaces\Http\Response\ArchiveProjectResponseDto;
 use App\Boardly\Projects\Interfaces\Http\Response\CreateProjectResponseDto;
 use App\Boardly\Projects\Interfaces\Http\Response\GetProjectResponseDto;
 use App\Boardly\Projects\Interfaces\Http\Response\ListProjectsResponseDto;
+use App\Shared\Application\Bus\CommandBusInterface;
+use App\Shared\Application\Bus\QueryBusInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -33,10 +32,8 @@ final readonly class ProjectController
 {
     public function __construct(
         private TokenStorageInterface $tokenStorage,
-        private CreateProjectHandler $createProjectHandler,
-        private ListProjectsHandler $listProjectsHandler,
-        private GetProjectHandler $getProjectHandler,
-        private ArchiveProjectHandler $archiveProjectHandler,
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus,
     ) {
     }
 
@@ -75,7 +72,7 @@ final readonly class ProjectController
     public function create(
         #[MapRequestPayload] CreateProjectRequestDto $requestDto,
     ): JsonResponse {
-        $result = ($this->createProjectHandler)(
+        $result = $this->commandBus->dispatch(
             new CreateProjectCommand(
                 ownerAccountId: $this->currentAccountId(),
                 name: $requestDto->name,
@@ -118,9 +115,7 @@ final readonly class ProjectController
     )]
     public function list(): JsonResponse
     {
-        $result = ($this->listProjectsHandler)(
-            new ListProjectsQuery($this->currentAccountId())
-        );
+        $result = $this->queryBus->ask(new ListProjectsQuery($this->currentAccountId()));
 
         if (!$result instanceof ListProjectsResult) {
             throw new \LogicException(sprintf('Expected %s from list projects handler.', ListProjectsResult::class));
@@ -171,13 +166,11 @@ final readonly class ProjectController
     public function get(string $projectId): JsonResponse
     {
         try {
-            $result = ($this->getProjectHandler)(
+            $result = $this->queryBus->ask(
                 new GetProjectQuery($projectId, $this->currentAccountId())
             );
-        } catch (ProjectNotFound) {
-            return $this->projectNotFoundResponse();
         } catch (\InvalidArgumentException) {
-            return $this->projectNotFoundResponse();
+            return $this->notFoundResponse();
         }
 
         if (!$result instanceof GetProjectResult) {
@@ -210,9 +203,8 @@ final readonly class ProjectController
         ],
         responses: [
             new OA\Response(
-                response: 200,
+                response: 204,
                 description: 'Project archived.',
-                content: new OA\JsonContent(ref: '#/components/schemas/ArchiveProjectResponse'),
             ),
             new OA\Response(
                 response: 401,
@@ -226,25 +218,74 @@ final readonly class ProjectController
             ),
         ],
     )]
-    public function archive(string $projectId): JsonResponse
+    public function archive(string $projectId): Response
     {
         try {
-            $result = ($this->archiveProjectHandler)(
+            $result = $this->commandBus->dispatch(
                 new ArchiveProjectCommand($projectId, $this->currentAccountId())
             );
-        } catch (ProjectNotFound) {
-            return $this->projectNotFoundResponse();
         } catch (\InvalidArgumentException) {
-            return $this->projectNotFoundResponse();
+            return $this->notFoundResponse();
         }
 
         if (!$result instanceof ArchiveProjectResult) {
             throw new \LogicException(sprintf('Expected %s from archive project handler.', ArchiveProjectResult::class));
         }
 
-        return new JsonResponse(
-            ArchiveProjectResponseDto::fromResult($result)->toArray(),
-        );
+        return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/api/projects/{projectId}', name: 'api_projects_delete', methods: ['DELETE'], format: 'json')]
+    #[OA\Delete(
+        path: '/api/projects/{projectId}',
+        operationId: 'deleteProject',
+        description: 'Deletes a project owned by the authenticated account. Missing or inaccessible projects return 404.',
+        summary: 'Delete a project',
+        security: [
+            ['bearerAuth' => []],
+        ],
+        tags: ['Projects'],
+        parameters: [
+            new OA\Parameter(
+                name: 'projectId',
+                description: 'Project identifier.',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid'),
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: 'Project deleted.',
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Missing, invalid, expired, revoked, missing-account, or non-active bearer token.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ErrorEnvelope'),
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Project not found or not accessible by the authenticated account.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ErrorEnvelope'),
+            ),
+        ],
+    )]
+    public function delete(string $projectId): Response
+    {
+        try {
+            $result = $this->commandBus->dispatch(
+                new DeleteProjectCommand($projectId, $this->currentAccountId())
+            );
+        } catch (\InvalidArgumentException) {
+            return $this->notFoundResponse();
+        }
+
+        if (!$result instanceof DeleteProjectResult) {
+            throw new \LogicException(sprintf('Expected %s from delete project handler.', DeleteProjectResult::class));
+        }
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
     private function currentAccountId(): string
@@ -257,7 +298,7 @@ final readonly class ProjectController
         return $user->accountId()->value();
     }
 
-    private function projectNotFoundResponse(): JsonResponse
+    private function notFoundResponse(): JsonResponse
     {
         return new JsonResponse([
             'error' => [
