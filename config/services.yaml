@@ -111,3 +111,7 @@ services:
     App\Boardly\IdentityAccess\Interfaces\Http\OpenApi\SchemaDescriber:
         tags:
             - { name: nelmio_api_doc.describer, priority: 100 }
+
+    App\Boardly\Projects\Interfaces\Http\OpenApi\SchemaDescriber:
+        tags:
+            - { name: nelmio_api_doc.describer, priority: 100 }

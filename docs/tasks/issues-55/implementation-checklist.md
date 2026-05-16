@@ -23,11 +23,11 @@
 - [x] Integration tests for repository and Doctrine mapping.
 
 ## Phase 4: Interfaces (API)
-- [ ] Create `ProjectController` in `src/Boardly/Projects/Interfaces/Http/Controller`.
-- [ ] Create Request DTOs and Response DTOs.
-- [ ] Configure routing if necessary (or use attributes).
-- [ ] Update OpenAPI documentation (likely in `Interfaces/Http/OpenApi`).
-- [ ] Functional tests for API endpoints (happy path + unauthorized access).
+- [x] Create `ProjectController` in `src/Boardly/Projects/Interfaces/Http/Controller`.
+- [x] Create Request DTOs and Response DTOs.
+- [x] Configure routing if necessary (or use attributes).
+- [x] Update OpenAPI documentation (likely in `Interfaces/Http/OpenApi`).
+- [x] Functional tests for API endpoints (happy path + unauthorized access).
 
 ## Phase 5: Final Validation
 - [ ] `php bin/console doctrine:schema:validate` returns no errors.

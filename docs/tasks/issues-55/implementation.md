@@ -1,8 +1,8 @@
 # Implementation: GitHub issue #55: Start core Product domain with Projects MVP
 
 ## Status
-- Phase: Phase 3: Infrastructure (Persistence)
-- Task: Implementing Doctrine Persistence
+- Phase: Phase 4: Interfaces (API)
+- Task: Creating the Projects API controller
 
 ## Subagents used
 - `generalist`
@@ -51,6 +51,93 @@ Completed Phase 2: Application Layer.
 ## Risks / follow-up
 N/A
 
+## 2026-05-16 11:00:00 EEST - Task: Create Request DTOs and Response DTOs
+
+### Subagents used
+- Attempted a worker subagent for the Projects API DTO slice, then completed the implementation in the main thread after the agent did not attach cleanly.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Request/CreateProjectRequestDto.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/CreateProjectResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/ProjectListItemResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/ListProjectsResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/GetProjectResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/ArchiveProjectResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added a `CreateProjectRequestDto` compatible with `MapRequestPayload` and Symfony validation.
+- Added dedicated response DTOs for create, list, get, and archive project endpoints.
+- Updated `ProjectController` to consume the request DTO and emit the response DTOs instead of manual array shaping.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Request/CreateProjectRequestDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/CreateProjectResponseDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/ProjectListItemResponseDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/ListProjectsResponseDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/GetProjectResponseDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/ArchiveProjectResponseDto.php`
+
+### Risks / follow-up
+- OpenAPI schema classes and functional API tests remain on the checklist.
+
+## 2026-05-16 11:12:00 EEST - Task: Configure routing if necessary (or use attributes)
+
+### Subagents used
+- `symfony-architecture` was requested for a quick routing sanity check.
+
+### Skills used
+- `task-implementation`
+- `symfony-architecture`
+
+### Files changed
+- `config/routes.yaml`
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added a dedicated attribute-route import for `App\Boardly\Projects\Interfaces\Http\Controller` so Symfony registers the Projects API endpoints.
+- Reconciled the checklist with the codebase state by marking the routing item complete.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `/opt/homebrew/bin/php bin/console debug:router api_projects_create`
+
+### Risks / follow-up
+- OpenAPI documentation and functional API tests are still pending in the checklist.
+
+## 2026-05-16 10:36:46 EEST - Task: Create `ProjectController`
+
+### Subagents used
+- `symfony-architecture` (consulted for controller wiring and scope boundaries)
+
+### Skills used
+- `task-implementation`
+- `symfony-architecture`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added a new `ProjectController` with routes for create, list, get, and archive operations under `/api/projects`.
+- Wired the controller directly to the existing Projects use case handlers and authenticated account context.
+- Returned explicit JSON error envelopes for invalid requests and missing/unauthorized projects so the new API endpoints remain usable without waiting for the later DTO/OpenAPI task.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application`
+
+### Risks / follow-up
+- Request/response DTOs, OpenAPI docs, route polish, and API functional tests are still pending in the checklist.
+
 ## 2026-05-16 10:29:17 EEST - Task: Phase 3: Infrastructure (Persistence)
 
 ### Subagents used
@@ -81,3 +168,76 @@ N/A
 
 ### Risks / follow-up
 - Phase 4 API work and final validation remain unchecked in the task folder.
+
+## 2026-05-16 10:44:12 EEST - Task: Update OpenAPI documentation
+
+### Subagents used
+- `symfony-architecture` for a quick pattern check against the existing Nelmio/OpenAPI setup.
+
+### Skills used
+- `task-implementation`
+- `symfony-architecture`
+
+### Files changed
+- `src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/SchemaDescriber.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectRequest.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectResponse.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ProjectListItemResponse.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ListProjectsResponse.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/GetProjectResponse.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ArchiveProjectResponse.php`
+- `config/services.yaml`
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added OpenAPI attributes to the Projects controller for create, list, get, and archive endpoints, including bearer security, request bodies, path parameters, and documented 401/404/422 responses.
+- Added Projects-specific standalone OpenAPI schema classes for request and response payloads.
+- Added a Projects schema describer and registered it so Nelmio includes the standalone schema classes in `components.schemas`.
+
+### Verification
+- `php -l src/Boardly/Projects/Interfaces/Http/Controller/ProjectController.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/SchemaDescriber.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectRequest.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectResponse.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ProjectListItemResponse.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ListProjectsResponse.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/GetProjectResponse.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/ArchiveProjectResponse.php`
+- `php bin/console debug:container --tag=nelmio_api_doc.describer`
+- `php bin/console debug:router --show-controllers | rg "api_projects_(create|list|get|archive)"`
+- `php bin/console nelmio:apidoc:dump --format=json --no-pretty`
+
+### Risks / follow-up
+- API functional tests are still pending in the checklist.
+
+## 2026-05-16 10:48:42 EEST - Task: Functional tests for API endpoints (happy path + unauthorized access)
+
+### Subagents used
+- `explorer` for the Projects API test pattern and controller/auth flow review.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectCreatedOutboxEventSerializer.php`
+- `src/Boardly/Projects/Infrastructure/Outbox/ProjectArchivedOutboxEventSerializer.php`
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added a dedicated functional test class for the Projects API controller.
+- Covered the happy path for create, list, get, and archive endpoints.
+- Covered unauthorized access through missing bearer token on create and foreign-owner 404s on get/archive.
+- Added Projects outbox serializers so create/archive requests can complete without serializer failures during the functional suite.
+
+### Verification
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php -l src/Boardly/Projects/Infrastructure/Outbox/ProjectCreatedOutboxEventSerializer.php`
+- `php -l src/Boardly/Projects/Infrastructure/Outbox/ProjectArchivedOutboxEventSerializer.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+
+### Risks / follow-up
+- Final validation checklist items remain pending.
