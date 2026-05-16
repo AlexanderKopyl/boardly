@@ -1,0 +1,17 @@
+description = "Read-only Boardly task analysis"
+prompt = """
+Perform read-only analysis for a Boardly task.
+
+Required:
+1. Read GEMINI.md, AGENTS.md, CLAUDE.md, and relevant existing skills from skills/.
+2. Inspect only task-relevant files.
+3. Do not edit files.
+4. Do not invent project facts.
+5. Return:
+   - current facts
+   - affected files/modules
+   - relevant rules/skills
+   - risks
+   - unknowns
+   - recommended planning scope
+"""
