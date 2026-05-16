@@ -81,6 +81,10 @@ path = "skills/adr-writing/SKILL.md"
 enabled = true
 
 [[skills.config]]
+path = "skills/symfony-cqrs-bus-boundary/SKILL.md"
+enabled = true
+
+[[skills.config]]
 path = "skills/caveman-response/SKILL.md"
 enabled = true
 

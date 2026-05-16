@@ -62,6 +62,7 @@ Skills do not replace accepted ADRs or developer rulebooks.
 | --- | --- |
 | `domain-modeling` | aggregates, invariants, value objects, domain events, transaction boundaries |
 | `feature-architecture` | end-to-end backend architecture for a feature/use case |
+| `symfony-cqrs-bus-boundary` | HTTP controller CQRS boundary: CommandBusInterface/QueryBusInterface only, no concrete handler injection/invocation |
 | `workflow-design` | issue statuses, transitions, guards, validators, Symfony Workflow fit |
 | `async-flow` | RabbitMQ/Messenger, Outbox, retries, DLQ, idempotency |
 | `search-indexing` | OpenSearch/Elasticsearch documents, projections, reindexing |
@@ -89,6 +90,20 @@ Skills do not replace accepted ADRs or developer rulebooks.
 | --- | --- |
 | `caveman-response` | short, direct, low-token answers when explicitly requested |
 | `graphify-knowledge-map` | compact knowledge graphs, dependency maps, architecture maps |
+
+## Hard backend controller rule
+
+Whenever a task creates, modifies, or reviews HTTP controllers, Commands, Queries, concrete handlers, or bus configuration, use `symfony-cqrs-bus-boundary`.
+
+Hard rule:
+
+```text
+HTTP controllers must never inject or invoke concrete Application handlers directly.
+Controllers must dispatch Commands through CommandBusInterface and Queries through QueryBusInterface.
+Concrete command handlers must be registered on command.bus.
+Concrete query handlers must be registered on query.bus.
+Direct calls like ($this->createProjectHandler)(...), $this->createProjectHandler->__invoke(...), or $this->createProjectHandler->handle(...) are architecture violations.
+```
 
 ## Task lifecycle rules
 
@@ -167,6 +182,8 @@ Do not use MemPalace for simple repo discovery such as class location, route/con
 - RabbitMQ is for asynchronous side effects, not core consistency.
 - Next.js is the frontend framework, not the source of business truth.
 - Backend remains source of truth for business invariants, permissions, workflow transitions, identity lifecycle, persistence, and project/task state.
+- HTTP controllers must dispatch Commands through `CommandBusInterface` and Queries through `QueryBusInterface`.
+- HTTP controllers must never inject or invoke concrete Application handlers directly.
 - Frontend context domain models are not backend aggregates.
 - Frontend access token must be memory-only.
 - Frontend refresh token must be HttpOnly and unreadable by JavaScript.

@@ -152,6 +152,10 @@ Ask before destructive actions, dependency changes, migrations, deployment chang
 - Business behavior first, framework mechanics second.
 - Symfony is implementation detail, not the domain model.
 - Controllers stay thin.
+- HTTP controllers must dispatch Commands through `CommandBusInterface` and Queries through `QueryBusInterface`.
+- HTTP controllers must never inject or invoke concrete Application handlers directly.
+- Concrete command handlers must be registered on `command.bus`; concrete query handlers must be registered on `query.bus`.
+- Direct controller calls like `($this->createProjectHandler)(...)`, `$this->createProjectHandler->__invoke(...)`, or `$this->createProjectHandler->handle(...)` are architecture violations.
 - Domain logic belongs in the domain/application layers, not controllers, forms, Doctrine listeners, or generic services.
 - Doctrine is persistence adapter, not the owner of business behavior.
 - RabbitMQ/Messenger handles asynchronous side effects, not core consistency.
