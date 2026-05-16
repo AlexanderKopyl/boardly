@@ -75,7 +75,7 @@
 ## Test strategy
 - **Domain Tests**: Unit tests for `Project` aggregate invariants (name, icon format, status transitions).
 - **Application Tests**: Use case tests with mocked repositories to verify ownership filtering and command/query logic.
-- **Infrastructure Tests**: Integration tests for Doctrine mapping and migrations. Verify that repository queries correctly filter by `owner_account_id`.
+- **Infrastructure Tests**: Use `php bin/console doctrine:schema:validate --skip-sync` for mapping validation, then rely on integration tests and migration checks for the `projects` schema, `projects.projects` table, `owner_account_id` FK, `icon_key` constraint, and repository access filtering.
 - **API Tests**: Functional tests (Symfony WebTestCase) for end-to-end flows, including unauthorized access attempts.
 
 ## Implementation notes

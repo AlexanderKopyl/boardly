@@ -71,7 +71,8 @@ Implement a vertical slice for Projects MVP within a new "Projects" bounded cont
 - [ ] Functional tests for API endpoints (happy path + unauthorized access).
 
 ## Validation checklist
-- [ ] `php bin/console doctrine:schema:validate` returns no errors.
+- [ ] `php bin/console doctrine:schema:validate --skip-sync` returns no mapping errors.
+- [ ] Explicit migration/integration DB checks confirm the `projects` schema, `projects.projects` table, owner FK, `icon_key` constraint, and access-aware repository behavior.
 - [ ] `php bin/phpunit` passes for all new tests.
 - [ ] API functional tests confirm that accounts can only see/modify their own projects (404 for others).
 - [ ] Migration can be run up and down safely.

@@ -4,6 +4,34 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 11:30:00 EEST - Task: Resolve Phase 5 Doctrine validation conflict
+
+### Subagents used
+- `generalist` was spawned for the task-artifact update; the doc edits were completed in the main thread.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/planning.md`
+- `docs/tasks/issues-55/analysis.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Replaced the invalid full `doctrine:schema:validate` gate with `doctrine:schema:validate --skip-sync` for Doctrine mapping validation.
+- Added a separate validation item for the explicit migration/integration DB checks covering the `projects` schema, `projects.projects` table, owner FK, `icon_key` constraint, and access-aware repository behavior.
+- Kept the persistence architecture unchanged: scalar `owner_account_id` and the real database FK remain in place.
+
+### Verification
+- `php bin/console doctrine:schema:validate --skip-sync`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- Verified the migration file still defines the `projects.projects` FK to `public.accounts` and the `icon_key` check constraint.
+
+### Risks / follow-up
+- No code changes were required for this artifact update.
+- The remaining final-validation checklist items are still pending.
+
 ## Subagents used
 - `generalist`
 
