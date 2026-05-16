@@ -1,20 +1,15 @@
-description = "Create a safe Boardly implementation plan"
+description = "Plan a Boardly task using Gemini skills"
 prompt = """
-Create a minimal implementation plan for a Boardly task.
+Plan a Boardly task.
 
-Required:
-1. Use GEMINI.md as the default rule map.
-2. Load only task-relevant docs or skills listed in GEMINI.md.
-3. Base the plan on current repository facts.
-4. Do not edit files.
-5. Preserve public contracts unless the task explicitly changes them.
-6. Include:
-   - scope
-   - assumptions
-   - files likely to change
-   - step-by-step plan
-   - verification commands
-   - risks
-   - rollback notes
-   - out-of-scope items
+Use GEMINI.md as the default rule map.
+Use `.gemini/skills/task-planning/SKILL.md` for backend, infrastructure, docs, or mixed tasks.
+Use `.gemini/skills/frontend-task-planning/SKILL.md` for frontend-only tasks.
+Do not use `.codex/skills/*` as runtime instructions for Gemini.
+Load only additional task-relevant docs or skills.
+
+If the task folder, goal, scope, or target area is unclear, follow the selected Gemini skill rules.
+Stop if the selected Gemini skill cannot be loaded.
+
+Return the summary required by the selected skill and identify the saved planning artifact when one is created.
 """
