@@ -3,11 +3,12 @@ prompt = """
 Create a minimal implementation plan for a Boardly task.
 
 Required:
-1. Base the plan on current repository facts.
-2. Reuse relevant existing skills from skills/.
-3. Do not edit files.
-4. Preserve public contracts unless the task explicitly changes them.
-5. Include:
+1. Use GEMINI.md as the default rule map.
+2. Load only task-relevant docs or skills listed in GEMINI.md.
+3. Base the plan on current repository facts.
+4. Do not edit files.
+5. Preserve public contracts unless the task explicitly changes them.
+6. Include:
    - scope
    - assumptions
    - files likely to change
