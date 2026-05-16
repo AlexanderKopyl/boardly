@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Boardly\Projects\Application\ArchiveProject;
 
-use App\Boardly\Projects\Application\Exception\ProjectNotFound;
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
-use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
 use App\Shared\Application\Outbox\OutboxInterface;
 use App\Shared\Application\Port\ClockInterface;
@@ -27,17 +25,10 @@ final readonly class ArchiveProjectHandler
         return $this->transactional->transactional(
             function () use ($command): ArchiveProjectResult {
                 $id = ProjectId::fromString($command->projectId());
-                $project = $this->projects->find($id);
-
-                if ($project === null) {
-                    throw ProjectNotFound::withId($id);
-                }
-
-                $currentAccountId = AccountId::fromString($command->currentAccountId());
-                if (!$project->ownerAccountId()->equals($currentAccountId)) {
-                    // ADR-0008: Return 404 instead of 403
-                    throw ProjectNotFound::withId($id);
-                }
+                $project = $this->projects->getAccessibleById(
+                    $id,
+                    \App\Boardly\SharedKernel\Domain\ValueObject\AccountId::fromString($command->currentAccountId()),
+                );
 
                 $domainResult = $project->archive($this->clock->now());
 

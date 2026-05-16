@@ -77,13 +77,48 @@ final class GetProjectHandlerTest extends TestCase
         $this->expectException(ProjectNotFound::class);
         $handler->__invoke(new GetProjectQuery(self::PROJECT_ID, self::OTHER_ACCOUNT_ID));
     }
+
+    public function test_it_throws_exception_if_project_is_deleted(): void
+    {
+        $project = Project::reconstitute(
+            ProjectId::fromString(self::PROJECT_ID),
+            AccountId::fromString(self::OWNER_ID),
+            ProjectName::fromString('Deleted Project'),
+            ProjectIconKey::fromString('rocket'),
+            ProjectStatus::deleted(),
+            new \DateTimeImmutable(),
+            new \DateTimeImmutable(),
+            null,
+            new \DateTimeImmutable(),
+        );
+
+        $repository = new FakeProjectRepository($project);
+        $handler = new GetProjectHandler($repository);
+
+        $this->expectException(ProjectNotFound::class);
+        $handler->__invoke(new GetProjectQuery(self::PROJECT_ID, self::OWNER_ID));
+    }
 }
 
 final class FakeProjectRepository implements ProjectRepositoryInterface
 {
     public function __construct(private ?Project $project = null) {}
     public function save(Project $project): void {}
-    public function get(ProjectId $id): Project { throw new \LogicException('Not implemented'); }
-    public function find(ProjectId $id): ?Project { return $this->project; }
-    public function findByOwner(AccountId $ownerId): array { return []; }
+    public function getAccessibleById(ProjectId $id, AccountId $currentAccountId): Project
+    {
+        if (!$this->project instanceof Project) {
+            throw ProjectNotFound::withId($id);
+        }
+
+        if (!$this->project->ownerAccountId()->equals($currentAccountId) || $this->project->status()->isDeleted()) {
+            throw ProjectNotFound::withId($id);
+        }
+
+        return $this->project;
+    }
+
+    public function findAccessibleActiveByOwner(AccountId $ownerId): array
+    {
+        return [];
+    }
 }

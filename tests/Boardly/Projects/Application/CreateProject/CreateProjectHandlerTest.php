@@ -46,8 +46,13 @@ final class CreateProjectHandlerTest extends TestCase
         ));
 
         $this->assertInstanceOf(CreateProjectResult::class, $result);
-        $this->assertSame(self::PROJECT_ID, $result->projectId());
+        $this->assertSame(self::PROJECT_ID, $result->id());
+        $this->assertSame('Test Project', $result->name());
+        $this->assertSame('rocket', $result->iconKey());
         $this->assertSame('active', $result->status());
+        $this->assertSame($now->format(\DateTimeInterface::ATOM), $result->createdAt());
+        $this->assertSame($now->format(\DateTimeInterface::ATOM), $result->updatedAt());
+        $this->assertNull($result->archivedAt());
 
         $this->assertCount(1, $repository->savedProjects);
         $project = $repository->savedProjects[0];
@@ -93,17 +98,12 @@ final class FakeProjectRepository implements ProjectRepositoryInterface
         $this->savedProjects[] = $project;
     }
 
-    public function get(ProjectId $id): Project
+    public function getAccessibleById(ProjectId $id, AccountId $currentAccountId): Project
     {
         throw new \LogicException('Not implemented');
     }
 
-    public function find(ProjectId $id): ?Project
-    {
-        return null;
-    }
-
-    public function findByOwner(AccountId $ownerId): array
+    public function findAccessibleActiveByOwner(AccountId $ownerId): array
     {
         return [];
     }

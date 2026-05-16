@@ -11,10 +11,10 @@ use App\Boardly\IdentityAccess\Domain\Model\Account;
 use App\Boardly\IdentityAccess\Domain\ValueObject\AccountName;
 use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
-use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
 use App\Boardly\Projects\Domain\Model\Project;
 use App\Boardly\Projects\Domain\ValueObject\ProjectIconKey;
 use App\Boardly\Projects\Domain\ValueObject\ProjectName;
+use App\Boardly\Projects\Infrastructure\Persistence\Doctrine\Repository\DoctrineProjectRepository;
 use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
 use App\Shared\Application\Bus\CommandBusInterface;
@@ -33,7 +33,7 @@ final class ProjectControllerTest extends WebTestCase
     private AccountRepositoryInterface $accounts;
     private PasswordHasherInterface $passwordHasher;
     private AccessTokenIssuerInterface $accessTokenIssuer;
-    private ProjectRepositoryInterface $projects;
+    private DoctrineProjectRepository $projects;
 
     protected function setUp(): void
     {
@@ -46,7 +46,7 @@ final class ProjectControllerTest extends WebTestCase
         $this->accounts = $container->get(AccountRepositoryInterface::class);
         $this->passwordHasher = $container->get(PasswordHasherInterface::class);
         $this->accessTokenIssuer = $container->get(AccessTokenIssuerInterface::class);
-        $this->projects = $container->get(ProjectRepositoryInterface::class);
+        $this->projects = $container->get(DoctrineProjectRepository::class);
 
         self::assertTrue(
             $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts', 'projects.projects']),
@@ -83,9 +83,13 @@ final class ProjectControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
 
         $data = $this->responseData();
-        self::assertSame(['id', 'status'], array_keys($data));
+        self::assertSame(['id', 'name', 'iconKey', 'status', 'createdAt', 'updatedAt', 'archivedAt'], array_keys($data));
+        self::assertSame('Created Project', $data['name']);
+        self::assertSame('board', $data['iconKey']);
         self::assertSame('active', $data['status']);
+        self::assertNull($data['archivedAt']);
         self::assertMatchesRegularExpression('/^[0-9a-f-]{36}$/', $data['id']);
+        self::assertSame($data['createdAt'], $data['updatedAt']);
 
         $project = $this->projects->find(ProjectId::fromString($data['id']));
         self::assertInstanceOf(Project::class, $project);
@@ -93,6 +97,8 @@ final class ProjectControllerTest extends WebTestCase
         self::assertSame('Created Project', $project->name()->value());
         self::assertSame('board', $project->iconKey()->value());
         self::assertTrue($project->status()->isActive());
+        self::assertSame($project->createdAt()->format(\DateTimeInterface::ATOM), $data['createdAt']);
+        self::assertSame($project->updatedAt()->format(\DateTimeInterface::ATOM), $data['updatedAt']);
     }
 
     public function testCreateProjectWithoutBearerTokenReturns401(): void
@@ -126,6 +132,10 @@ final class ProjectControllerTest extends WebTestCase
             'timeline',
             new \DateTimeImmutable('2026-05-05T10:05:00+00:00'),
         );
+        $this->markProjectArchived(
+            $secondProject->id()->value(),
+            new \DateTimeImmutable('2026-05-05T10:20:00+00:00'),
+        );
         $this->persistProject(
             '018f3f7a-9e4c-7b2d-9c52-000000000703',
             $otherAccount->id(),
@@ -140,10 +150,9 @@ final class ProjectControllerTest extends WebTestCase
 
         $data = $this->responseData();
         self::assertArrayHasKey('projects', $data);
-        self::assertCount(2, $data['projects']);
+        self::assertCount(1, $data['projects']);
 
         $projects = $data['projects'];
-        usort($projects, static fn (array $left, array $right): int => strcmp($left['id'], $right['id']));
 
         self::assertSame(
             [
@@ -153,13 +162,6 @@ final class ProjectControllerTest extends WebTestCase
                     'iconKey' => 'board',
                     'status' => 'active',
                     'createdAt' => '2026-05-05T10:00:00+00:00',
-                ],
-                [
-                    'id' => $secondProject->id()->value(),
-                    'name' => 'Owner Beta',
-                    'iconKey' => 'timeline',
-                    'status' => 'active',
-                    'createdAt' => '2026-05-05T10:05:00+00:00',
                 ],
             ],
             $projects,
@@ -306,6 +308,42 @@ final class ProjectControllerTest extends WebTestCase
         self::assertInstanceOf(Project::class, $deletedProject);
         self::assertTrue($deletedProject->status()->isDeleted());
         self::assertNotNull($deletedProject->deletedAt());
+
+        $this->getJson('/api/projects/'.$projectId, $this->validTokenFor($owner->id()));
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(
+            [
+                'error' => [
+                    'code' => 'project_not_found',
+                    'message' => 'Project not found.',
+                ],
+            ],
+            $this->responseData(),
+        );
+
+        $this->postJson('/api/projects/'.$projectId.'/archive', [], $this->validTokenFor($owner->id()));
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(
+            [
+                'error' => [
+                    'code' => 'project_not_found',
+                    'message' => 'Project not found.',
+                ],
+            ],
+            $this->responseData(),
+        );
+
+        $this->deleteJson('/api/projects/'.$projectId, $this->validTokenFor($owner->id()));
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame(
+            [
+                'error' => [
+                    'code' => 'project_not_found',
+                    'message' => 'Project not found.',
+                ],
+            ],
+            $this->responseData(),
+        );
     }
 
     public function testDeleteProjectForAnotherAccountReturns404(): void
@@ -429,6 +467,20 @@ final class ProjectControllerTest extends WebTestCase
         $this->entityManager->clear();
 
         return $project;
+    }
+
+    private function markProjectArchived(string $projectId, \DateTimeImmutable $archivedAt): void
+    {
+        $this->entityManager->getConnection()->executeStatement(
+            'UPDATE projects.projects SET status = :status, updated_at = :updatedAt, archived_at = :archivedAt WHERE id = :id',
+            [
+                'id' => $projectId,
+                'status' => 'archived',
+                'updatedAt' => $archivedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'archivedAt' => $archivedAt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+            ],
+        );
+        $this->entityManager->clear();
     }
 
     private function validTokenFor(AccountId $accountId): string

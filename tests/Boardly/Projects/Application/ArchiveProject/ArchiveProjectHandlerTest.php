@@ -7,6 +7,7 @@ namespace App\Tests\Boardly\Projects\Application\ArchiveProject;
 use App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectCommand;
 use App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectHandler;
 use App\Boardly\Projects\Application\ArchiveProject\ArchiveProjectResult;
+use App\Boardly\Projects\Application\Exception\ProjectNotFound;
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
 use App\Boardly\Projects\Domain\Event\ProjectArchived;
 use App\Boardly\Projects\Domain\Model\Project;
@@ -64,15 +65,56 @@ final class ArchiveProjectHandlerTest extends TestCase
         $this->assertCount(1, $outbox->storedEvents);
         $this->assertInstanceOf(ProjectArchived::class, $outbox->storedEvents[0]);
     }
+
+    public function test_it_throws_exception_if_project_is_deleted(): void
+    {
+        $project = Project::reconstitute(
+            ProjectId::fromString(self::PROJECT_ID),
+            AccountId::fromString(self::OWNER_ID),
+            ProjectName::fromString('Deleted Project'),
+            ProjectIconKey::fromString('rocket'),
+            ProjectStatus::deleted(),
+            new DateTimeImmutable('-1 day'),
+            new DateTimeImmutable('-1 day'),
+            null,
+            new DateTimeImmutable('-1 hour')
+        );
+
+        $repository = new FakeProjectRepository($project);
+        $outbox = new FakeOutbox();
+        $handler = new ArchiveProjectHandler(
+            $repository,
+            new FakeClock(new DateTimeImmutable()),
+            new FakeTransactional(),
+            $outbox
+        );
+
+        $this->expectException(ProjectNotFound::class);
+        $handler->__invoke(new ArchiveProjectCommand(self::PROJECT_ID, self::OWNER_ID));
+    }
 }
 
 final class FakeProjectRepository implements ProjectRepositoryInterface
 {
     public function __construct(private ?Project $project = null) {}
     public function save(Project $project): void {}
-    public function get(ProjectId $id): Project { throw new \LogicException('Not implemented'); }
-    public function find(ProjectId $id): ?Project { return $this->project; }
-    public function findByOwner(AccountId $ownerId): array { return []; }
+    public function getAccessibleById(ProjectId $id, AccountId $currentAccountId): Project
+    {
+        if (!$this->project instanceof Project) {
+            throw ProjectNotFound::withId($id);
+        }
+
+        if (!$this->project->ownerAccountId()->equals($currentAccountId) || $this->project->status()->isDeleted()) {
+            throw ProjectNotFound::withId($id);
+        }
+
+        return $this->project;
+    }
+
+    public function findAccessibleActiveByOwner(AccountId $ownerId): array
+    {
+        return [];
+    }
 }
 
 final class FakeClock implements ClockInterface

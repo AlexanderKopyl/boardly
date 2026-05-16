@@ -47,7 +47,12 @@ final readonly class CreateProjectHandler
 
                 return new CreateProjectResult(
                     $project->id()->value(),
+                    $project->name()->value(),
+                    $project->iconKey()->value(),
                     $project->status()->value(),
+                    $project->createdAt()->format(\DateTimeInterface::ATOM),
+                    $project->updatedAt()->format(\DateTimeInterface::ATOM),
+                    $project->archivedAt()?->format(\DateTimeInterface::ATOM),
                 );
             }
         );

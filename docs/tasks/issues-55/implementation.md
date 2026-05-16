@@ -4,6 +4,68 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 17:16:55 EEST - Task: Resolve the remaining Projects review blockers for access-aware repository behavior and stable create response shape
+
+### Subagents used
+- `explorer` for a final blocker-scope sanity check.
+- `worker` agents were spawned to partition the access-control and create-response slices, but the final edits were landed directly after the blocker analysis converged.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `src/Boardly/Projects/Application/Port/ProjectRepositoryInterface.php`
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepository.php`
+- `src/Boardly/Projects/Application/ListProjects/ListProjectsHandler.php`
+- `src/Boardly/Projects/Application/GetProject/GetProjectHandler.php`
+- `src/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandler.php`
+- `src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `src/Boardly/Projects/Application/CreateProject/CreateProjectHandler.php`
+- `src/Boardly/Projects/Application/CreateProject/CreateProjectResult.php`
+- `src/Boardly/Projects/Interfaces/Http/Response/CreateProjectResponseDto.php`
+- `src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectResponse.php`
+- `tests/Boardly/Projects/Application/CreateProject/CreateProjectHandlerTest.php`
+- `tests/Boardly/Projects/Application/ListProjects/ListProjectsHandlerTest.php`
+- `tests/Boardly/Projects/Application/GetProject/GetProjectHandlerTest.php`
+- `tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Replaced the Projects application port usage with access-aware repository methods so get/archive/delete enforce accessibility at the repository boundary.
+- Updated the Doctrine repository to return only active, accessible projects for the default list and to hide deleted/inaccessible projects behind the same `ProjectNotFound` path.
+- Expanded the create flow result/HTTP response/OpenAPI schema to the full stable project shape used elsewhere in the Projects API.
+- Updated the focused Projects unit, repository integration, and controller tests to reflect the new contract and deleted-project 404 behavior.
+- Reconciled the task checklist so the resolved review blockers are marked complete and the `.env.test` blocker is explicitly noted as absent from the diff.
+
+### Verification
+- `php -l src/Boardly/Projects/Application/Port/ProjectRepositoryInterface.php`
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepository.php`
+- `php -l src/Boardly/Projects/Application/ListProjects/ListProjectsHandler.php`
+- `php -l src/Boardly/Projects/Application/GetProject/GetProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/DeleteProject/DeleteProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/CreateProject/CreateProjectHandler.php`
+- `php -l src/Boardly/Projects/Application/CreateProject/CreateProjectResult.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/Response/CreateProjectResponseDto.php`
+- `php -l src/Boardly/Projects/Interfaces/Http/OpenApi/Schema/CreateProjectResponse.php`
+- `php -l tests/Boardly/Projects/Application/CreateProject/CreateProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Application/ListProjects/ListProjectsHandlerTest.php`
+- `php -l tests/Boardly/Projects/Application/GetProject/GetProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `php -l tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Application/CreateProject/CreateProjectHandlerTest.php tests/Boardly/Projects/Application/ListProjects/ListProjectsHandlerTest.php tests/Boardly/Projects/Application/GetProject/GetProjectHandlerTest.php tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php tests/Boardly/Projects/Application/DeleteProject/DeleteProjectHandlerTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+
+### Risks / follow-up
+- The repository integration and controller functional test runs are blocked in this environment by the unresolved PostgreSQL host `postgres`, so only syntax checks and the application unit test slice completed successfully here.
+
 ## 2026-05-16 16:54:59 EEST - Task: Complete the Projects outbox chain for create/archive/delete: add message mappers, message classes, and message handlers for the new project events
 
 ### Subagents used

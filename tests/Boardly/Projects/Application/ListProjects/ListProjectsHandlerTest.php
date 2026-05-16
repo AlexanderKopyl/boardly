@@ -39,22 +39,33 @@ final class ListProjectsHandlerTest extends TestCase
             $ownerId,
             ProjectName::fromString('Project 2'),
             ProjectIconKey::fromString('folder'),
+            ProjectStatus::archived(),
+            new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
+            new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
+            new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
+            null
+        );
+        $project3 = Project::reconstitute(
+            ProjectId::fromString('550e8400-e29b-41d4-a716-446655440003'),
+            AccountId::fromString('550e8400-e29b-41d4-a716-446655440004'),
+            ProjectName::fromString('Foreign Project'),
+            ProjectIconKey::fromString('board'),
             ProjectStatus::active(),
-            new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
-            new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
+            new \DateTimeImmutable('2026-05-16T12:00:00+00:00'),
+            new \DateTimeImmutable('2026-05-16T12:00:00+00:00'),
             null,
             null
         );
 
-        $repository = new FakeProjectRepository([$project1, $project2]);
+        $repository = new FakeProjectRepository([$project1, $project2, $project3]);
         $handler = new ListProjectsHandler($repository);
 
         $result = $handler->__invoke(new ListProjectsQuery(self::OWNER_ID));
 
         $this->assertInstanceOf(ListProjectsResult::class, $result);
-        $this->assertCount(2, $result->projects());
+        $this->assertCount(1, $result->projects());
         $this->assertSame('Project 1', $result->projects()[0]->name);
-        $this->assertSame('Project 2', $result->projects()[1]->name);
+        $this->assertSame('active', $result->projects()[0]->status);
     }
 }
 
@@ -62,7 +73,12 @@ final class FakeProjectRepository implements ProjectRepositoryInterface
 {
     public function __construct(private array $projects = []) {}
     public function save(Project $project): void {}
-    public function get(ProjectId $id): Project { throw new \LogicException('Not implemented'); }
-    public function find(ProjectId $id): ?Project { return null; }
-    public function findByOwner(AccountId $ownerId): array { return $this->projects; }
+    public function getAccessibleById(ProjectId $id, AccountId $currentAccountId): Project { throw new \LogicException('Not implemented'); }
+    public function findAccessibleActiveByOwner(AccountId $ownerId): array
+    {
+        return array_values(array_filter(
+            $this->projects,
+            static fn (Project $project) => $project->ownerAccountId()->equals($ownerId) && $project->status()->isActive(),
+        ));
+    }
 }

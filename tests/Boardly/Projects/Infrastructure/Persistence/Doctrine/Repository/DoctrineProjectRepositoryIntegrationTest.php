@@ -10,6 +10,7 @@ use App\Boardly\IdentityAccess\Domain\ValueObject\Email;
 use App\Boardly\IdentityAccess\Domain\ValueObject\PasswordHash;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Mapper\AccountMapper;
 use App\Boardly\IdentityAccess\Infrastructure\Persistence\Doctrine\Repository\DoctrineAccountRepository;
+use App\Boardly\Projects\Application\Exception\ProjectNotFound;
 use App\Boardly\Projects\Domain\Model\Project;
 use App\Boardly\Projects\Domain\ValueObject\ProjectIconKey;
 use App\Boardly\Projects\Domain\ValueObject\ProjectName;
@@ -146,7 +147,7 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         self::assertNull($stored->archivedAt());
     }
 
-    public function testFindByOwnerReturnsOnlyProjectsForThatOwner(): void
+    public function testFindAccessibleActiveByOwnerReturnsOnlyActiveProjectsForThatOwner(): void
     {
         $owner = $this->persistAccount('000000000053', 'owner@example.com');
         $otherOwner = $this->persistAccount('000000000054', 'other-owner@example.com');
@@ -165,8 +166,24 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
             iconKey: ProjectIconKey::fromString('board'),
             createdAt: new \DateTimeImmutable('2026-05-05T13:05:00+00:00'),
         );
-        $foreignProject = $this->createProject(
+        $archivedProject = $this->createProject(
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000604',
+            ownerId: $owner->id(),
+            name: 'Archived Project',
+            iconKey: ProjectIconKey::fromString('timeline'),
+            createdAt: new \DateTimeImmutable('2026-05-05T13:06:00+00:00'),
+        );
+        $archivedProject->archive(new \DateTimeImmutable('2026-05-05T13:30:00+00:00'));
+        $deletedProject = $this->createProject(
             id: '018f3f7a-9e4c-7b2d-9c52-000000000605',
+            ownerId: $owner->id(),
+            name: 'Deleted Project',
+            iconKey: ProjectIconKey::fromString('folder'),
+            createdAt: new \DateTimeImmutable('2026-05-05T13:07:00+00:00'),
+        );
+        $deletedProject->delete(new \DateTimeImmutable('2026-05-05T13:35:00+00:00'));
+        $foreignProject = $this->createProject(
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000606',
             ownerId: $otherOwner->id(),
             name: 'Foreign Project',
             iconKey: ProjectIconKey::fromString('timeline'),
@@ -175,11 +192,13 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
 
         $this->repository->save($firstProject);
         $this->repository->save($secondProject);
+        $this->repository->save($archivedProject);
+        $this->repository->save($deletedProject);
         $this->repository->save($foreignProject);
         $this->entityManager->flush();
         $this->entityManager->clear();
 
-        $found = $this->repository->findByOwner($owner->id());
+        $found = $this->repository->findAccessibleActiveByOwner($owner->id());
         $foundIds = array_map(
             static fn (Project $project): string => $project->id()->value(),
             $found,
@@ -201,6 +220,26 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
             $foundIds,
         );
         self::assertSame(['First Project', 'Second Project'], $foundNames);
+    }
+
+    public function testGetAccessibleByIdThrowsForDeletedProject(): void
+    {
+        $owner = $this->persistAccount('000000000055', 'deleted-owner@example.com');
+        $deletedProject = $this->createProject(
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000607',
+            ownerId: $owner->id(),
+            name: 'Deleted Project',
+            iconKey: ProjectIconKey::fromString('folder'),
+            createdAt: new \DateTimeImmutable('2026-05-05T14:00:00+00:00'),
+        );
+        $deletedProject->delete(new \DateTimeImmutable('2026-05-05T14:05:00+00:00'));
+
+        $this->repository->save($deletedProject);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $this->expectException(ProjectNotFound::class);
+        $this->repository->getAccessibleById($deletedProject->id(), $owner->id());
     }
 
     public function testProjectDoctrineMappingUsesScalarOwnerAccountIdAndSchemaQualifiedTable(): void

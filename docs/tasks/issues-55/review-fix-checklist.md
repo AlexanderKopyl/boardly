@@ -47,3 +47,11 @@
 - [x] Focused application tests for create, archive, and delete flows
 - [x] Focused Projects API functional tests for create, get, archive, and delete contracts
 - [x] Focused outbox/integration tests for the new project event chain
+
+## Resolved review blockers
+
+- [x] Make the Projects repository contract access-aware so list/get/archive/delete use repository-level accessibility filtering instead of handler-side ownership checks.
+- [x] Make the default project list return only accessible active projects.
+- [x] Make get/archive/delete return non-leaky 404 behavior for deleted or inaccessible projects.
+- [x] Expand the create response contract to return the full stable project shape instead of only `id` and `status`.
+- [x] Remove any local `.env.test` workaround from the PR if it exists in the diff. No `.env.test` diff was present in the current PR, so nothing needed removal.

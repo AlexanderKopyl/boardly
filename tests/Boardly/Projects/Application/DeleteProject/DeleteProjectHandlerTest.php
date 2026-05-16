@@ -109,6 +109,32 @@ final class DeleteProjectHandlerTest extends TestCase
         $this->expectException(ProjectNotFound::class);
         $handler->__invoke(new DeleteProjectCommand(self::PROJECT_ID, self::OTHER_ACCOUNT_ID));
     }
+
+    public function test_it_throws_exception_if_project_is_deleted(): void
+    {
+        $project = Project::reconstitute(
+            ProjectId::fromString(self::PROJECT_ID),
+            AccountId::fromString(self::OWNER_ID),
+            ProjectName::fromString('Deleted Project'),
+            ProjectIconKey::fromString('rocket'),
+            ProjectStatus::deleted(),
+            new DateTimeImmutable('-1 day'),
+            new DateTimeImmutable('-1 day'),
+            null,
+            new DateTimeImmutable('-1 hour')
+        );
+
+        $repository = new FakeProjectRepository($project);
+        $handler = new DeleteProjectHandler(
+            $repository,
+            new FakeClock(new DateTimeImmutable()),
+            new FakeTransactional(),
+            new FakeOutbox()
+        );
+
+        $this->expectException(ProjectNotFound::class);
+        $handler->__invoke(new DeleteProjectCommand(self::PROJECT_ID, self::OWNER_ID));
+    }
 }
 
 final class FakeProjectRepository implements ProjectRepositoryInterface
@@ -123,17 +149,20 @@ final class FakeProjectRepository implements ProjectRepositoryInterface
         $this->savedProjects[] = $project;
     }
 
-    public function get(ProjectId $id): Project
+    public function getAccessibleById(ProjectId $id, AccountId $currentAccountId): Project
     {
-        throw new \LogicException('Not implemented');
-    }
+        if (!$this->project instanceof Project) {
+            throw ProjectNotFound::withId($id);
+        }
 
-    public function find(ProjectId $id): ?Project
-    {
+        if (!$this->project->ownerAccountId()->equals($currentAccountId) || $this->project->status()->isDeleted()) {
+            throw ProjectNotFound::withId($id);
+        }
+
         return $this->project;
     }
 
-    public function findByOwner(AccountId $ownerId): array
+    public function findAccessibleActiveByOwner(AccountId $ownerId): array
     {
         return [];
     }

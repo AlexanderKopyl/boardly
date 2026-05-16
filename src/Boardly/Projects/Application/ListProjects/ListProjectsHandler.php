@@ -17,7 +17,7 @@ final readonly class ListProjectsHandler
     public function __invoke(ListProjectsQuery $query): ListProjectsResult
     {
         $ownerId = AccountId::fromString($query->ownerAccountId());
-        $projects = $this->projects->findByOwner($ownerId);
+        $projects = $this->projects->findAccessibleActiveByOwner($ownerId);
 
         $items = array_map(
             fn ($project) => new ProjectListItem(
