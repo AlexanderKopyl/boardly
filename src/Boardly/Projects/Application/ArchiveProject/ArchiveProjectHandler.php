@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Boardly\Projects\Application\ArchiveProject;
 
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
+use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
 use App\Shared\Application\Outbox\OutboxInterface;
 use App\Shared\Application\Port\ClockInterface;
 use App\Shared\Application\Transaction\TransactionalInterface;
+use DateTimeInterface;
 
 final readonly class ArchiveProjectHandler
 {
@@ -27,7 +29,7 @@ final readonly class ArchiveProjectHandler
                 $id = ProjectId::fromString($command->projectId());
                 $project = $this->projects->getAccessibleById(
                     $id,
-                    \App\Boardly\SharedKernel\Domain\ValueObject\AccountId::fromString($command->currentAccountId()),
+                    AccountId::fromString($command->currentAccountId()),
                 );
 
                 $domainResult = $project->archive($this->clock->now());
@@ -38,7 +40,7 @@ final readonly class ArchiveProjectHandler
                 return new ArchiveProjectResult(
                     $project->id()->value(),
                     $project->status()->value(),
-                    $domainResult->event()->archivedAt()->format(\DateTimeInterface::ATOM),
+                    $domainResult->event()->archivedAt()->format(DateTimeInterface::ATOM),
                 );
             }
         );

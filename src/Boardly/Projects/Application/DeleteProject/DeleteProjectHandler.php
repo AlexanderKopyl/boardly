@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Boardly\Projects\Application\DeleteProject;
 
 use App\Boardly\Projects\Application\Port\ProjectRepositoryInterface;
+use App\Boardly\SharedKernel\Domain\ValueObject\AccountId;
 use App\Boardly\SharedKernel\Domain\ValueObject\ProjectId;
 use App\Shared\Application\Outbox\OutboxInterface;
 use App\Shared\Application\Port\ClockInterface;
@@ -27,7 +28,7 @@ final readonly class DeleteProjectHandler
                 $id = ProjectId::fromString($command->projectId());
                 $project = $this->projects->getAccessibleById(
                     $id,
-                    \App\Boardly\SharedKernel\Domain\ValueObject\AccountId::fromString($command->currentAccountId()),
+                    AccountId::fromString($command->currentAccountId()),
                 );
 
                 $domainResult = $project->delete($this->clock->now());
