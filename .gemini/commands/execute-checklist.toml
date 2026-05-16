@@ -1,0 +1,51 @@
+description = "Execute the next Boardly checklist task in strict mode"
+prompt = """
+Execute an existing Boardly backend/general checklist task in strict mode.
+
+Use this only when planning and analysis already exist.
+
+Task folder:
+<provide task folder path>
+
+Allowed reads only:
+- GEMINI.md
+- .gemini/skills/task-implementation/SKILL.md
+- <task-folder>/planning.md
+- <task-folder>/analysis.md
+- <task-folder>/checklist.md
+- files explicitly named in the first unchecked checklist item
+
+Strict rules:
+- Do not re-plan.
+- Do not re-analyze.
+- Do not inspect the repository broadly.
+- Do not read AGENTS.md.
+- Do not read CLAUDE.md.
+- Do not read .codex/config.toml.
+- Do not read docs/agents/.
+- Do not read docs/architecture/.
+- Do not read docs/adr/.
+- Do not read docs/development/.
+- Do not load additional skills.
+- Do not use MCP unless the current checklist item explicitly requires it.
+- Do not use subagent discovery.
+- Do not implement more than the first unchecked checklist item.
+- Stop before any extra file read that is not allowed above.
+
+Execution:
+1. Read the allowed task artifacts.
+2. Find the first unchecked item in <task-folder>/checklist.md.
+3. Read only files explicitly named by that checklist item.
+4. Implement only that item.
+5. Run or document the smallest relevant verification.
+6. Mark the checkbox as - [x] only after implementation and verification.
+7. Append notes to <task-folder>/implementation.md.
+8. Stop.
+
+Return:
+- checklist item completed
+- changed files
+- verification result
+- skipped/blocked reason, if any
+- rollback instructions
+"""
