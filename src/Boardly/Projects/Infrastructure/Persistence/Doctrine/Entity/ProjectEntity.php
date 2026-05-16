@@ -23,7 +23,7 @@ class ProjectEntity
     #[ORM\Column(name: 'icon_key', type: 'string', length: 64, options: ['default' => 'folder'])]
     private string $iconKey = 'folder';
 
-    #[ORM\Column(type: 'string')]
+    #[ORM\Column(type: 'string', length: 32)]
     private string $status;
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]

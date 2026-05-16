@@ -50,3 +50,34 @@ Completed Phase 2: Application Layer.
 
 ## Risks / follow-up
 N/A
+
+## 2026-05-16 10:29:17 EEST - Task: Phase 3: Infrastructure (Persistence)
+
+### Subagents used
+- `worker` (`project_persistence_implementation`)
+
+### Skills used
+- `task-implementation`
+- `testing-strategy`
+
+### Files changed
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity/ProjectEntity.php`
+- `migrations/Version20260516071731.php`
+- `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `docs/tasks/issues-55/implementation-checklist.md`
+
+### Summary
+- Added the Projects Doctrine integration test covering save/reload, owner filtering, and update/archive persistence.
+- Aligned the Projects schema with ADR-0009 by adding the `owner_account_id` foreign key to `public.accounts` and constraining `status` to `VARCHAR(32)`.
+- Updated the Doctrine entity to match the narrower `status` column.
+- Marked the Phase 3 persistence checklist items complete because the repository, entity, mapping, migration, and tests are now present in the repo.
+
+### Verification
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity/ProjectEntity.php`
+- `php -l migrations/Version20260516071731.php`
+- `php -l tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `php bin/console doctrine:migrations:migrate --env=test --no-interaction`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- Phase 4 API work and final validation remain unchecked in the task folder.

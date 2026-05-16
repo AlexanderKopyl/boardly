@@ -16,11 +16,11 @@
 - [x] Use case unit tests with mocked repositories.
 
 ## Phase 3: Infrastructure (Persistence)
-- [ ] Create `ProjectEntity` in `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity`.
-- [ ] Create `ProjectRepository` in `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository`.
-- [ ] Update `config/packages/doctrine.yaml` with `BoardlyProjects` mapping.
-- [ ] Create DB migration for `projects` schema and `projects.projects` table.
-- [ ] Integration tests for repository and Doctrine mapping.
+- [x] Create `ProjectEntity` in `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity`.
+- [x] Create `ProjectRepository` in `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository`.
+- [x] Update `config/packages/doctrine.yaml` with `BoardlyProjects` mapping.
+- [x] Create DB migration for `projects` schema and `projects.projects` table.
+- [x] Integration tests for repository and Doctrine mapping.
 
 ## Phase 4: Interfaces (API)
 - [ ] Create `ProjectController` in `src/Boardly/Projects/Interfaces/Http/Controller`.
