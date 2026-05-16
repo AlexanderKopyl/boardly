@@ -3,13 +3,14 @@ prompt = """
 Implement only the approved Boardly task plan.
 
 Required:
-1. Read the approved plan.
-2. Reuse relevant existing skills from skills/.
-3. Do not widen scope.
-4. Do not touch unrelated files.
-5. Stop if repository reality conflicts with the plan.
-6. Run agreed verification commands when possible.
-7. Return:
+1. Use GEMINI.md as the default rule map.
+2. Load only task-relevant docs or skills listed in GEMINI.md.
+3. Reuse existing skills from skills/ when relevant.
+4. Do not widen scope.
+5. Do not touch unrelated files.
+6. Stop if repository reality conflicts with the plan.
+7. Run agreed verification commands when possible.
+8. Return:
    - changed files
    - what changed
    - verification results
