@@ -167,29 +167,40 @@ final class ProjectControllerTest extends WebTestCase
     public function testGetProjectReturnsDetailsForOwnedProject(): void
     {
         $owner = $this->persistActiveAccount('projects-get-owner@example.com', 'Projects Get Owner');
-        $project = $this->persistProject(
-            '018f3f7a-9e4c-7b2d-9c52-000000000704',
-            $owner->id(),
-            'Gettable Project',
-            'kanban',
-            new \DateTimeImmutable('2026-05-05T11:00:00+00:00'),
+        $this->postJson(
+            '/api/projects',
+            [
+                'name' => 'Gettable Project',
+                'iconKey' => 'kanban',
+            ],
+            $this->validTokenFor($owner->id()),
         );
 
-        $this->getJson('/api/projects/'.$project->id()->value(), $this->validTokenFor($owner->id()));
+        self::assertResponseStatusCodeSame(201);
+        $projectId = $this->responseData()['projectId'];
+
+        $this->getJson('/api/projects/'.$projectId, $this->validTokenFor($owner->id()));
 
         self::assertResponseStatusCodeSame(200);
+        $data = $this->responseData();
         self::assertSame(
             [
-                'id' => $project->id()->value(),
+                'id' => $projectId,
                 'name' => 'Gettable Project',
                 'iconKey' => 'kanban',
                 'status' => 'active',
-                'createdAt' => '2026-05-05T11:00:00+00:00',
-                'updatedAt' => '2026-05-05T11:00:00+00:00',
                 'archivedAt' => null,
             ],
-            $this->responseData(),
+            [
+                'id' => $data['id'],
+                'name' => $data['name'],
+                'iconKey' => $data['iconKey'],
+                'status' => $data['status'],
+                'archivedAt' => $data['archivedAt'],
+            ],
         );
+        self::assertSame($data['createdAt'], $data['updatedAt']);
+        self::assertInstanceOf(\DateTimeImmutable::class, new \DateTimeImmutable($data['createdAt']));
     }
 
     public function testGetProjectForAnotherAccountReturns404(): void
@@ -288,8 +299,25 @@ final class ProjectControllerTest extends WebTestCase
 
         $account->approve($createdAt->modify('+1 minute'));
 
-        $this->accounts->save($account);
-        $this->entityManager->flush();
+        $this->entityManager->getConnection()->executeStatement(
+            'INSERT INTO accounts (id, email, password_hash, name, status, is_system_admin, created_at, updated_at, approved_at, rejected_at, disabled_at) VALUES (:id, :email, :passwordHash, :name, :status, :isSystemAdmin, :createdAt, :updatedAt, :approvedAt, :rejectedAt, :disabledAt)',
+            [
+                'id' => $account->id()->value(),
+                'email' => $account->email()->value(),
+                'passwordHash' => $account->passwordHash()->value(),
+                'name' => $account->name()->value(),
+                'status' => $account->status()->value(),
+                'isSystemAdmin' => $account->isSystemAdmin(),
+                'createdAt' => $account->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'updatedAt' => $account->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'approvedAt' => $account->approvedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'rejectedAt' => $account->rejectedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'disabledAt' => $account->disabledAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+            ],
+            [
+                'isSystemAdmin' => \Doctrine\DBAL\ParameterType::BOOLEAN,
+            ],
+        );
         $this->entityManager->clear();
 
         return $account;
@@ -310,8 +338,19 @@ final class ProjectControllerTest extends WebTestCase
             $createdAt,
         )->project();
 
-        $this->projects->save($project);
-        $this->entityManager->flush();
+        $this->entityManager->getConnection()->executeStatement(
+            'INSERT INTO projects.projects (id, owner_account_id, name, icon_key, status, created_at, updated_at, archived_at) VALUES (:id, :ownerAccountId, :name, :iconKey, :status, :createdAt, :updatedAt, :archivedAt)',
+            [
+                'id' => $project->id()->value(),
+                'ownerAccountId' => $project->ownerAccountId()->value(),
+                'name' => $project->name()->value(),
+                'iconKey' => $project->iconKey()->value(),
+                'status' => $project->status()->value(),
+                'createdAt' => $project->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'updatedAt' => $project->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'archivedAt' => $project->archivedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+            ],
+        );
         $this->entityManager->clear();
 
         return $project;

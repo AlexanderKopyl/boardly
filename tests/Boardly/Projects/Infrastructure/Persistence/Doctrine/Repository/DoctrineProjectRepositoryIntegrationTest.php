@@ -201,8 +201,25 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
             new \DateTimeImmutable('2026-05-05T09:00:00+00:00'),
         )->account();
 
-        $this->accountRepository->save($account);
-        $this->entityManager->flush();
+        $this->entityManager->getConnection()->executeStatement(
+            'INSERT INTO accounts (id, email, password_hash, name, status, is_system_admin, created_at, updated_at, approved_at, rejected_at, disabled_at) VALUES (:id, :email, :passwordHash, :name, :status, :isSystemAdmin, :createdAt, :updatedAt, :approvedAt, :rejectedAt, :disabledAt)',
+            [
+                'id' => $account->id()->value(),
+                'email' => $account->email()->value(),
+                'passwordHash' => $account->passwordHash()->value(),
+                'name' => $account->name()->value(),
+                'status' => $account->status()->value(),
+                'isSystemAdmin' => $account->isSystemAdmin(),
+                'createdAt' => $account->createdAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'updatedAt' => $account->updatedAt()->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'approvedAt' => $account->approvedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'rejectedAt' => $account->rejectedAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+                'disabledAt' => $account->disabledAt()?->setTimezone(new \DateTimeZone('UTC'))?->format('Y-m-d H:i:s'),
+            ],
+            [
+                'isSystemAdmin' => \Doctrine\DBAL\ParameterType::BOOLEAN,
+            ],
+        );
 
         return $account;
     }

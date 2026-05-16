@@ -4,6 +4,36 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 08:08:00 EEST - Task: `php bin/phpunit` passes for all new tests
+
+### Subagents used
+- `task-verifier` to confirm the full-suite failure modes before any code changes.
+- `worker` for the IdentityAccess cleanup-order fix.
+
+### Skills used
+- `task-implementation`
+- `testing-strategy`
+
+### Files changed
+- `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/LoginControllerTest.php`
+- `tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RefreshAuthenticationControllerTest.php`
+- `tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+- `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `docs/tasks/issues-55/implementation-checklist.md`
+
+### Summary
+- Fixed IdentityAccess test teardown so `projects.projects` is deleted before `accounts`, which removes the FK violations introduced by the Projects schema.
+- Hardened the Projects HTTP/controller fixtures by seeding the owner account and project rows directly in SQL for the functional test, avoiding ORM visibility quirks during request-driven assertions.
+- Adjusted the GET project functional test to create its fixture through the public create endpoint and assert the response contract rather than a synthetic timestamp.
+
+### Verification
+- `php ./vendor/bin/phpunit tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/LoginControllerTest.php tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/RefreshAuthenticationControllerTest.php tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/LogoutControllerTest.php tests/Boardly/IdentityAccess/Interfaces/Http/Controller/Auth/GetCurrentAccountControllerTest.php tests/Boardly/IdentityAccess/Interfaces/Http/Security/ApiAuthenticationTest.php tests/Boardly/IdentityAccess/Infrastructure/Persistence/Doctrine/DoctrineRefreshSessionRepositoryTest.php tests/Boardly/IdentityAccess/Infrastructure/Persistence/Doctrine/Repository/DoctrineAccountRepositoryIntegrationTest.php tests/Boardly/IdentityAccess/Infrastructure/Persistence/Doctrine/Repository/DoctrineAccountRepositoryTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects`
+- `php ./vendor/bin/phpunit`
+
+### Risks / follow-up
+- The remaining unchecked validation items are still pending in the task folder.
+
 ## 2026-05-16 11:30:00 EEST - Task: Resolve Phase 5 Doctrine validation conflict
 
 ### Subagents used

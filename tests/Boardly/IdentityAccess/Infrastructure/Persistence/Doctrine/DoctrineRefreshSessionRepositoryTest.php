@@ -41,11 +41,12 @@ final class DoctrineRefreshSessionRepositoryTest extends KernelTestCase
         $this->accountRepository = new DoctrineAccountRepository($this->entityManager, new AccountMapper());
 
         self::assertTrue(
-            $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts', 'refresh_sessions']),
-            'The accounts and refresh_sessions tables must exist. Run doctrine:migrations:migrate --env=test before this test.',
+            $this->entityManager->getConnection()->createSchemaManager()->tablesExist(['accounts', 'projects.projects', 'refresh_sessions']),
+            'The accounts, projects.projects and refresh_sessions tables must exist. Run doctrine:migrations:migrate --env=test before this test.',
         );
 
         $this->entityManager->clear();
+        $this->entityManager->getConnection()->executeStatement('DELETE FROM projects.projects');
         $this->entityManager->getConnection()->executeStatement('DELETE FROM refresh_sessions');
         $this->entityManager->getConnection()->executeStatement('DELETE FROM accounts');
     }

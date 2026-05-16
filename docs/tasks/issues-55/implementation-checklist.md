@@ -32,6 +32,6 @@
 ## Phase 5: Final Validation
 - [x] `php bin/console doctrine:schema:validate --skip-sync` returns no mapping errors.
 - [x] Explicit migration/integration DB checks confirm the `projects` schema, `projects.projects` table, owner FK, `icon_key` constraint, and access-aware repository behavior.
-- [ ] `php bin/phpunit` passes for all new tests.
+- [x] `php bin/phpunit` passes for all new tests.
 - [ ] API functional tests confirm that accounts can only see/modify their own projects (404 for others).
 - [ ] Migration can be run up and down safely.
