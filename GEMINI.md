@@ -110,14 +110,6 @@ Common mappings:
 | Observability/operations | `skills/observability-operations/SKILL.md` |
 | ADRs | `skills/adr-writing/SKILL.md` |
 
-## Architecture and legacy reviews
-
-Do not keep architecture rules in this file.
-
-When a task touches architecture, module boundaries, legacy migration, Symfony placement, Doctrine, Messenger, Redis, OpenSearch, or source-of-truth decisions, load the relevant rule file from the lookup map and cite it in the answer.
-
-Current state is evidence, not permission.
-
 ## Safety
 
 Never read, print, summarize, modify, or infer secrets from:
