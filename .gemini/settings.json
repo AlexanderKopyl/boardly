@@ -1,5 +1,51 @@
 {
   "context": {
     "fileName": "GEMINI.md"
+  },
+  "mcp": {
+    "allowed": [
+      "sequentialthinking",
+      "context7",
+      "mempalace",
+      "playwright"
+    ]
+  },
+  "mcpServers": {
+    "sequentialthinking": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "mcp/sequentialthinking"
+      ],
+      "timeout": 120000,
+      "trust": false
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "timeout": 120000,
+      "trust": false
+    },
+    "mempalace": {
+      "command": "/Users/aleksandrkopyl/.local/bin/mempalace-mcp",
+      "args": [],
+      "cwd": "/Users/aleksandrkopyl/www/boardly",
+      "timeout": 60000,
+      "trust": false
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "cwd": "./frontend",
+      "timeout": 120000,
+      "trust": false
+    }
   }
 }
