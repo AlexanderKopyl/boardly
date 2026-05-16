@@ -223,6 +223,9 @@ Controllers must not:
 - mutate aggregates directly;
 - use Doctrine EntityManager;
 - dispatch Symfony MessageBusInterface directly;
+- inject concrete Application handlers;
+- invoke concrete Application handlers directly;
+- call handler methods such as __invoke() or handle() from controllers;
 - publish RabbitMQ messages directly;
 - query Redis/OpenSearch directly;
 - perform permission decisions that belong to application/domain policy;
@@ -239,6 +242,54 @@ HTTP Request
 -> Application handler
 -> Result
 -> Response mapping
+```
+
+Hard rule:
+
+```text
+HTTP controllers must never inject or invoke concrete Application handlers directly.
+Controllers must dispatch Commands through CommandBusInterface and Queries through QueryBusInterface.
+Concrete command handlers must be registered on command.bus.
+Concrete query handlers must be registered on query.bus.
+Direct calls like ($this->createProjectHandler)(...), $this->createProjectHandler->__invoke(...), or $this->createProjectHandler->handle(...) are architecture violations.
+```
+
+Bad:
+
+```php
+final readonly class CreateProjectController
+{
+    public function __construct(
+        private CreateProjectHandler $createProjectHandler,
+    ) {
+    }
+
+    public function __invoke(CreateProjectRequest $request): JsonResponse
+    {
+        $result = ($this->createProjectHandler)(new CreateProjectCommand(...));
+
+        return new JsonResponse($result);
+    }
+}
+```
+
+Good:
+
+```php
+final readonly class CreateProjectController
+{
+    public function __construct(
+        private CommandBusInterface $commandBus,
+    ) {
+    }
+
+    public function __invoke(CreateProjectRequest $request): JsonResponse
+    {
+        $result = $this->commandBus->dispatch(new CreateProjectCommand(...));
+
+        return new JsonResponse($result);
+    }
+}
 ```
 
 ## 7. Request DTO rules
@@ -319,9 +370,9 @@ Handlers must not:
 
 ## 9. Command/query bus rules
 
-Controllers should call Boardly bus abstractions, not Symfony Messenger directly.
+Controllers must call Boardly bus abstractions, not concrete handlers and not Symfony Messenger directly.
 
-Allowed:
+Allowed in controllers:
 
 ```text
 App\Shared\Application\Bus\CommandBusInterface
@@ -332,6 +383,19 @@ Forbidden in controllers:
 
 ```text
 Symfony\Component\Messenger\MessageBusInterface
+App\Boardly\<Context>\Application\<UseCase>\<UseCase>Handler
+```
+
+Rules:
+
+```text
+- Commands represent user intentions and must be dispatched through CommandBusInterface.
+- Queries represent reads and must be dispatched through QueryBusInterface.
+- HTTP controllers must not inject concrete Application handlers.
+- HTTP controllers must not invoke concrete Application handlers directly.
+- Concrete command handlers must be registered on command.bus.
+- Concrete query handlers must be registered on query.bus.
+- Direct controller calls like ($this->handler)(...), $this->handler->__invoke(...), or $this->handler->handle(...) are architecture violations.
 ```
 
 Application commands that return immediate API results must be handled synchronously. Do not route core commands such as login, refresh, approve account, create issue, or change issue status to RabbitMQ by default.
@@ -960,6 +1024,15 @@ For changed PHP files:
 php -l path/to/changed-file.php
 ```
 
+For HTTP controllers, verify CQRS bus boundary:
+
+```bash
+git grep -n "Handler" -- 'src/Boardly/**/Interfaces/Http/Controller/*.php'
+git grep -n "MessageBusInterface" -- 'src/Boardly/**/Interfaces/Http/Controller/*.php'
+git grep -n "->__invoke\|->handle\|(\$this->.*Handler)" -- 'src/Boardly/**/Interfaces/Http/Controller/*.php'
+php bin/console debug:messenger
+```
+
 ## 30. PR / task summary template
 
 Every backend change summary should include:
@@ -971,6 +1044,8 @@ Changed:
 Architecture:
 - Layer boundaries respected: yes/no + note
 - Controller/console command kept thin: yes/no/not applicable
+- Controllers use CommandBusInterface/QueryBusInterface only: yes/no/not applicable
+- Controllers do not inject/invoke concrete handlers: yes/no/not applicable
 - Application handler owns orchestration: yes/no/not applicable
 - Domain invariants protected: yes/no/not applicable
 - Infrastructure details isolated: yes/no/not applicable
@@ -982,6 +1057,7 @@ Verification:
 - php bin/console lint:container: pass/fail/not run
 - php ./vendor/bin/phpunit <scope>: pass/fail/not run
 - composer phpstan: pass/fail/not run
+- controller bus boundary grep: pass/fail/not run
 - manual smoke: <endpoint/command/action/result>
 
 Rollback:
@@ -994,6 +1070,8 @@ Do not:
 
 ```text
 - put business logic into controllers;
+- inject concrete Application handlers into controllers;
+- invoke concrete Application handlers directly from controllers;
 - use Doctrine EntityManager directly in application handlers;
 - expose Doctrine entities in API responses;
 - make domain depend on Symfony/Doctrine/Messenger;
