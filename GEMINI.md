@@ -60,7 +60,7 @@ MemPalace is context only. It is not the source of truth. If memory conflicts wi
 
 ## Rule lookup map
 
-Load only the relevant file for the task.
+Load only the relevant file for the task. Do not load all rules up front.
 
 | Task area | Read when relevant |
 |---|---|
@@ -110,50 +110,11 @@ Common mappings:
 | Observability/operations | `skills/observability-operations/SKILL.md` |
 | ADRs | `skills/adr-writing/SKILL.md` |
 
-## Architecture baseline
+## Architecture and legacy reviews
 
-Target backend structure:
+Do not keep architecture rules in this file.
 
-```text
-src/<Module>/Domain/
-src/<Module>/Application/
-src/<Module>/Infrastructure/
-src/<Module>/Interfaces/
-```
-
-Layer meaning:
-
-- `Domain`: business behavior, invariants, value objects, domain events.
-- `Application`: use cases, commands, queries, handlers, ports, transactions.
-- `Infrastructure`: Doctrine, DBAL, external APIs, queues, cache, search, framework adapters.
-- `Interfaces`: HTTP controllers, CLI commands, request DTOs, response DTOs, webhooks.
-
-Symfony is an implementation framework, not the architecture center.
-
-Do not treat current legacy folders as target architecture.
-
-Do not put business behavior into:
-
-```text
-src/Controller
-src/Entity
-src/Repository
-src/Service
-Doctrine listeners
-Symfony Forms
-HTTP controllers
-```
-
-Controllers stay thin. Doctrine is a persistence adapter, not the business owner.
-
-## Classification language
-
-When reviewing legacy or current structure, classify findings as:
-
-- `TARGET_RULE`
-- `CURRENT_STATE`
-- `LEGACY_EXCEPTION`
-- `WRONG_AND_MUST_BE_FIXED`
+When a task touches architecture, module boundaries, legacy migration, Symfony placement, Doctrine, Messenger, Redis, OpenSearch, or source-of-truth decisions, load the relevant rule file from the lookup map and cite it in the answer.
 
 Current state is evidence, not permission.
 
