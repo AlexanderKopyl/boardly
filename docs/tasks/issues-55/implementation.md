@@ -4,6 +4,138 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 12:49:00 EEST - Task: Add `deleted_at` persistence to the Projects entity/mapper/migration
+
+### Subagents used
+- `symfony-architecture` was requested to sanity-check the minimal Doctrine and migration change set.
+
+### Skills used
+- `task-implementation`
+- `symfony-architecture`
+
+### Files changed
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity/ProjectEntity.php`
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Mapper/ProjectMapper.php`
+- `migrations/Version20260516071731.php`
+- `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Summary
+- Added nullable `deleted_at` persistence to the Projects Doctrine entity and mapper.
+- Extended the migration to create `projects.projects.deleted_at` and allow `deleted` in the status check constraint.
+- Added repository integration coverage for deleted-project round-tripping and for the Doctrine metadata/table column shape.
+
+### Verification
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Entity/ProjectEntity.php`
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Mapper/ProjectMapper.php`
+- `php -l migrations/Version20260516071731.php`
+- `php -l tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+- `php bin/console doctrine:schema:validate --skip-sync`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- The integration test currently fails against the local test database because the database schema still predates `deleted_at`. The code change is in place, but the test database needs the migration applied before the repository test can pass.
+
+## 2026-05-16 12:27:00 EEST - Task: Make `Project::archive()` repeated-call behavior explicit in the domain contract and tests
+
+### Subagents used
+- `ddd-modeling` to confirm the clean domain contract for repeated archive calls.
+
+### Skills used
+- `task-implementation`
+- `ddd-modeling`
+
+### Files changed
+- `src/Boardly/Projects/Domain/Exception/ProjectAlreadyArchived.php`
+- `src/Boardly/Projects/Domain/Model/Project.php`
+- `tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Made repeated calls to `Project::archive()` explicit by rejecting them with a dedicated `ProjectAlreadyArchived` domain exception.
+- Kept deleted-project protection intact and separate, so archive behavior is now clear for both archived and deleted terminal-like states.
+- Added an aggregate test that exercises the repeated-archive contract directly.
+
+### Verification
+- `php -l src/Boardly/Projects/Domain/Exception/ProjectAlreadyArchived.php`
+- `php -l src/Boardly/Projects/Domain/Model/Project.php`
+- `php -l tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- Result: OK (7 tests, 39 assertions)
+
+### Risks / follow-up
+- The new guard changes archived-state behavior from implicit overwrite to an explicit domain failure. That is intentional, but it should be kept in mind by any API or application flow that retries archive commands.
+
+## 2026-05-16 12:14:00 EEST - Task: Make the soft-delete lifecycle explicit in the `Project` aggregate
+
+### Subagents used
+- `ddd-modeling` to confirm the smallest aggregate-level change for the explicit lifecycle contract.
+
+### Skills used
+- `task-implementation`
+- `ddd-modeling`
+
+### Files changed
+- `src/Boardly/Projects/Domain/Exception/InvalidProjectLifecycleTransition.php`
+- `src/Boardly/Projects/Domain/Event/ProjectDeleted.php`
+- `src/Boardly/Projects/Domain/Model/Project.php`
+- `src/Boardly/Projects/Domain/Result/ProjectDeletedResult.php`
+- `src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Mapper/ProjectMapper.php`
+- `tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `tests/Boardly/Projects/Application/GetProject/GetProjectHandlerTest.php`
+- `tests/Boardly/Projects/Application/ListProjects/ListProjectsHandlerTest.php`
+- `tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added `deletedAt` to the `Project` aggregate state and reconstitution path.
+- Added `Project::delete()` and an explicit terminal-state guard so deleted projects cannot be mutated.
+- Added a `ProjectDeleted` domain event/result pair to keep the aggregate transition pattern consistent with create/archive.
+- Updated the mapper and existing test fixtures to match the aggregate signature change.
+- Extended the aggregate test coverage for active delete, archived delete, and deletion terminal behavior.
+
+### Verification
+- `php -l src/Boardly/Projects/Domain/Exception/InvalidProjectLifecycleTransition.php`
+- `php -l src/Boardly/Projects/Domain/Event/ProjectDeleted.php`
+- `php -l src/Boardly/Projects/Domain/Model/Project.php`
+- `php -l src/Boardly/Projects/Domain/Result/ProjectDeletedResult.php`
+- `php -l src/Boardly/Projects/Infrastructure/Persistence/Doctrine/Mapper/ProjectMapper.php`
+- `php -l tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Application/GetProject/GetProjectHandlerTest.php`
+- `php -l tests/Boardly/Projects/Application/ListProjects/ListProjectsHandlerTest.php`
+- `php -l tests/Boardly/Projects/Domain/Model/ProjectTest.php`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Domain/Model tests/Boardly/Projects/Application/ArchiveProject/ArchiveProjectHandlerTest.php tests/Boardly/Projects/Application/GetProject/GetProjectHandlerTest.php tests/Boardly/Projects/Application/ListProjects/ListProjectsHandlerTest.php`
+
+### Risks / follow-up
+- The next checklist item still needs the repeated-call behavior on `Project::archive()` made explicit.
+
+## 2026-05-16 11:37:03 EEST - Task: Extend `ProjectStatus` to support `deleted`
+
+### Subagents used
+- `ddd-modeling` was spawned to review the minimal domain change for the status value object.
+
+### Skills used
+- `task-implementation`
+- `ddd-modeling`
+
+### Files changed
+- `src/Boardly/Projects/Domain/ValueObject/ProjectStatus.php`
+- `tests/Boardly/Projects/Domain/ValueObject/ProjectStatusTest.php`
+- `docs/tasks/issues-55/review-fix-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Added `deleted` as a first-class `ProjectStatus` value alongside the existing `active` and `archived` states.
+- Added `ProjectStatus::deleted()`, `ProjectStatus::isDeleted()`, and string hydration support for `deleted`.
+- Extended the value object tests to cover the new state and equality behavior.
+
+### Verification
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Domain/ValueObject`
+
+### Risks / follow-up
+- The aggregate lifecycle rules, `deleted_at` persistence, delete flow, controller wiring, and outbox changes are still pending in later checklist items.
+
 ## 2026-05-16 11:15:08 EEST - Task: Migration can be run up and down safely
 
 ### Subagents used

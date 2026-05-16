@@ -37,6 +37,7 @@ final class ArchiveProjectHandlerTest extends TestCase
             ProjectStatus::active(),
             new DateTimeImmutable('-1 day'),
             new DateTimeImmutable('-1 day'),
+            null,
             null
         );
 

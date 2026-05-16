@@ -10,6 +10,7 @@ final class ProjectStatus
 {
     private const string ACTIVE = 'active';
     private const string ARCHIVED = 'archived';
+    private const string DELETED = 'deleted';
 
     private readonly string $value;
 
@@ -28,6 +29,11 @@ final class ProjectStatus
         return new self(self::ARCHIVED);
     }
 
+    public static function deleted(): self
+    {
+        return new self(self::DELETED);
+    }
+
     public static function fromString(string $value): self
     {
         if ('' === trim($value)) {
@@ -37,6 +43,7 @@ final class ProjectStatus
         return match ($value) {
             self::ACTIVE => self::active(),
             self::ARCHIVED => self::archived(),
+            self::DELETED => self::deleted(),
             default => throw InvalidProjectStatus::unknown($value),
         };
     }
@@ -59,6 +66,11 @@ final class ProjectStatus
     public function isArchived(): bool
     {
         return self::ARCHIVED === $this->value;
+    }
+
+    public function isDeleted(): bool
+    {
+        return self::DELETED === $this->value;
     }
 
     public function __toString(): string

@@ -83,6 +83,7 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         $this->assertSameInstant($createdAt, $stored->createdAt());
         $this->assertSameInstant($createdAt, $stored->updatedAt());
         self::assertNull($stored->archivedAt());
+        self::assertNull($stored->deletedAt());
     }
 
     public function testSaveUpdatesExistingProjectWhenArchived(): void
@@ -112,6 +113,37 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         self::assertTrue($stored->status()->isArchived());
         $this->assertSameInstant($archivedAt, $stored->archivedAt());
         $this->assertSameInstant($archivedAt, $stored->updatedAt());
+        self::assertNull($stored->deletedAt());
+    }
+
+    public function testSaveUpdatesExistingProjectWhenDeleted(): void
+    {
+        $owner = $this->persistAccount('000000000055', 'delete-owner@example.com');
+        $createdAt = new \DateTimeImmutable('2026-05-05T12:00:00+00:00');
+        $project = $this->createProject(
+            id: '018f3f7a-9e4c-7b2d-9c52-000000000606',
+            ownerId: $owner->id(),
+            name: 'Project Gamma',
+            iconKey: ProjectIconKey::fromString('timeline'),
+            createdAt: $createdAt,
+        );
+
+        $this->repository->save($project);
+        $this->entityManager->flush();
+
+        $deletedAt = new \DateTimeImmutable('2026-05-05T13:00:00+00:00');
+        $project->delete($deletedAt);
+        $this->repository->save($project);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $stored = $this->repository->find($project->id());
+
+        self::assertInstanceOf(Project::class, $stored);
+        self::assertTrue($stored->status()->isDeleted());
+        $this->assertSameInstant($deletedAt, $stored->deletedAt());
+        $this->assertSameInstant($deletedAt, $stored->updatedAt());
+        self::assertNull($stored->archivedAt());
     }
 
     public function testFindByOwnerReturnsOnlyProjectsForThatOwner(): void
@@ -178,12 +210,13 @@ final class DoctrineProjectRepositoryIntegrationTest extends KernelTestCase
         $foreignKeys = $this->entityManager->getConnection()->createSchemaManager()->listTableForeignKeys('projects.projects');
 
         self::assertSame(
-            ['id', 'ownerAccountId', 'name', 'iconKey', 'status', 'createdAt', 'updatedAt', 'archivedAt', 'version'],
+            ['id', 'ownerAccountId', 'name', 'iconKey', 'status', 'createdAt', 'updatedAt', 'archivedAt', 'deletedAt', 'version'],
             $metadata->getFieldNames(),
         );
         self::assertSame([], $metadata->getAssociationNames());
         self::assertArrayHasKey('owner_account_id', $columns);
         self::assertArrayHasKey('icon_key', $columns);
+        self::assertArrayHasKey('deleted_at', $columns);
         self::assertSame('folder', $columns['icon_key']->getDefault());
         self::assertCount(1, $foreignKeys);
         self::assertSame(['owner_account_id'], $foreignKeys[0]->getLocalColumns());

@@ -33,6 +33,7 @@ final class GetProjectHandlerTest extends TestCase
             ProjectStatus::active(),
             new \DateTimeImmutable(),
             new \DateTimeImmutable(),
+            null,
             null
         );
 
@@ -65,6 +66,7 @@ final class GetProjectHandlerTest extends TestCase
             ProjectStatus::active(),
             new \DateTimeImmutable(),
             new \DateTimeImmutable(),
+            null,
             null
         );
 

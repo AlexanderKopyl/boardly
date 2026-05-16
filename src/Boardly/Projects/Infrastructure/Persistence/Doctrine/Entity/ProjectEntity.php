@@ -35,6 +35,9 @@ class ProjectEntity
     #[ORM\Column(name: 'archived_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $archivedAt;
 
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $deletedAt;
+
     #[ORM\Version]
     #[ORM\Column(type: 'integer')]
     private int $version = 1;
@@ -48,6 +51,7 @@ class ProjectEntity
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt,
         ?\DateTimeImmutable $archivedAt,
+        ?\DateTimeImmutable $deletedAt,
     ) {
         $this->id = $id;
         $this->ownerAccountId = $ownerAccountId;
@@ -57,6 +61,7 @@ class ProjectEntity
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;
         $this->archivedAt = $archivedAt;
+        $this->deletedAt = $deletedAt;
     }
 
     public function getId(): string
@@ -99,6 +104,11 @@ class ProjectEntity
         return $this->archivedAt;
     }
 
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
     public function getVersion(): int
     {
         return $this->version;
@@ -110,11 +120,13 @@ class ProjectEntity
         string $status,
         \DateTimeImmutable $updatedAt,
         ?\DateTimeImmutable $archivedAt,
+        ?\DateTimeImmutable $deletedAt,
     ): void {
         $this->name = $name;
         $this->iconKey = $iconKey;
         $this->status = $status;
         $this->updatedAt = $updatedAt;
         $this->archivedAt = $archivedAt;
+        $this->deletedAt = $deletedAt;
     }
 }

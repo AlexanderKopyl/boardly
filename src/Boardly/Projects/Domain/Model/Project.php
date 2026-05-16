@@ -6,8 +6,12 @@ namespace App\Boardly\Projects\Domain\Model;
 
 use App\Boardly\Projects\Domain\Event\ProjectArchived;
 use App\Boardly\Projects\Domain\Event\ProjectCreated;
+use App\Boardly\Projects\Domain\Event\ProjectDeleted;
+use App\Boardly\Projects\Domain\Exception\ProjectAlreadyArchived;
+use App\Boardly\Projects\Domain\Exception\InvalidProjectLifecycleTransition;
 use App\Boardly\Projects\Domain\Result\ProjectArchivedResult;
 use App\Boardly\Projects\Domain\Result\ProjectCreatedResult;
+use App\Boardly\Projects\Domain\Result\ProjectDeletedResult;
 use App\Boardly\Projects\Domain\ValueObject\ProjectIconKey;
 use App\Boardly\Projects\Domain\ValueObject\ProjectName;
 use App\Boardly\Projects\Domain\ValueObject\ProjectStatus;
@@ -25,6 +29,7 @@ final class Project
         private readonly \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
         private ?\DateTimeImmutable $archivedAt,
+        private ?\DateTimeImmutable $deletedAt,
     ) {
     }
 
@@ -44,6 +49,7 @@ final class Project
             $createdAt,
             $createdAt,
             null,
+            null,
         );
 
         return new ProjectCreatedResult(
@@ -61,6 +67,7 @@ final class Project
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt,
         ?\DateTimeImmutable $archivedAt,
+        ?\DateTimeImmutable $deletedAt,
     ): self {
         return new self(
             $id,
@@ -71,17 +78,41 @@ final class Project
             $createdAt,
             $updatedAt,
             $archivedAt,
+            $deletedAt,
         );
     }
 
     public function archive(\DateTimeImmutable $archivedAt): ProjectArchivedResult
     {
+        if ($this->status->isDeleted()) {
+            throw InvalidProjectLifecycleTransition::deletedProjectIsTerminal();
+        }
+
+        if ($this->status->isArchived()) {
+            throw ProjectAlreadyArchived::create();
+        }
+
         $this->status = ProjectStatus::archived();
         $this->updatedAt = $archivedAt;
         $this->archivedAt = $archivedAt;
 
         return new ProjectArchivedResult(
             new ProjectArchived($this->id, $archivedAt),
+        );
+    }
+
+    public function delete(\DateTimeImmutable $deletedAt): ProjectDeletedResult
+    {
+        if ($this->status->isDeleted()) {
+            throw InvalidProjectLifecycleTransition::deletedProjectIsTerminal();
+        }
+
+        $this->status = ProjectStatus::deleted();
+        $this->updatedAt = $deletedAt;
+        $this->deletedAt = $deletedAt;
+
+        return new ProjectDeletedResult(
+            new ProjectDeleted($this->id, $deletedAt),
         );
     }
 
@@ -123,5 +154,10 @@ final class Project
     public function archivedAt(): ?\DateTimeImmutable
     {
         return $this->archivedAt;
+    }
+
+    public function deletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
     }
 }

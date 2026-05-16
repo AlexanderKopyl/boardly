@@ -31,6 +31,7 @@ final class ListProjectsHandlerTest extends TestCase
             ProjectStatus::active(),
             new \DateTimeImmutable('2026-05-16T10:00:00+00:00'),
             new \DateTimeImmutable('2026-05-16T10:00:00+00:00'),
+            null,
             null
         );
         $project2 = Project::reconstitute(
@@ -41,6 +42,7 @@ final class ListProjectsHandlerTest extends TestCase
             ProjectStatus::active(),
             new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
             new \DateTimeImmutable('2026-05-16T11:00:00+00:00'),
+            null,
             null
         );
 

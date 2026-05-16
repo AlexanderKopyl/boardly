@@ -24,12 +24,23 @@ final class ProjectStatusTest extends TestCase
         $this->assertSame('archived', $status->value());
         $this->assertTrue($status->isArchived());
         $this->assertFalse($status->isActive());
+        $this->assertFalse($status->isDeleted());
+    }
+
+    public function test_it_can_be_deleted(): void
+    {
+        $status = ProjectStatus::deleted();
+        $this->assertSame('deleted', $status->value());
+        $this->assertTrue($status->isDeleted());
+        $this->assertFalse($status->isActive());
+        $this->assertFalse($status->isArchived());
     }
 
     public function test_it_can_be_created_from_string(): void
     {
         $this->assertTrue(ProjectStatus::fromString('active')->isActive());
         $this->assertTrue(ProjectStatus::fromString('archived')->isArchived());
+        $this->assertTrue(ProjectStatus::fromString('deleted')->isDeleted());
     }
 
     public function test_it_throws_exception_for_unknown_status(): void
@@ -45,8 +56,10 @@ final class ProjectStatusTest extends TestCase
         $s1 = ProjectStatus::active();
         $s2 = ProjectStatus::active();
         $s3 = ProjectStatus::archived();
+        $s4 = ProjectStatus::deleted();
 
         $this->assertTrue($s1->equals($s2));
         $this->assertFalse($s1->equals($s3));
+        $this->assertFalse($s1->equals($s4));
     }
 }

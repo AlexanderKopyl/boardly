@@ -26,6 +26,7 @@ final class ProjectMapper
             $project->createdAt(),
             $project->updatedAt(),
             $project->archivedAt(),
+            $project->deletedAt(),
         );
     }
 
@@ -41,6 +42,7 @@ final class ProjectMapper
             $project->status()->value(),
             $project->updatedAt(),
             $project->archivedAt(),
+            $project->deletedAt(),
         );
     }
 
@@ -55,6 +57,7 @@ final class ProjectMapper
             $entity->getCreatedAt(),
             $entity->getUpdatedAt(),
             $entity->getArchivedAt(),
+            $entity->getDeletedAt(),
         );
     }
 }
