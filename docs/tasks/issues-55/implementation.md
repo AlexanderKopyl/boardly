@@ -4,6 +4,35 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 - Task: Reset the test database and rerun the focused Projects repository integration test
+
+### Subagents used
+- `task-verifier` to confirm the checklist item tied to this request and the minimum evidence needed to mark it done.
+
+### Skills used
+- `task-implementation`
+
+### Files changed
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Attempted the requested test database reset and focused persistence verification for `tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`.
+- `php bin/console doctrine:database:drop --force --env=test` failed because the local PostgreSQL role is not the owner of `broadly_test_test`.
+- `php bin/console doctrine:database:create --env=test` failed for the same permission reason.
+- `php bin/console doctrine:schema:drop --force --full-database --env=test` succeeded, but `doctrine:migrations:migrate --env=test` still failed on `outbox_messages` because that table is excluded by the schema filter and survived the schema-only reset.
+- Dropped `public.outbox_messages` and `public.processed_messages` manually in the test database, but the migration command still reports `outbox_messages` already exists, so the requested focused test could not be completed successfully.
+
+### Verification
+- `php bin/console doctrine:database:drop --force --env=test`
+- `php bin/console doctrine:database:create --env=test`
+- `php bin/console doctrine:schema:drop --force --full-database --env=test`
+- `php bin/console doctrine:migrations:migrate --no-interaction --env=test`
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Infrastructure/Persistence/Doctrine/Repository/DoctrineProjectRepositoryIntegrationTest.php`
+
+### Risks / follow-up
+- The review-fix checklist item for `deleted_at` persistence is still blocked because the test database cannot be fully reset with the current local privileges, and the migration command still sees a stale `outbox_messages` table state.
+- If the database ownership/permissions are fixed, rerun the exact reset → migrate → focused test sequence and only then mark the checklist item complete.
+
 ## 2026-05-16 12:49:00 EEST - Task: Add `deleted_at` persistence to the Projects entity/mapper/migration
 
 ### Subagents used
