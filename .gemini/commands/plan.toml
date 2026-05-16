@@ -1,14 +1,15 @@
-description = "Plan a Boardly task using the existing task-planning skill"
+description = "Plan a Boardly task using Gemini skills"
 prompt = """
 Plan a Boardly task.
 
 Use GEMINI.md as the default rule map.
-Before creating a plan, load and follow `.codex/skills/task-planning/SKILL.md`.
-Do not duplicate or reinterpret that workflow here.
+Use `.gemini/skills/task-planning/SKILL.md` for backend, infrastructure, docs, or mixed tasks.
+Use `.gemini/skills/frontend-task-planning/SKILL.md` for frontend-only tasks.
+Do not use `.codex/skills/*` as runtime instructions for Gemini.
 Load only additional task-relevant docs or skills.
 
-If the task folder, goal, scope, or target area requirements are unclear, follow the rules from `.codex/skills/task-planning/SKILL.md`.
-Stop if that skill cannot be loaded.
+If the task folder, goal, scope, or target area is unclear, follow the selected Gemini skill rules.
+Stop if the selected Gemini skill cannot be loaded.
 
-Return the summary required by the skill and identify the saved planning artifact.
+Return the summary required by the selected skill and identify the saved planning artifact when one is created.
 """
