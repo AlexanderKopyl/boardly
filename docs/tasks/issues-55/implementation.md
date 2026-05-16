@@ -4,6 +4,29 @@
 - Phase: Phase 4: Interfaces (API)
 - Task: Creating the Projects API controller
 
+## 2026-05-16 11:15:08 EEST - Task: Migration can be run up and down safely
+
+### Subagents used
+- `task-verifier` for a focused review of the Projects migration rollback path.
+
+### Skills used
+- `task-implementation`
+- `testing-strategy`
+
+### Files changed
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Verified the existing `DoctrineMigrations\Version20260516071731` migration is reversible as-is.
+- Ran the migration down and then back up against the test environment to confirm the `projects` schema and table can be dropped and recreated cleanly.
+
+### Verification
+- `/opt/homebrew/bin/php bin/console doctrine:migrations:execute 'DoctrineMigrations\Version20260516071731' --down --env=test --no-interaction && /opt/homebrew/bin/php bin/console doctrine:migrations:execute 'DoctrineMigrations\Version20260516071731' --up --env=test --no-interaction`
+
+### Risks / follow-up
+- No code changes were required for this validation item.
+
 ## 2026-05-16 08:08:00 EEST - Task: `php bin/phpunit` passes for all new tests
 
 ### Subagents used
@@ -61,6 +84,30 @@
 ### Risks / follow-up
 - No code changes were required for this artifact update.
 - The remaining final-validation checklist items are still pending.
+
+## 2026-05-16 11:45:00 EEST - Task: API functional tests confirm owner-only project access
+
+### Subagents used
+- `testing-security-reviewer` was requested to sanity-check the ownership boundary in the Projects API tests.
+
+### Skills used
+- `task-implementation`
+- `testing-strategy`
+
+### Files changed
+- `docs/tasks/issues-55/implementation-checklist.md`
+- `docs/tasks/issues-55/implementation.md`
+
+### Summary
+- Confirmed that the Projects API functional test suite already covers owner-only visibility for `GET /api/projects/{id}` and `POST /api/projects/{id}/archive` with 404 responses for foreign accounts.
+- Re-ran the focused Projects controller functional test class to verify the existing coverage still passes.
+- Updated the checklist to mark this final-validation item complete.
+
+### Verification
+- `php ./vendor/bin/phpunit tests/Boardly/Projects/Interfaces/Http/Controller/ProjectControllerTest.php`
+
+### Risks / follow-up
+- The remaining unchecked validation item is the migration up/down safety check.
 
 ## Subagents used
 - `generalist`
