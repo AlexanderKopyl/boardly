@@ -46,6 +46,7 @@ Do not treat skills as replacements for accepted ADRs or developer rulebooks.
 | Compact long-running session state into resumable memo | `context-compaction` |
 | Aggregate, invariant, value object, domain event, repository, transaction boundary | `domain-modeling` |
 | End-to-end backend architecture for a feature/use case | `feature-architecture` |
+| HTTP controllers, Commands, Queries, concrete handlers, bus registration, controller boundary review | `symfony-cqrs-bus-boundary` |
 | Statuses, transitions, guards, validators, workflow rules | `workflow-design` |
 | RabbitMQ, Messenger, Outbox, retries, DLQ, idempotency | `async-flow` |
 | OpenSearch/Elasticsearch, indexing, read models, projections | `search-indexing` |
@@ -63,6 +64,19 @@ Do not treat skills as replacements for accepted ADRs or developer rulebooks.
 | Next.js pages, providers, React components, hooks, forms, guards | `frontend-ui-composition` |
 | Frontend Tailwind/CSS variables/shadcn/Radix/shared primitives | `frontend-style-system` |
 | Frontend ADR-0006/0007 review, auth safety, UI/API boundary review | `frontend-review-checklist` |
+
+## Hard backend controller rule
+
+Whenever creating, modifying, or reviewing HTTP controllers, Commands, Queries, handlers, or bus config, use `symfony-cqrs-bus-boundary`.
+
+Hard rule:
+
+- HTTP controllers must never inject or invoke concrete Application handlers directly.
+- Controllers must dispatch Commands through `CommandBusInterface`.
+- Controllers must dispatch Queries through `QueryBusInterface`.
+- Concrete command handlers must be registered on `command.bus`.
+- Concrete query handlers must be registered on `query.bus`.
+- Direct controller calls like `($this->createProjectHandler)(...)`, `$this->createProjectHandler->__invoke(...)`, or `$this->createProjectHandler->handle(...)` are architecture violations.
 
 ## Task lifecycle skills
 
@@ -111,9 +125,10 @@ Use multiple skills when the request crosses boundaries.
 
 Examples:
 
-- `ChangeIssueStatus` usually needs `feature-architecture`, `domain-modeling`, `workflow-design`, `permission-modeling`, `async-flow`, `search-indexing`, `testing-strategy`, and possibly `adr-writing`.
-- `SearchIssues` usually needs `feature-architecture`, `search-indexing`, `permission-modeling`, `cache-performance`, and `testing-strategy`.
-- `GetProjectBoard` usually needs `feature-architecture`, `search-indexing` or read-model reasoning, `permission-modeling`, `cache-performance`, and `observability-operations`.
+- `ChangeIssueStatus` usually needs `feature-architecture`, `domain-modeling`, `workflow-design`, `permission-modeling`, `symfony-cqrs-bus-boundary`, `async-flow`, `search-indexing`, `testing-strategy`, and possibly `adr-writing`.
+- Any backend HTTP controller task must include `symfony-cqrs-bus-boundary`.
+- `SearchIssues` usually needs `feature-architecture`, `search-indexing`, `permission-modeling`, `symfony-cqrs-bus-boundary`, `cache-performance`, and `testing-strategy`.
+- `GetProjectBoard` usually needs `feature-architecture`, `search-indexing` or read-model reasoning, `permission-modeling`, `symfony-cqrs-bus-boundary`, `cache-performance`, and `observability-operations`.
 - Frontend IdentityAccess usually needs `frontend-task-planning`, `frontend-context-architecture`, `frontend-auth-session`, `frontend-use-case-flow`, `frontend-api-integration`, `frontend-ui-composition`, and `testing-strategy`.
 - Frontend UI/styling work usually needs `frontend-task-planning`, `frontend-context-architecture`, `frontend-ui-composition`, `frontend-style-system`, and `testing-strategy`.
 - Frontend review usually needs `frontend-review-checklist`, `frontend-context-architecture`, `frontend-auth-session`, `frontend-api-integration`, `frontend-ui-composition`, and `frontend-style-system`.
@@ -145,11 +160,12 @@ If several backend skills apply, start with the business architecture skill, the
 
 1. `feature-architecture`
 2. `domain-modeling`
-3. `workflow-design` or `permission-modeling`
-4. `async-flow`, `search-indexing`, or `cache-performance`
-5. `testing-strategy`
-6. `observability-operations`
-7. `adr-writing`
+3. `symfony-cqrs-bus-boundary` for HTTP controllers / commands / queries / handlers / bus config
+4. `workflow-design` or `permission-modeling`
+5. `async-flow`, `search-indexing`, or `cache-performance`
+6. `testing-strategy`
+7. `observability-operations`
+8. `adr-writing`
 
 If several frontend skills apply, start with ADR-0006 boundaries, then add specialized skills:
 
@@ -185,6 +201,9 @@ Do not use MemPalace for simple repo discovery such as class locations, routes, 
 - Do not assume existing folders, entities, controllers, services, queues, indexes, database tables, frontend contexts, or frontend app structure unless explicitly provided.
 - Boardly starts as a modular monolith.
 - Symfony is an implementation framework, not the architectural center.
+- HTTP controllers must dispatch Commands through `CommandBusInterface` and Queries through `QueryBusInterface`.
+- HTTP controllers must never inject or invoke concrete Application handlers directly.
+- Concrete handlers must be registered on the correct command/query bus.
 - Next.js is the frontend framework, not the source of business truth.
 - Relational DB is the source of truth.
 - Redis is cache/fast storage only.
