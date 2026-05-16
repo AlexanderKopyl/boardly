@@ -1,20 +1,42 @@
-description = "Implement approved Boardly plan only"
+description = "Implement a Boardly task from a checklist"
 prompt = """
-Implement only the approved Boardly task plan.
+Implement a Boardly task using the existing task-implementation workflow.
 
 Required:
 1. Use GEMINI.md as the default rule map.
-2. Load only task-relevant docs or skills listed in GEMINI.md.
-3. Reuse existing skills from skills/ when relevant.
-4. Do not widen scope.
-5. Do not touch unrelated files.
-6. Stop if repository reality conflicts with the plan.
-7. Run agreed verification commands when possible.
-8. Return:
-   - changed files
-   - what changed
-   - verification results
-   - deviations from plan
-   - risks
-   - rollback instructions
+2. Load `.codex/skills/task-implementation/SKILL.md` before editing.
+3. Load only additional task-relevant docs or skills.
+4. Require a task folder path or identify the task folder from the user's request.
+5. Read `<task-folder>/planning.md` if present.
+6. Read `<task-folder>/analysis.md` if present.
+7. Read `<task-folder>/checklist.md` if present.
+8. If `<task-folder>/checklist.md` does not exist, create it before implementation from:
+   - `<task-folder>/planning.md`
+   - `<task-folder>/analysis.md`
+   - current implementation understanding
+9. Do not implement everything in one pass.
+10. Pick the first unchecked checklist task.
+11. Select required subagent(s) and skill(s) for that single task.
+12. Implement only that checklist task.
+13. Run or document relevant verification for that task.
+14. Mark the checkbox as `- [x]` only after implementation and verification are done or documented.
+15. Append implementation notes to `<task-folder>/implementation.md`.
+16. Continue with the next unchecked task only if still within the requested scope.
+17. Stop if repository reality conflicts with the plan or checklist.
+
+Do not:
+- widen scope;
+- touch unrelated files;
+- skip the checklist;
+- mark a task done without verification evidence;
+- create broad rewrites unless the checklist explicitly requires them.
+
+Return:
+- changed files
+- checklist tasks completed
+- subagents/skills used
+- verification results
+- deviations from plan/checklist
+- risks
+- rollback instructions
 """
