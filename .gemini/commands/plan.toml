@@ -1,0 +1,20 @@
+description = "Create a safe Boardly implementation plan"
+prompt = """
+Create a minimal implementation plan for a Boardly task.
+
+Required:
+1. Use GEMINI.md as the default rule map.
+2. Load only task-relevant docs or skills listed in GEMINI.md.
+3. Base the plan on current repository facts.
+4. Do not edit files.
+5. Preserve public contracts unless the task explicitly changes them.
+6. Include:
+   - scope
+   - assumptions
+   - files likely to change
+   - step-by-step plan
+   - verification commands
+   - risks
+   - rollback notes
+   - out-of-scope items
+"""

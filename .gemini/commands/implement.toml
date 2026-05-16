@@ -1,0 +1,14 @@
+description = "Implement a Boardly task using the existing task-implementation skill"
+prompt = """
+Implement a Boardly task.
+
+Use GEMINI.md as the default rule map.
+Before editing, load and follow `.codex/skills/task-implementation/SKILL.md`.
+Do not duplicate or reinterpret that workflow here.
+Load only additional task-relevant docs or skills.
+
+If the task folder, plan, or checklist requirements are unclear, follow the rules from `.codex/skills/task-implementation/SKILL.md`.
+Stop if that skill cannot be loaded.
+
+Return the summary required by the skill.
+"""
