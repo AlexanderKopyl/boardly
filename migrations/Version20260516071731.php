@@ -32,14 +32,14 @@ final class Version20260516071731 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_version_positive_check');
-        $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_status_check');
-        $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_name_not_blank_check');
-        $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_icon_key_format_check');
-        $this->addSql('DROP INDEX projects.idx_projects_projects_owner_created_at');
-        $this->addSql('DROP INDEX projects.idx_projects_projects_owner_status');
-        $this->addSql('ALTER TABLE projects.projects DROP CONSTRAINT projects_projects_owner_account_fk');
-        $this->addSql('DROP TABLE projects.projects');
+        $this->addSql('ALTER TABLE IF EXISTS projects.projects DROP CONSTRAINT IF EXISTS projects_projects_version_positive_check');
+        $this->addSql('ALTER TABLE IF EXISTS projects.projects DROP CONSTRAINT IF EXISTS projects_projects_status_check');
+        $this->addSql('ALTER TABLE IF EXISTS projects.projects DROP CONSTRAINT IF EXISTS projects_projects_name_not_blank_check');
+        $this->addSql('ALTER TABLE IF EXISTS projects.projects DROP CONSTRAINT IF EXISTS projects_projects_icon_key_format_check');
+        $this->addSql('DROP INDEX IF EXISTS projects.idx_projects_projects_owner_created_at');
+        $this->addSql('DROP INDEX IF EXISTS projects.idx_projects_projects_owner_status');
+        $this->addSql('ALTER TABLE IF EXISTS projects.projects DROP CONSTRAINT IF EXISTS projects_projects_owner_account_fk');
+        $this->addSql('DROP TABLE IF EXISTS projects.projects');
         $this->addSql('DROP SCHEMA IF EXISTS projects');
     }
 }
