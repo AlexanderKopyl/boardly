@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { archiveProjectUseCase } from '../../application/use-cases/archive-project'
@@ -57,7 +58,8 @@ function formatCreatedAt(createdAt: string): string {
     return createdAt
   }
 
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'UTC',
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date)
@@ -135,16 +137,19 @@ function getActionErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'We could not update the project right now.'
 }
 
-function CreateProjectLink() {
+type CreateProjectActionProps = {
+  readonly onClick: () => void
+}
+
+function CreateProjectAction({ onClick }: CreateProjectActionProps) {
   return (
-    <Link
-      href="/app/projects/new"
-      className="ui-button"
-      data-variant="primary"
-      data-size="sm"
+    <Button
+      variant="primary"
+      size="sm"
+      onClick={onClick}
     >
       Create project
-    </Link>
+    </Button>
   )
 }
 
@@ -169,6 +174,7 @@ function ProjectsListSkeleton() {
 
 export function ProjectsListPage() {
   const gateway = useProjectsHttpGateway()
+  const router = useRouter()
   const isMountedRef = useRef(true)
   const [viewState, setViewState] = useState<ProjectsViewState>({ status: 'loading' })
   const [reloadToken, setReloadToken] = useState(0)
@@ -211,6 +217,10 @@ export function ProjectsListPage() {
     }
   }, [gateway, reloadToken])
 
+  function handleCreateProject() {
+    router.push('/app/projects/new')
+  }
+
   async function handleProjectAction(projectAction: ProjectActionState) {
     setActionError(null)
     setPendingAction(projectAction)
@@ -246,7 +256,7 @@ export function ProjectsListPage() {
 
   const headerActions =
     <div className="flex flex-wrap items-center gap-3">
-      <CreateProjectLink />
+      <CreateProjectAction onClick={handleCreateProject} />
       {viewState.status === 'ready' ? (
         <Badge variant="neutral">{viewState.projects.length} projects</Badge>
       ) : (
@@ -287,7 +297,7 @@ export function ProjectsListPage() {
         <EmptyState
           title="No projects yet"
           description="This workspace does not have any projects yet."
-          actions={<CreateProjectLink />}
+          actions={<CreateProjectAction onClick={handleCreateProject} />}
         />
       ) : null}
 

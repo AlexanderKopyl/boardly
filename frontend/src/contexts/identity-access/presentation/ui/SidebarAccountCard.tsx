@@ -42,13 +42,15 @@ export function SidebarAccountCard(): ReactElement {
   const avatarLabel = account ? getAvatarLabel(account.name, account.email) : isRestoring ? '…' : '?'
 
   return (
-    <div className="ui-app-shell__account-card">
-      <div className="ui-app-shell__account-avatar">{avatarLabel}</div>
-      <div className="ui-app-shell__account-copy">
-        <div className="ui-app-shell__account-name" title={name}>
+    <div className="flex items-center gap-3 rounded-2xl border border-[color:var(--sidebar-border)] bg-white/5 px-4 py-3">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--sidebar-accent)] text-sm font-semibold tracking-[0.1em] text-[var(--sidebar-foreground)]">
+        {avatarLabel}
+      </div>
+      <div className="min-w-0">
+        <div className="truncate text-sm font-semibold text-[var(--sidebar-foreground)]" title={name}>
           {name}
         </div>
-        <div className="ui-app-shell__account-email" title={email}>
+        <div className="truncate text-xs text-[var(--sidebar-muted)]" title={email}>
           {email}
         </div>
       </div>

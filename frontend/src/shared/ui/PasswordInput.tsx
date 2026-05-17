@@ -28,19 +28,19 @@ export function PasswordInput({
   const [isVisible, setIsVisible] = useState(false)
 
   return (
-    <div className={cn('ui-password-input', className)}>
+    <div className={cn('flex items-stretch gap-2', className)}>
       <Input
         id={id}
         {...props}
         type={isVisible ? 'text' : 'password'}
-        className={cn('ui-password-input__control', inputClassName)}
+        className={cn('flex-1', inputClassName)}
       />
       <Button
         type="button"
         disabled={disabled}
-        variant="ghost"
-        size="sm"
-        className="ui-password-input__toggle"
+        variant="outline"
+        size="md"
+        className="shrink-0 px-3"
         aria-controls={id}
         aria-pressed={isVisible}
         aria-label={isVisible ? concealLabel : revealLabel}

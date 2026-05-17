@@ -5,8 +5,8 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 
 export default function PendingApprovalPage() {
   return (
-    <main className="ui-auth-page">
-      <section className="ui-auth-page__panel">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 sm:px-6 lg:px-8">
+      <section className="w-full">
         <EmptyState
           icon={<Badge variant="warning">Pending approval</Badge>}
           title="Account request received"

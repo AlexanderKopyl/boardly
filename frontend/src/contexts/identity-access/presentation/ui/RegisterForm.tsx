@@ -85,7 +85,7 @@ export function RegisterForm() {
   }
 
   return (
-    <form className="ui-form-stack" onSubmit={handleSubmit}>
+    <form className="space-y-5" onSubmit={handleSubmit}>
       <FormField
         label="Full name"
         description="Use the name your teammates will recognize."
@@ -148,7 +148,7 @@ export function RegisterForm() {
 
       {error ? <Alert variant="destructive">{error}</Alert> : null}
 
-      <Button type="submit" disabled={loading} isLoading={loading} className="ui-form-submit">
+      <Button type="submit" disabled={loading} isLoading={loading} className="w-full">
         {loading ? 'Registering…' : 'Register'}
       </Button>
     </form>

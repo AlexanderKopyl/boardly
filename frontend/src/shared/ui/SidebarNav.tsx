@@ -35,11 +35,15 @@ export function SidebarNav({
   const groups = sections ?? (items ? [{ items }] : [])
 
   return (
-    <nav aria-label={label} className={cn('ui-sidebar-nav', className)} {...props}>
+    <nav aria-label={label} className={cn('space-y-5', className)} {...props}>
       {groups.map((group, groupIndex) => (
-        <div className="ui-sidebar-nav__section" key={`${group.label ?? 'group'}-${groupIndex}`}>
-          {group.label ? <p className="ui-sidebar-nav__section-label">{group.label}</p> : null}
-          <ul className="ui-sidebar-nav__list">
+        <div key={`${group.label ?? 'group'}-${groupIndex}`} className="space-y-2">
+          {group.label ? (
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
+              {group.label}
+            </p>
+          ) : null}
+          <ul className="space-y-1">
             {group.items.map((item, index) => (
               <li key={`${item.href}-${index}`}>
                 {item.disabled ? (
@@ -47,32 +51,49 @@ export function SidebarNav({
                     aria-disabled="true"
                     data-disabled="true"
                     data-current={item.current || undefined}
-                    className="ui-sidebar-nav__link"
+                    className={cn(
+                      'flex items-start gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-[var(--sidebar-foreground)] transition-colors',
+                      item.current && 'bg-[var(--sidebar-accent)]',
+                      !item.current && 'text-[var(--sidebar-muted)]',
+                    )}
                   >
-                    {item.icon ? <span className="ui-sidebar-nav__icon">{item.icon}</span> : null}
-                    <span className="ui-sidebar-nav__content">
-                      <span className="ui-sidebar-nav__label">{item.label}</span>
+                    {item.icon ? (
+                      <span className="mt-0.5 text-[var(--sidebar-muted)]">{item.icon}</span>
+                    ) : null}
+                    <span className="min-w-0 flex-1">
+                      <span className="block">{item.label}</span>
                       {item.description ? (
-                        <span className="ui-sidebar-nav__description">{item.description}</span>
+                        <span className="mt-0.5 block text-xs text-[var(--sidebar-muted)]">
+                          {item.description}
+                        </span>
                       ) : null}
                     </span>
-                    {item.badge ? <span className="ui-sidebar-nav__badge">{item.badge}</span> : null}
+                    {item.badge ? <span className="shrink-0">{item.badge}</span> : null}
                   </span>
                 ) : (
                   <Link
                     href={item.href}
                     aria-current={item.current ? 'page' : undefined}
                     data-current={item.current || undefined}
-                    className="ui-sidebar-nav__link"
+                    className={cn(
+                      'flex items-start gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors',
+                      item.current
+                        ? 'bg-[var(--sidebar-accent)] text-[var(--sidebar-foreground)]'
+                        : 'text-[var(--sidebar-muted)] hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-foreground)]',
+                    )}
                   >
-                    {item.icon ? <span className="ui-sidebar-nav__icon">{item.icon}</span> : null}
-                    <span className="ui-sidebar-nav__content">
-                      <span className="ui-sidebar-nav__label">{item.label}</span>
+                    {item.icon ? (
+                      <span className="mt-0.5 text-[var(--sidebar-muted)]">{item.icon}</span>
+                    ) : null}
+                    <span className="min-w-0 flex-1">
+                      <span className="block">{item.label}</span>
                       {item.description ? (
-                        <span className="ui-sidebar-nav__description">{item.description}</span>
+                        <span className="mt-0.5 block text-xs text-[var(--sidebar-muted)]">
+                          {item.description}
+                        </span>
                       ) : null}
                     </span>
-                    {item.badge ? <span className="ui-sidebar-nav__badge">{item.badge}</span> : null}
+                    {item.badge ? <span className="shrink-0">{item.badge}</span> : null}
                   </Link>
                 )}
               </li>

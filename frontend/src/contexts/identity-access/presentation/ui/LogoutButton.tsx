@@ -29,7 +29,7 @@ export function LogoutButton() {
     <Button
       variant="ghost"
       size="sm"
-      className="ui-sidebar-logout-button"
+      className="w-full justify-start text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-foreground)]"
       onClick={handleClick}
       disabled={loading}
       isLoading={loading}

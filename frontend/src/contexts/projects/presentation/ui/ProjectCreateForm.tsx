@@ -118,7 +118,7 @@ export function ProjectCreateForm() {
   }
 
   return (
-    <form className="ui-form-stack" onSubmit={handleSubmit}>
+    <form className="grid gap-6" onSubmit={handleSubmit}>
       <FormField
         label="Project name"
         description="Use the name your team will recognize in the workspace."
@@ -165,7 +165,7 @@ export function ProjectCreateForm() {
 
       {error ? <Alert variant="destructive">{error}</Alert> : null}
 
-      <Button type="submit" disabled={loading} isLoading={loading} className="ui-form-submit">
+      <Button type="submit" disabled={loading} isLoading={loading}>
         {loading ? 'Creating project…' : 'Create project'}
       </Button>
     </form>

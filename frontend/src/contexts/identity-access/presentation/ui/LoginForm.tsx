@@ -89,7 +89,7 @@ export function LoginForm() {
   }
 
   return (
-    <form className="ui-form-stack" onSubmit={handleSubmit}>
+    <form className="space-y-5" onSubmit={handleSubmit}>
       <FormField
         label="Email"
         description="Use the email address linked to your Boardly account."
@@ -130,7 +130,7 @@ export function LoginForm() {
 
       {error ? <Alert variant="destructive">{error}</Alert> : null}
 
-      <Button type="submit" disabled={loading} isLoading={loading} className="ui-form-submit">
+      <Button type="submit" disabled={loading} isLoading={loading} className="w-full">
         {loading ? 'Signing in…' : 'Sign in'}
       </Button>
     </form>
