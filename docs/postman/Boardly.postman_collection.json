@@ -1,9 +1,11 @@
 {
   "info": {
-    "_postman_id": "595b7d52-c94c-472a-b12d-931f3f99c29d",
+    "_postman_id": "be310d5f-b722-4050-9e29-7b80c90387ea",
     "name": "Boardly API",
     "description": "Postman collection for Boardly Symfony API. Current implemented endpoint: POST /api/auth/register. Planned auth/admin endpoints are included as placeholders based on docs/design/authentication-api-strategy.md.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26298874",
+    "_collection_link": "https://go.postman.co/collection/26298874-be310d5f-b722-4050-9e29-7b80c90387ea?source=collection_link"
   },
   "item": [
     {
@@ -11,6 +13,36 @@
       "item": [
         {
           "name": "Register Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Response contains accountId and status', function () {",
+                  "    pm.expect(json).to.have.property('accountId');",
+                  "    pm.expect(json).to.have.property('status');",
+                  "});",
+                  "",
+                  "if (json.accountId) {",
+                  "    pm.environment.set('accountId', json.accountId);",
+                  "}",
+                  "",
+                  "if (json.status) {",
+                  "    pm.environment.set('accountStatus', json.status);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -21,6 +53,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{xdebug}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -45,37 +82,24 @@
             },
             "description": "Implemented endpoint. Creates a pending account. Note: current Symfony DTO expects `plainPassword`, not `password`."
           },
+          "response": []
+        },
+        {
+          "name": "Login",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status is 201 Created', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "const json = pm.response.json();",
-                  "",
-                  "pm.test('Response contains accountId and status', function () {",
-                  "    pm.expect(json).to.have.property('accountId');",
-                  "    pm.expect(json).to.have.property('status');",
-                  "});",
-                  "",
-                  "if (json.accountId) {",
-                  "    pm.environment.set('accountId', json.accountId);",
-                  "}",
-                  "",
-                  "if (json.status) {",
-                  "    pm.environment.set('accountStatus', json.status);",
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('accessToken', json.accessToken);",
                   "}"
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "[PLANNED] Login",
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -110,6 +134,10 @@
             },
             "description": "Planned endpoint from authentication API strategy. Expected to return accessToken and set refresh_token cookie."
           },
+          "response": []
+        },
+        {
+          "name": "Refresh",
           "event": [
             {
               "listen": "test",
@@ -123,10 +151,7 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "[PLANNED] Refresh",
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -152,23 +177,23 @@
             },
             "description": "Planned endpoint. Requires refresh_token cookie in Postman cookie jar and X-CSRF-Intent header."
           },
+          "response": []
+        },
+        {
+          "name": "Logout",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    const json = pm.response.json();",
-                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "if (pm.response.code === 204) {",
+                  "    pm.environment.unset('accessToken');",
                   "}"
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "[PLANNED] Logout",
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -194,30 +219,11 @@
             },
             "description": "Planned endpoint. Should revoke current refresh session when available and clear refresh cookie."
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code === 204) {",
-                  "    pm.environment.unset('accessToken');",
-                  "}"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "[PLANNED] Current Account",
+          "name": "Current Account",
           "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -228,6 +234,13 @@
                 }
               ]
             },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
               "host": [
@@ -240,7 +253,8 @@
               ]
             },
             "description": "Planned endpoint. Requires Authorization: Bearer {{accessToken}}."
-          }
+          },
+          "response": []
         }
       ]
     },
@@ -250,13 +264,6 @@
         {
           "name": "[PLANNED] List Pending Accounts",
           "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -267,6 +274,13 @@
                 }
               ]
             },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/admin/accounts/pending",
               "host": [
@@ -280,18 +294,12 @@
               ]
             },
             "description": "Planned system-admin endpoint."
-          }
+          },
+          "response": []
         },
         {
           "name": "[PLANNED] Approve Account",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -302,6 +310,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/admin/accounts/{{accountId}}/approve",
               "host": [
@@ -316,18 +331,12 @@
               ]
             },
             "description": "Planned system-admin endpoint. Expected 204 No Content."
-          }
+          },
+          "response": []
         },
         {
           "name": "[PLANNED] Reject Account",
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -338,6 +347,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/admin/accounts/{{accountId}}/reject",
               "host": [
@@ -352,51 +368,72 @@
               ]
             },
             "description": "Planned system-admin endpoint. Expected 204 No Content."
-          }
+          },
+          "response": []
         }
       ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://127.0.0.1:8080",
-      "type": "string"
+      "value": "http://127.0.0.1:8080"
     },
     {
       "key": "email",
-      "value": "alexander.kopyl+boardly@example.com",
-      "type": "string"
+      "value": "alexander.kopyl+boardly@example.com"
     },
     {
       "key": "password",
-      "value": "Password123!",
-      "type": "string"
+      "value": "Password123!"
     },
     {
       "key": "name",
-      "value": "Alexander Kopyl",
-      "type": "string"
+      "value": "Alexander Kopyl"
     },
     {
       "key": "accountId",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "accountStatus",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "accessToken",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "csrfIntent",
-      "value": "auth-refresh",
-      "type": "string"
+      "value": "auth-refresh"
+    },
+    {
+      "key": "xdebug",
+      "value": ""
     }
   ]
 }
