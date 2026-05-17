@@ -35,7 +35,7 @@ export function AppShell({
       {sidebar ? (
         <aside
           className={cn(
-            'bg-[var(--sidebar)] text-[var(--sidebar-foreground)] lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-[352px] lg:border-r lg:border-[color:var(--sidebar-border)]',
+            'bg-[var(--sidebar)] text-[var(--sidebar-foreground)] lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-[280px] lg:border-r lg:border-[color:var(--sidebar-border)]',
             sidebarClassName,
           )}
         >
@@ -46,14 +46,14 @@ export function AppShell({
         <div
           className={cn(
             'flex min-h-screen min-w-0 flex-col',
-            sidebar ? 'lg:pl-[352px]' : undefined,
+            sidebar ? 'lg:pl-[280px]' : undefined,
             contentClassName,
           )}
         >
           {header ? (
             <div
               className={cn(
-                'border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 lg:fixed lg:inset-x-0 lg:left-[352px] lg:top-0 lg:z-20',
+                'border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 lg:fixed lg:top-0 lg:z-20 lg:left-[280px] lg:w-[calc(100%-280px)]',
                 headerClassName,
               )}
             >

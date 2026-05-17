@@ -1,5 +1,58 @@
 # Frontend Verification: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Geometry correction pass: tighten shell offsets and row rhythm
+
+### Visual evidence
+
+- Current screen: latest Chrome screenshot at `http://localhost:3000/app/projects`
+- Target screen: `docs/design/stitch/projects-list/screen.png`
+
+### CURRENT vs TARGET geometry table
+
+| Area | CURRENT | TARGET |
+| --- | --- | --- |
+| Sidebar width | Roughly 280px on desktop, but the inner rhythm still reads a little looser than the reference. | Exact 280px desktop sidebar with about 24px internal padding. |
+| Topbar x offset | Starts at the sidebar edge, but the fixed header still needs the explicit 280px shell offset. | Starts at x=280px with width `calc(100% - 280px)` or equivalent. |
+| Main content x offset | Content begins after the sidebar, but the title/filter column still feels slightly under-tuned. | Content begins after the 280px sidebar with about 32px inner padding. |
+| WORKSPACE eyebrow | Present above the Projects title in the latest screenshot. | Removed. |
+| Filter bar width/alignment | Aligned to the list column, but the border/spacing still reads a touch heavier than the target. | Shares the same content column as the rows, stats, and tip with softer borders. |
+| Row width/alignment | Row spans the content column, but the card density is still a bit too airy. | Same column, compact card row geometry. |
+| Row height/density | About 90px+ in the latest screenshot, slightly looser than the target. | Compact desktop row height around 84-90px. |
+| Border softness | Several surfaces still read like near-black wireframe outlines. | Soft token-based borders/opacities. |
+| Stats/tip alignment | Stats and tip already share the same grid, but the vertical rhythm is not fully reference-tight. | Shared content column with tighter vertical rhythm. |
+
+### Commands run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run typecheck` in `frontend/` | Passed | `tsc --noEmit` completed successfully after the geometry pass. |
+| `npm run lint` in `frontend/` | Passed | `eslint .` completed successfully after the geometry pass. |
+| `npm run build` in `frontend/` | Passed | `next build` completed successfully and produced the app routes. |
+
+### Manual checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Browser geometry comparison | Partially verified | The latest browser screenshot was used as CURRENT evidence, but the live page was not refreshed to a new captured screenshot in this sandbox after the code patch. |
+
+### Failures
+
+- The latest available browser screenshot still shows the pre-refresh shell/page geometry, so the final visual correction pass remains partially verified.
+
+### Not run
+
+| Command | Reason |
+| --- | --- |
+| None | All required frontend commands were run. |
+
+### Final verification status
+
+PARTIALLY_VERIFIED
+
+### Remaining risks
+
+- The code/build checks passed, but the live screenshot comparison still needs a fresh browser refresh/capture to confirm that the 280px sidebar, topbar offset, eyebrow removal, and border softening are all rendered exactly as intended.
+
 ## 2026-05-17 - Final visual polish pass verification
 
 ### Visual evidence

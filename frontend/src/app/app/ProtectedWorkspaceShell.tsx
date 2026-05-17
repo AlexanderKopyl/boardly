@@ -92,7 +92,7 @@ function WorkspaceTopbar(): ReactElement {
             <SearchIcon />
           </span>
           <input
-            className="h-10 w-72 rounded-full border border-border/60 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/80 shadow-none outline-none transition-colors focus:border-primary/[0.35] focus:ring-2 focus:ring-primary/[0.15]"
+            className="h-10 w-72 rounded-full border border-border/40 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/80 shadow-none outline-none transition-colors focus:border-primary/[0.35] focus:ring-2 focus:ring-primary/[0.15]"
             placeholder="Search projects..."
             type="search"
           />
@@ -114,7 +114,7 @@ function WorkspaceTopbar(): ReactElement {
           <HelpIcon />
         </button>
 
-        <div className="flex size-9 items-center justify-center rounded-full border border-border/60 bg-card text-[11px] font-semibold tracking-[0.08em] text-secondary-foreground shadow-none">
+        <div className="flex size-9 items-center justify-center rounded-full border border-border/40 bg-card text-[11px] font-semibold tracking-[0.08em] text-secondary-foreground shadow-none">
           AK
         </div>
       </div>
@@ -147,7 +147,7 @@ function WorkspaceSidebar({ pathname }: { pathname: string }): ReactElement {
   const navigationSections = buildNavigationSections(pathname)
 
   return (
-    <div className="flex h-full flex-col px-4 py-5">
+    <div className="flex h-full flex-col px-6 py-5">
       <div className="flex items-start gap-3 px-1 py-2">
         <div className="grid size-10 shrink-0 grid-cols-2 gap-1 rounded-xl bg-white p-2 text-[var(--sidebar)]">
           <span className="rounded-[2px] bg-current" />

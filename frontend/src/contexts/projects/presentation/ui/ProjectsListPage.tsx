@@ -100,14 +100,14 @@ function getIconTileClasses(status: string): string {
   }
 
   if (status === 'archived') {
-    return 'border-border/70 bg-secondary-container text-secondary'
+    return 'border-border/40 bg-secondary-container text-secondary'
   }
 
   if (status === 'deleted') {
     return 'border-destructive/20 bg-destructive/10 text-destructive'
   }
 
-  return 'border-border/70 bg-muted text-muted-foreground'
+  return 'border-border/40 bg-muted text-muted-foreground'
 }
 
 function getProjectGlyph(iconKey: string): string {
@@ -182,7 +182,7 @@ function FilterChip({
   readonly value: string
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-[12px] border border-border/60 bg-primary/10 px-3 py-2 shadow-none">
+    <div className="flex items-center gap-2 rounded-[12px] border border-border/40 bg-primary/10 px-3 py-2 shadow-none">
       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
         {label}
       </span>
@@ -227,12 +227,12 @@ function ProjectsListNotice({
       className={
         tone === 'destructive'
           ? 'rounded-[12px] border border-destructive/20 bg-destructive/5 px-5 py-6'
-          : 'rounded-[12px] border border-border/60 bg-card px-5 py-6 shadow-sm'
+          : 'rounded-[12px] border border-border/40 bg-card px-5 py-6 shadow-sm'
       }
     >
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-start gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-[10px] border border-border/60 bg-muted text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-[10px] border border-border/40 bg-muted text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {icon}
           </div>
 
@@ -251,7 +251,7 @@ function ProjectsListNotice({
 function ProjectsListSkeleton() {
   return (
     <section aria-label="Projects loading" className="space-y-6">
-      <div className="rounded-[12px] border border-border/60 bg-card p-4 shadow-sm sm:p-5">
+      <div className="rounded-[12px] border border-border/40 bg-card p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <Skeleton className="h-10 w-48 rounded-[14px]" />
@@ -265,7 +265,7 @@ function ProjectsListSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <article
             key={`project-skeleton-${index}`}
-            className="rounded-[12px] border border-border/60 bg-card px-4 py-4 shadow-sm sm:px-5"
+            className="rounded-[12px] border border-border/40 bg-card px-4 py-4 shadow-sm sm:px-5"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 items-center gap-4">
@@ -313,7 +313,7 @@ function ProjectsListSkeleton() {
           </div>
         </div>
 
-        <div className="rounded-[16px] border border-border/60 bg-card p-6 shadow-sm">
+        <div className="rounded-[16px] border border-border/40 bg-card p-6 shadow-sm">
           <Skeleton className="h-3 w-32 rounded-full" />
           <Skeleton className="mt-3 h-6 w-40 rounded-md" />
           <Skeleton className="mt-4 h-16 w-full rounded-md" />
@@ -348,11 +348,11 @@ function ProjectRow({
   const isSelectedActionPending = isProjectActionPending && pendingAction?.action === activeAction?.action
 
   return (
-    <article className="group rounded-[12px] border border-border/60 bg-card px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-primary/20 hover:bg-surface-container-lowest sm:px-5">
+    <article className="group rounded-[12px] border border-border/40 bg-card px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-primary/20 hover:bg-surface-container-lowest sm:px-5 lg:min-h-[88px] lg:px-5 lg:py-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="flex min-w-0 items-center gap-4">
           <div
-            className={`flex size-11 shrink-0 items-center justify-center rounded-[10px] border text-[11px] font-semibold uppercase tracking-[0.22em] ${getIconTileClasses(
+            className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[12px] border text-[11px] font-semibold uppercase tracking-[0.22em] ${getIconTileClasses(
               project.status,
             )}`}
           >
@@ -376,9 +376,9 @@ function ProjectRow({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col items-start gap-3 lg:items-end">
+        <div className="flex min-w-0 flex-col items-start gap-3 lg:self-center lg:items-end">
           <div className="flex items-center gap-3">
-            <Badge variant={getStatusVariant(project.status)} className="rounded-full px-2.5 py-1 text-[10px] tracking-[0.18em]">
+            <Badge variant={getStatusVariant(project.status)} className="rounded-full border border-border/40 px-2.5 py-1 text-[10px] tracking-[0.18em]">
               {getStatusLabel(project.status)}
             </Badge>
 
@@ -393,14 +393,14 @@ function ProjectRow({
 
           <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             {project.status === 'active' ? (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={rowActionDisabled}
-                className="h-8 rounded-[10px] border-border/60 px-3 text-xs font-semibold"
-                onClick={onArchive}
-              >
-                Archive
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={rowActionDisabled}
+              className="h-8 rounded-[10px] border-border/40 px-3 text-xs font-semibold"
+              onClick={onArchive}
+            >
+              Archive
               </Button>
             ) : null}
 
@@ -418,7 +418,7 @@ function ProjectRow({
       </div>
 
       {activeAction !== null ? (
-        <div className="mt-4 rounded-[12px] border border-border/60 bg-muted/35 p-4">
+        <div className="mt-4 rounded-[12px] border border-border/40 bg-muted/35 p-4">
           <div className="space-y-1.5">
             <p className="text-sm font-semibold tracking-tight text-foreground">
               {getActionTitle(activeAction.action)}
@@ -504,7 +504,7 @@ function ProjectsSummary({
         </div>
       </div>
 
-        <div className="rounded-[16px] border border-border/60 bg-card p-6 shadow-sm">
+        <div className="rounded-[16px] border border-border/40 bg-card p-6 shadow-sm">
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
               Workspace Tip
@@ -616,9 +616,6 @@ export function ProjectsListPage() {
     <div className="w-full max-w-[1240px] space-y-6 lg:space-y-8">
       <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Workspace
-          </p>
           <div className="space-y-2">
             <h1 className="text-[36px] font-semibold tracking-tight text-foreground sm:text-[40px]">
               Projects
@@ -644,7 +641,7 @@ export function ProjectsListPage() {
       {viewState.status !== 'loading' ? (
         <section
           aria-label="Project filters"
-          className="flex flex-col gap-4 rounded-[12px] border border-border/60 bg-card px-4 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between sm:px-5"
+          className="flex flex-col gap-4 rounded-[12px] border border-border/40 bg-card px-4 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between sm:px-5"
         >
           <div className="flex flex-wrap items-center gap-2">
             <FilterChip label="Status:" value="All Projects" />

@@ -1,5 +1,51 @@
 # Frontend Implementation: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Geometry correction pass: tighten desktop shell offsets and soften row chrome
+
+### Subagents used
+
+- `frontend-ui-composition` for a focused geometry review of the shell and projects list surfaces.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `verification-evidence`
+- `frontend-ui-composition`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/app/app/ProtectedWorkspaceShell.tsx`
+- `frontend/src/shared/ui/AppShell.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `docs/tasks/issues-64/frontend-verification.md`
+- `docs/tasks/issues-64/frontend-implementation.md`
+
+### Summary
+
+- Fixed the desktop workspace shell offset to use a 280px sidebar and matching topbar/content alignment.
+- Removed the `WORKSPACE` eyebrow and softened the remaining border treatments on the list page surfaces.
+- Tightened the project row geometry toward the target compact card height and icon tile sizing.
+- Kept behavior unchanged: no backend, API, auth, or dependency edits.
+
+### Verification
+
+- `npm run typecheck` in `frontend/` passed.
+- `npm run lint` in `frontend/` passed.
+- `npm run build` in `frontend/` passed.
+- Live browser evidence remains partially verified because the available Chrome screenshot still reflects the pre-refresh geometry in this sandbox.
+
+### Risks / follow-up
+
+- The live browser comparison still needs a fresh capture after the shell refresh to confirm the updated geometry.
+- No behavior changed outside the allowed frontend files.
+
 ## 2026-05-17 - Visual polish pass: soften the shell tokens and constrain the projects surface
 
 ### Subagents used
