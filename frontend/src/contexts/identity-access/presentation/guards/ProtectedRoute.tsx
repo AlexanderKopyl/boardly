@@ -14,8 +14,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { session, isLoading, hasBootstrapped, bootstrap } = useAuth()
   const router = useRouter()
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { bootstrap() }, [])
+  useEffect(() => {
+    if (!hasBootstrapped && session === null) {
+      void bootstrap()
+    }
+  }, [bootstrap, hasBootstrapped, session])
 
   useEffect(() => {
     if (hasBootstrapped && !isLoading && session === null) {
