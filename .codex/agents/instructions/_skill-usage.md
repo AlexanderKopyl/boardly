@@ -31,11 +31,36 @@ Frontend task guidance:
 
 Do not treat skills as replacements for accepted ADRs or developer rulebooks.
 
+## Context economy rules
+
+Treat context as a scarce engineering resource.
+
+Use `context-pack-builder` when the relevant files/docs are unclear.
+
+Use `context-budget-audit` when the task is large, many docs/skills/artifacts are candidates, or context feels bloated.
+
+Use `context-compaction` when the session becomes long/noisy or needs handoff.
+
+Use `agent-evaluation-metrics` after meaningful planning/analysis/implementation/review work when the workflow quality should be measured.
+
+Tool-output hygiene:
+
+- prefer `git diff --name-only`, `git diff --stat`, `git grep`, `rg`, symbol search, and targeted file reads;
+- prefer diff-only and section-only reads for large files;
+- do not paste full logs, full generated files, dependency installs, or broad command output;
+- preserve exact error lines only when they affect the next decision;
+- use `head`, `tail`, grep filters, line ranges, and summaries for large outputs;
+- save durable findings into task artifacts instead of carrying raw tool output through the session.
+
+Do not reduce context by hiding security, permission, source-of-truth, CQRS bus, frontend auth/session, ADR-0006, ADR-0007, or transaction-boundary risks.
+
 ## How to choose a skill
 
 | User need | Use skill |
 | --- | --- |
 | New session, unknown area, branch review discovery, candidate files | `repo-onboarding` |
+| Build a minimal must-read/maybe-read/do-not-read task context pack | `context-pack-builder` |
+| Estimate/control context pressure and decide full vs section/diff/summarize/skip | `context-budget-audit` |
 | Create a durable task plan in a specified task folder | `task-planning` |
 | Analyze a task and save analysis artifact into a task folder | `task-analysis` |
 | Implement a checkbox plan task-by-task and update checklist | `task-implementation` |
@@ -44,6 +69,7 @@ Do not treat skills as replacements for accepted ADRs or developer rulebooks.
 | Frontend-specific checkbox implementation with ADR/rules verification | `frontend-task-implementation` |
 | Record exact verification commands, results, not-run reasons, final status | `verification-evidence` |
 | Compact long-running session state into resumable memo | `context-compaction` |
+| Record workflow metrics: files opened/edited, tools, verification, assumptions, unsupported claims | `agent-evaluation-metrics` |
 | Aggregate, invariant, value object, domain event, repository, transaction boundary | `domain-modeling` |
 | End-to-end backend architecture for a feature/use case | `feature-architecture` |
 | HTTP controllers, Commands, Queries, concrete handlers, bus registration, controller boundary review | `symfony-cqrs-bus-boundary` |
@@ -83,20 +109,26 @@ Hard rule:
 Use these when the user works through a task folder:
 
 0. `repo-onboarding` creates `<task-folder>/onboarding.md` when scope/files are unclear.
-1. `task-planning` creates `<task-folder>/planning.md`.
-2. `task-analysis` creates `<task-folder>/analysis.md`.
-3. `task-implementation` creates or updates `<task-folder>/checklist.md` and appends `<task-folder>/implementation.md`.
-4. `verification-evidence` creates or updates `<task-folder>/verification.md`.
-5. `context-compaction` creates or updates `<task-folder>/compaction.md` when the session becomes long/noisy or needs handoff.
+1. `context-pack-builder` creates `<task-folder>/context-pack.md` when a minimal context pack is needed.
+2. `context-budget-audit` creates `<task-folder>/context-budget.md` when context pressure should be controlled.
+3. `task-planning` creates `<task-folder>/planning.md`.
+4. `task-analysis` creates `<task-folder>/analysis.md`.
+5. `task-implementation` creates or updates `<task-folder>/checklist.md` and appends `<task-folder>/implementation.md`.
+6. `verification-evidence` creates or updates `<task-folder>/verification.md`.
+7. `agent-evaluation-metrics` creates `<task-folder>/agent-metrics.md` when workflow measurement is useful.
+8. `context-compaction` creates or updates `<task-folder>/compaction.md` when the session becomes long/noisy or needs handoff.
 
 Frontend-specific lifecycle:
 
 0. `repo-onboarding` creates `<task-folder>/onboarding.md` when scope/files are unclear.
-1. `frontend-task-planning` creates `<task-folder>/frontend-planning.md`.
-2. `frontend-task-analysis` creates `<task-folder>/frontend-analysis.md`.
-3. `frontend-task-implementation` creates or updates `<task-folder>/frontend-checklist.md`, `<task-folder>/frontend-implementation.md`, and `<task-folder>/frontend-verification.md`.
-4. `verification-evidence` may also update `<task-folder>/verification.md` for cross-stack evidence.
-5. `context-compaction` creates or updates `<task-folder>/compaction.md` when needed.
+1. `context-pack-builder` creates `<task-folder>/context-pack.md` when needed.
+2. `context-budget-audit` creates `<task-folder>/context-budget.md` when needed.
+3. `frontend-task-planning` creates `<task-folder>/frontend-planning.md`.
+4. `frontend-task-analysis` creates `<task-folder>/frontend-analysis.md`.
+5. `frontend-task-implementation` creates or updates `<task-folder>/frontend-checklist.md`, `<task-folder>/frontend-implementation.md`, and `<task-folder>/frontend-verification.md`.
+6. `verification-evidence` may also update `<task-folder>/verification.md` for cross-stack evidence.
+7. `agent-evaluation-metrics` creates `<task-folder>/agent-metrics.md` when workflow measurement is useful.
+8. `context-compaction` creates or updates `<task-folder>/compaction.md` when needed.
 
 Implementation must be task-by-task:
 
@@ -119,42 +151,31 @@ Checklist items are not done unless all are true:
 4. Failures and not-run checks are disclosed.
 5. Architecture/security/source-of-truth/frontend-auth/frontend-style risks are addressed or documented.
 
-## Multi-skill requests
-
-Use multiple skills when the request crosses boundaries.
-
-Examples:
-
-- `ChangeIssueStatus` usually needs `feature-architecture`, `domain-modeling`, `workflow-design`, `permission-modeling`, `symfony-cqrs-bus-boundary`, `async-flow`, `search-indexing`, `testing-strategy`, and possibly `adr-writing`.
-- Any backend HTTP controller task must include `symfony-cqrs-bus-boundary`.
-- `SearchIssues` usually needs `feature-architecture`, `search-indexing`, `permission-modeling`, `symfony-cqrs-bus-boundary`, `cache-performance`, and `testing-strategy`.
-- `GetProjectBoard` usually needs `feature-architecture`, `search-indexing` or read-model reasoning, `permission-modeling`, `symfony-cqrs-bus-boundary`, `cache-performance`, and `observability-operations`.
-- Frontend IdentityAccess usually needs `frontend-task-planning`, `frontend-context-architecture`, `frontend-auth-session`, `frontend-use-case-flow`, `frontend-api-integration`, `frontend-ui-composition`, and `testing-strategy`.
-- Frontend UI/styling work usually needs `frontend-task-planning`, `frontend-context-architecture`, `frontend-ui-composition`, `frontend-style-system`, and `testing-strategy`.
-- Frontend review usually needs `frontend-review-checklist`, `frontend-context-architecture`, `frontend-auth-session`, `frontend-api-integration`, `frontend-ui-composition`, and `frontend-style-system`.
-- Long-running implementation should add `context-compaction` after major milestones or before handoff.
-- A compact answer to a previously analyzed feature can add `caveman-response` as the final output layer.
-- A compact structural map can add `graphify-knowledge-map` after the relevant architecture/domain/frontend skill.
-
 ## Priority rule
 
 If this is a managed backend/mixed task folder workflow, use the full lifecycle:
 
 1. `repo-onboarding` when scope/files are unclear
-2. `task-planning`
-3. `task-analysis`
-4. `task-implementation`
-5. `verification-evidence`
-6. `context-compaction` when needed
+2. `context-pack-builder` when the exact context set is unclear
+3. `context-budget-audit` when context is large or many docs/artifacts are candidates
+4. `task-planning`
+5. `task-analysis`
+6. `task-implementation`
+7. `verification-evidence`
+8. `agent-evaluation-metrics` when measurement is useful
+9. `context-compaction` when needed
 
 If this is a managed frontend task folder workflow, use the frontend lifecycle:
 
 1. `repo-onboarding` when scope/files are unclear
-2. `frontend-task-planning`
-3. `frontend-task-analysis`
-4. `frontend-task-implementation`
-5. `verification-evidence` or `task-verifier`
-6. `context-compaction` when needed
+2. `context-pack-builder` when the exact context set is unclear
+3. `context-budget-audit` when context is large or many docs/artifacts are candidates
+4. `frontend-task-planning`
+5. `frontend-task-analysis`
+6. `frontend-task-implementation`
+7. `verification-evidence` or `task-verifier`
+8. `agent-evaluation-metrics` when measurement is useful
+9. `context-compaction` when needed
 
 If several backend skills apply, start with the business architecture skill, then add specialized skills:
 
