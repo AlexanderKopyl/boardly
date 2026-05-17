@@ -90,6 +90,7 @@ Skills do not replace accepted ADRs or developer rulebooks.
 | `frontend-auth-session` | memory-only access token, HttpOnly refresh cookie, bootstrap, logout, protected routes |
 | `frontend-ui-composition` | Next.js pages, layouts, providers, React components, hooks, guards, forms |
 | `frontend-style-system` | ADR-0007 Tailwind, CSS variables, shadcn-style primitives, Radix, tokens, variants |
+| `frontend-e2e-playwright` | Playwright E2E/browser smoke tests for auth, protected routes, critical flows, focus/keyboard behavior |
 | `frontend-review-checklist` | ADR-0006/0007 frontend review, auth safety, API/UI/style boundary checks |
 
 ## Output modifier skills
@@ -117,6 +118,24 @@ Tool-output hygiene:
 - save durable findings into task artifacts instead of carrying raw tool output through the session.
 
 Do not reduce context by hiding security, permission, source-of-truth, CQRS bus, frontend auth/session, ADR-0006, ADR-0007, or transaction-boundary risks.
+
+## Frontend E2E rule
+
+Use `frontend-e2e-playwright` for browser-level coverage of critical flows:
+
+```text
+login/register/logout
+refresh-session/bootstrap
+protected route guest/authenticated/loading states
+retry-on-401 browser behavior
+cookie-dependent credentials behavior
+critical navigation/form flows
+accessibility-sensitive focus/keyboard behavior
+```
+
+Do not use Playwright for every component, pure application use case, DTO mapper, or isolated rendering detail.
+
+Do not add Playwright dependency/config/browser installation without explicit implementation scope and approval for dependency changes.
 
 ## Hard backend controller rule
 
@@ -222,6 +241,7 @@ Do not use MemPalace for simple repo discovery such as class location, route/con
 - Frontend context domain models are not backend aggregates.
 - Frontend access token must be memory-only.
 - Frontend refresh token must be HttpOnly and unreadable by JavaScript.
+- Playwright is for critical browser-level flows, not every component.
 - Tailwind CSS is the default frontend styling system.
 - CSS variables own theme-level semantic design tokens.
 - Shared UI primitives must remain generic and context-free.
