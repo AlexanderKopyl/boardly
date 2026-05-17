@@ -1,9 +1,6 @@
 import { ApiError } from '@/shared/api/api-error'
 import { httpRequest, type HttpMethod } from '@/shared/api/http-client'
-
-import { refreshSessionUseCase } from '@/contexts/identity-access/application/use-cases/refresh-session'
-import { AuthHttpGateway } from '@/contexts/identity-access/infrastructure/http/auth-http-gateway'
-import { AuthMemoryStore } from '@/contexts/identity-access/infrastructure/state/auth-memory-store'
+import { authSessionStore, refreshAuthAccessToken } from '@/shared/auth/auth-session-client'
 
 import type {
   CreateProjectResult,
@@ -21,9 +18,6 @@ import type {
   ProjectResponse,
   ProjectSummaryResponse,
 } from './projects-api-contracts'
-
-const authStore = new AuthMemoryStore()
-const authGateway = new AuthHttpGateway()
 
 function mapSummary(response: ProjectSummaryResponse): ProjectSummary {
   return {
@@ -73,13 +67,7 @@ function mapApiError(error: unknown): Error {
 }
 
 async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const session = await refreshSessionUseCase({ gateway: authGateway, store: authStore })
-    return session.accessToken
-  } catch {
-    authStore.clear()
-    return null
-  }
+  return refreshAuthAccessToken()
 }
 
 export class ProjectsHttpGateway implements ProjectGateway {
@@ -132,7 +120,7 @@ export class ProjectsHttpGateway implements ProjectGateway {
       body?: unknown
     },
   ): Promise<TResponse> {
-    const session = authStore.get()
+    const session = authSessionStore.get()
 
     if (session === null) {
       throw new ProjectsError('unauthorized', 'No active authenticated session was found.')

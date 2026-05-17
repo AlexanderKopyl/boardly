@@ -94,14 +94,15 @@ export function ProjectCreateForm() {
 
     setLoading(true)
     try {
-      await createProjectUseCase(
+      const result = await createProjectUseCase(
         {
           name: trimmedName,
           iconKey: trimmedIconKey.length > 0 ? trimmedIconKey : undefined,
         },
         { gateway },
       )
-      router.replace('/app/projects')
+
+      router.replace(`/app/projects/${result.project.id}`)
     } catch (caughtError) {
       if (caughtError instanceof ProjectsError && caughtError.code === 'validation_failed') {
         setFieldErrors(mapValidationErrors(caughtError.details))

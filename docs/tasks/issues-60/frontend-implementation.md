@@ -1,5 +1,58 @@
 # Frontend Implementation: Issue #60 Projects Slice
 
+## 2026-05-17 06:33 UTC - Task: Apply pre-merge fixes for Projects gateway, protected route decision, and create redirect
+
+### Subagents used
+
+- `task-verifier` (task-scoped review request)
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-api-integration`
+- `frontend-ui-composition`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0004-use-api-first-symfony-backend-with-nextjs-frontend.md`
+- `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/shared/auth/auth-session-client.ts`
+- `frontend/src/contexts/identity-access/presentation/hooks/useAuth.tsx`
+- `frontend/src/contexts/projects/infrastructure/http/projects-http-gateway.ts`
+- `frontend/src/contexts/projects/presentation/ui/ProjectCreateForm.tsx`
+- `docs/tasks/issues-60/frontend-implementation.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+- `docs/tasks/issues-60/frontend-checklist.md`
+
+### Summary
+
+- Moved shared auth/session access behind a single public helper in `shared/auth` so both `identity-access` and `projects` reuse the same gateway/store without Projects reaching into `identity-access` infrastructure internals.
+- Kept the refresh-on-401 behavior intact by routing Projects' token refresh through the shared auth-session helper.
+- Changed project creation to redirect to the created project details route when the backend returns a project id.
+- Recorded `/app/projects` as an intentional protected route under the existing `/app` workspace shell.
+
+### Verification
+
+- `npm run typecheck` in `frontend/`
+- `npm run lint` in `frontend/`
+- `npm run build` in `frontend/`
+- Targeted source check: `rg -n 'identity-access/(infrastructure/http/auth-http-gateway|infrastructure/state/auth-memory-store|application/use-cases/refresh-session)' frontend/src/contexts/projects`
+- Targeted source check: `rg -n 'router\\.replace\\(`/app/projects/\\$\\{result\\.project\\.id\\}`\\)' frontend/src/contexts/projects/presentation/ui/ProjectCreateForm.tsx`
+
+### Risks / follow-up
+
+- If the shared auth-session helper is ever split across bundles, the singleton store/gateway assumption should be revisited.
+- Manual authenticated smoke testing remains outside this small pre-merge pass.
+
 ## 2026-05-17 06:21 UTC - Task: Make auth bootstrap idempotent so protected routes do not double-refresh in StrictMode/remounts
 
 ### Subagents used

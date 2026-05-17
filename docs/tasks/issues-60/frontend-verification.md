@@ -62,6 +62,30 @@
 - Result: Passed
 - Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
 
+# Verification Notes
+
+## 2026-05-17 06:33 UTC - Task: Apply pre-merge fixes for Projects gateway, protected route decision, and create redirect
+
+### Verification target
+
+- Remove Projects -> IdentityAccess infrastructure deep imports.
+- Keep auth refresh behind an explicit shared boundary.
+- Redirect successful project creation to the project details route.
+- Document `/app/projects` as an intentional protected route.
+
+### Evidence
+
+- `npm run typecheck` in `frontend/` - passed
+- `npm run lint` in `frontend/` - passed
+- `npm run build` in `frontend/` - passed
+- `rg -n 'identity-access/(infrastructure/http/auth-http-gateway|infrastructure/state/auth-memory-store|application/use-cases/refresh-session)' frontend/src/contexts/projects` - no matches
+- `rg -n 'router\\.replace\\(`/app/projects/\\$\\{result\\.project\\.id\\}`\\)' frontend/src/contexts/projects/presentation/ui/ProjectCreateForm.tsx` - matched the details redirect
+
+### Notes
+
+- `/app/projects` remains intentionally protected by the existing `/app` layout shell; this pass only documented that decision and did not alter the routing model.
+- Manual browser smoke testing is still a separate blocker because this pass only verified the code path and build output.
+
 ## 2026-05-17 05:50 UTC - Task: Implement the project details use case and `/app/projects/[projectId]` page
 
 - Command: `npm run typecheck`
