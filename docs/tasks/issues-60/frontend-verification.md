@@ -1,5 +1,19 @@
 # Frontend Verification: Issue #60 Projects Slice
 
+## 2026-05-17 06:21 UTC - Task: Make auth bootstrap idempotent so protected routes do not double-refresh in StrictMode/remounts
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Manual browser smoke / network inspection: Blocked
+- Notes: The local app/browser inspection tools available in this session were not sufficient to drive Chrome devtools or inspect the request timeline directly, so I could not confirm the single refresh call in the browser network panel here.
+
 ## 2026-05-17 06:11 UTC - Task: Validate the slice with lint, typecheck, build, and manual authenticated smoke testing
 
 - Command: `npm run typecheck`

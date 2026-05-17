@@ -5,4 +5,5 @@
 - [x] Implement the project details use case and `/app/projects/[projectId]` page.
 - [x] Implement archive and delete listing actions with confirmation, error handling, and refresh.
 - [x] Update protected navigation so Projects is the first usable slice in the app shell.
+- [x] Make auth bootstrap idempotent so protected routes do not double-refresh in StrictMode/remounts.
 - [ ] Validate the slice with lint, typecheck, build, and manual authenticated smoke testing.

@@ -1,5 +1,51 @@
 # Frontend Implementation: Issue #60 Projects Slice
 
+## 2026-05-17 06:21 UTC - Task: Make auth bootstrap idempotent so protected routes do not double-refresh in StrictMode/remounts
+
+### Subagents used
+
+- `frontend-identity-access` (task-scoped review request)
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-auth-session`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/contexts/identity-access/presentation/hooks/useAuth.tsx`
+- `frontend/src/contexts/identity-access/presentation/guards/ProtectedRoute.tsx`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-implementation.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Summary
+
+- Added a module-scoped in-flight bootstrap guard in `useAuth.tsx` so concurrent mount effects share the same refresh/bootstrap promise instead of starting parallel `POST /api/auth/refresh` calls.
+- Short-circuited `ProtectedRoute` bootstrap when a session already exists, so restored in-memory sessions do not trigger an unnecessary refresh just because the protected shell mounted.
+- Kept invalid refresh handling unchanged: the bootstrap use case still clears memory and the protected route still redirects to `/login` once the session is known to be absent.
+
+### Verification
+
+- `npm run typecheck` in `frontend/`
+- `npm run lint` in `frontend/`
+- `npm run build` in `frontend/`
+- Manual browser smoke: attempted, but direct browser-network inspection tooling was not available in this session
+
+### Risks / follow-up
+
+- Browser-level confirmation of a single refresh request remains blocked by the available tooling in this session.
+- The dedupe guard is module-scoped, which is correct for a single browser session but should be revisited if auth providers are ever split across independently loaded bundles.
+
 ## 2026-05-17 06:11 UTC - Task: Validate the slice with lint, typecheck, build, and manual authenticated smoke testing
 
 ### Subagents used

@@ -12,6 +12,7 @@ import { AuthMemoryStore } from '../../infrastructure/state/auth-memory-store'
 
 const gateway = new AuthHttpGateway()
 const store = new AuthMemoryStore()
+let bootstrapInFlight: Promise<void> | null = null
 
 export interface AuthContextValue {
   session: AuthSession | null
@@ -46,18 +47,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const bootstrap = useCallback(async (): Promise<void> => {
-    setIsLoading(true)
-    try {
-      const result = await bootstrapSessionUseCase({ gateway, store })
-      setSession(result)
-    } catch {
-      store.clear()
-      setSession(null)
-    } finally {
-      setHasBootstrapped(true)
-      setIsLoading(false)
+    if (session !== null) {
+      if (!hasBootstrapped) {
+        setHasBootstrapped(true)
+      }
+
+      return
     }
-  }, [])
+
+    if (bootstrapInFlight !== null) {
+      await bootstrapInFlight
+      return
+    }
+
+    const inFlight = (async () => {
+      setIsLoading(true)
+      try {
+        const result = await bootstrapSessionUseCase({ gateway, store })
+        setSession(result)
+      } catch {
+        store.clear()
+        setSession(null)
+      } finally {
+        setHasBootstrapped(true)
+        setIsLoading(false)
+      }
+    })()
+
+    bootstrapInFlight = inFlight
+
+    try {
+      await inFlight
+    } finally {
+      if (bootstrapInFlight === inFlight) {
+        bootstrapInFlight = null
+      }
+    }
+  }, [hasBootstrapped, session])
 
   const value = useMemo<AuthContextValue>(
     () => ({ session, isLoading, hasBootstrapped, login, register, logout, bootstrap }),
