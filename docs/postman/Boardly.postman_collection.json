@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "be310d5f-b722-4050-9e29-7b80c90387ea",
     "name": "Boardly API",
-    "description": "Postman collection for Boardly Symfony API. Current implemented endpoint: POST /api/auth/register. Planned auth/admin endpoints are included as placeholders based on docs/design/authentication-api-strategy.md.",
+    "description": "Postman collection for Boardly Symfony API. Current implemented endpoints include auth registration and the implemented Projects MVP endpoints. Planned auth/admin endpoints are included as placeholders based on docs/design/authentication-api-strategy.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "26298874",
     "_collection_link": "https://go.postman.co/collection/26298874-be310d5f-b722-4050-9e29-7b80c90387ea?source=collection_link"
@@ -259,6 +259,553 @@
       ]
     },
     {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Response contains id, name, iconKey, status, and createdAt', function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('name');",
+                  "    pm.expect(json).to.have.property('iconKey');",
+                  "    pm.expect(json).to.have.property('status');",
+                  "    pm.expect(json).to.have.property('createdAt');",
+                  "});",
+                  "",
+                  "pm.test('Status is active', function () {",
+                  "    pm.expect(json.status).to.eql('active');",
+                  "});",
+                  "",
+                  "if (json.id) {",
+                  "    pm.environment.set('projectId', json.id);",
+                  "}",
+                  "",
+                  "if (json.name) {",
+                  "    pm.environment.set('projectNameLastCreated', json.name);",
+                  "}",
+                  "",
+                  "if (json.iconKey) {",
+                  "    pm.environment.set('projectIconKeyLastCreated', json.iconKey);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{projectName}}\",\n  \"iconKey\": \"{{projectIconKey}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            },
+            "description": "Creates a project with the requested icon key."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Project - Default Icon",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Response contains id, name, iconKey, status, and createdAt', function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('name');",
+                  "    pm.expect(json).to.have.property('iconKey');",
+                  "    pm.expect(json).to.have.property('status');",
+                  "    pm.expect(json).to.have.property('createdAt');",
+                  "});",
+                  "",
+                  "pm.test('Icon key defaults to folder', function () {",
+                  "    pm.expect(json.iconKey).to.eql('folder');",
+                  "});",
+                  "",
+                  "if (json.id) {",
+                  "    pm.environment.set('defaultIconProjectId', json.id);",
+                  "}",
+                  "",
+                  "if (json.name) {",
+                  "    pm.environment.set('projectNameLastCreated', json.name);",
+                  "}",
+                  "",
+                  "if (json.iconKey) {",
+                  "    pm.environment.set('projectIconKeyLastCreated', json.iconKey);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{projectName}} Default Icon\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            },
+            "description": "Creates a project using the default icon key."
+          },
+          "response": []
+        },
+        {
+          "name": "List Projects",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Response contains items array', function () {",
+                  "    pm.expect(json).to.have.property('items');",
+                  "    pm.expect(json.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (json.items && json.items.length > 0 && json.items[0].id) {",
+                  "    pm.environment.set('projectId', json.items[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            },
+            "description": "Lists projects."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('Response contains id, name, iconKey, status, and createdAt', function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('name');",
+                  "    pm.expect(json).to.have.property('iconKey');",
+                  "    pm.expect(json).to.have.property('status');",
+                  "    pm.expect(json).to.have.property('createdAt');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "description": "Returns a single project."
+          },
+          "response": []
+        },
+        {
+          "name": "Archive Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}/archive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}",
+                "archive"
+              ]
+            },
+            "description": "Archives a project."
+          },
+          "response": []
+        },
+        {
+          "name": "Archive Project - Idempotent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}/archive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}",
+                "archive"
+              ]
+            },
+            "description": "Archives a project again to confirm idempotent behavior."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "description": "Deletes a project."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Deleted/Missing Project - Non-Leaky 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/{{projectId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects",
+                "{{projectId}}"
+              ]
+            },
+            "description": "Verifies deleted or missing projects do not leak existence."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Project Icon Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 422 Unprocessable Entity', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{projectName}} Invalid Icon\",\n  \"iconKey\": \"Invalid Icon!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "projects"
+              ]
+            },
+            "description": "Validates icon key rejection."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Admin Accounts",
       "item": [
         {
@@ -416,6 +963,14 @@
       "value": "Alexander Kopyl"
     },
     {
+      "key": "projectName",
+      "value": "Boardly Project"
+    },
+    {
+      "key": "projectIconKey",
+      "value": "kanban"
+    },
+    {
       "key": "accountId",
       "value": ""
     },
@@ -425,6 +980,22 @@
     },
     {
       "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "projectId",
+      "value": ""
+    },
+    {
+      "key": "defaultIconProjectId",
+      "value": ""
+    },
+    {
+      "key": "projectNameLastCreated",
+      "value": ""
+    },
+    {
+      "key": "projectIconKeyLastCreated",
       "value": ""
     },
     {

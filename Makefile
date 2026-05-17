@@ -110,6 +110,10 @@ db-create:
 db-migrate:
 	php bin/console doctrine:migrations:migrate --no-interaction
 
+db-migration-down:
+	@test -n "$(VERSION)" || (echo "Usage: make db-migration-down VERSION='DoctrineMigrations\\Version20260516071731'"; exit 1)
+	php bin/console doctrine:migrations:execute '$(VERSION)' --down --no-interaction
+
 db-diff:
 	php bin/console doctrine:migrations:diff
 
