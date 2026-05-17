@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 
 import { ProjectsError } from '../../domain/project-errors'
 import { getProjectUseCase } from '../../application/use-cases/get-project'
-import { ProjectsHttpGateway } from '../../infrastructure/http/projects-http-gateway'
+import { useProjectsHttpGateway } from '../hooks/useProjectsHttpGateway'
 
 import { Badge } from '@/shared/ui/Badge'
 import { Button } from '@/shared/ui/Button'
@@ -13,8 +13,6 @@ import { Card } from '@/shared/ui/Card'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { Skeleton } from '@/shared/ui/Skeleton'
-
-const gateway = new ProjectsHttpGateway()
 
 type ProjectDetailsViewState =
   | { status: 'loading' }
@@ -121,6 +119,7 @@ function getProjectIdParam(value: string | string[] | undefined): string | null 
 }
 
 export function ProjectDetailsPage() {
+  const gateway = useProjectsHttpGateway()
   const router = useRouter()
   const params = useParams<{ projectId?: string | string[] }>()
   const projectId = getProjectIdParam(params.projectId)
@@ -153,7 +152,7 @@ export function ProjectDetailsPage() {
     return () => {
       isActive = false
     }
-  }, [projectId, reloadToken])
+  }, [gateway, projectId, reloadToken])
 
   return (
     <div className="space-y-8">

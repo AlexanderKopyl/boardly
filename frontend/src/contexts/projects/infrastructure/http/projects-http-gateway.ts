@@ -1,6 +1,5 @@
 import { ApiError } from '@/shared/api/api-error'
 import { httpRequest, type HttpMethod } from '@/shared/api/http-client'
-import { authSessionStore, refreshAuthAccessToken } from '@/shared/auth/auth-session-client'
 
 import type {
   CreateProjectResult,
@@ -18,6 +17,11 @@ import type {
   ProjectResponse,
   ProjectSummaryResponse,
 } from './projects-api-contracts'
+
+export interface ProjectsHttpGatewayDependencies {
+  getAccessToken: () => string | null
+  refreshAccessToken: () => Promise<string | null>
+}
 
 function mapSummary(response: ProjectSummaryResponse): ProjectSummary {
   return {
@@ -66,11 +70,9 @@ function mapApiError(error: unknown): Error {
     : new ProjectsError('unexpected', 'Unexpected projects error')
 }
 
-async function refreshAccessToken(): Promise<string | null> {
-  return refreshAuthAccessToken()
-}
-
 export class ProjectsHttpGateway implements ProjectGateway {
+  constructor(private readonly deps: ProjectsHttpGatewayDependencies) {}
+
   async listProjects(): Promise<ListProjectsResult> {
     const response = await this.request<ListProjectsResponse>('/api/projects')
 
@@ -120,9 +122,9 @@ export class ProjectsHttpGateway implements ProjectGateway {
       body?: unknown
     },
   ): Promise<TResponse> {
-    const session = authSessionStore.get()
+    const accessToken = this.deps.getAccessToken()
 
-    if (session === null) {
+    if (accessToken === null) {
       throw new ProjectsError('unauthorized', 'No active authenticated session was found.')
     }
 
@@ -130,8 +132,8 @@ export class ProjectsHttpGateway implements ProjectGateway {
       return await httpRequest<TResponse>(path, {
         method: options?.method,
         body: options?.body,
-        accessToken: session.accessToken,
-        onUnauthorized: refreshAccessToken,
+        accessToken,
+        onUnauthorized: this.deps.refreshAccessToken,
       })
     } catch (error) {
       throw mapApiError(error)

@@ -7,9 +7,13 @@ import { loginUseCase } from '../../application/use-cases/login'
 import { logoutUseCase } from '../../application/use-cases/logout'
 import { registerUseCase } from '../../application/use-cases/register'
 import type { AuthSession } from '../../domain/auth-session'
-import { authGateway, authSessionStore } from '@/shared/auth/auth-session-client'
+import { AuthHttpGateway } from '@/contexts/identity-access/infrastructure/http/auth-http-gateway'
+import { AuthMemoryStore } from '@/contexts/identity-access/infrastructure/state/auth-memory-store'
 
-let bootstrapInFlight: Promise<void> | null = null
+const authGateway = new AuthHttpGateway()
+const authSessionStore = new AuthMemoryStore()
+
+let sessionHydrationInFlight: Promise<AuthSession | null> | null = null
 
 export interface AuthContextValue {
   session: AuthSession | null
@@ -19,9 +23,36 @@ export interface AuthContextValue {
   register(email: string, plainPassword: string, name: string): Promise<void>
   logout(): Promise<void>
   bootstrap(): Promise<void>
+  refreshAccessToken(): Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+async function hydrateSession(): Promise<AuthSession | null> {
+  if (sessionHydrationInFlight !== null) {
+    return sessionHydrationInFlight
+  }
+
+  const inFlight = (async () => {
+    try {
+      const result = await bootstrapSessionUseCase({ gateway: authGateway, store: authSessionStore })
+      return result
+    } catch {
+      authSessionStore.clear()
+      return null
+    }
+  })()
+
+  sessionHydrationInFlight = inFlight
+
+  try {
+    return await inFlight
+  } finally {
+    if (sessionHydrationInFlight === inFlight) {
+      sessionHydrationInFlight = null
+    }
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(authSessionStore.get())
@@ -52,39 +83,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    if (bootstrapInFlight !== null) {
-      await bootstrapInFlight
-      return
-    }
-
-    const inFlight = (async () => {
-      setIsLoading(true)
-      try {
-        const result = await bootstrapSessionUseCase({ gateway: authGateway, store: authSessionStore })
-        setSession(result)
-      } catch {
-        authSessionStore.clear()
-        setSession(null)
-      } finally {
-        setHasBootstrapped(true)
-        setIsLoading(false)
-      }
-    })()
-
-    bootstrapInFlight = inFlight
-
+    setIsLoading(true)
     try {
-      await inFlight
+      const result = await hydrateSession()
+      setSession(result)
     } finally {
-      if (bootstrapInFlight === inFlight) {
-        bootstrapInFlight = null
-      }
+      setHasBootstrapped(true)
+      setIsLoading(false)
     }
   }, [hasBootstrapped, session])
 
+  const refreshAccessToken = useCallback(async (): Promise<string | null> => {
+    const result = await hydrateSession()
+    setSession(result)
+
+    return result?.accessToken ?? null
+  }, [])
+
   const value = useMemo<AuthContextValue>(
-    () => ({ session, isLoading, hasBootstrapped, login, register, logout, bootstrap }),
-    [session, isLoading, hasBootstrapped, login, register, logout, bootstrap],
+    () => ({
+      session,
+      isLoading,
+      hasBootstrapped,
+      login,
+      register,
+      logout,
+      bootstrap,
+      refreshAccessToken,
+    }),
+    [session, isLoading, hasBootstrapped, login, register, logout, bootstrap, refreshAccessToken],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

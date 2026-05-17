@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { archiveProjectUseCase } from '../../application/use-cases/archive-project'
 import { deleteProjectUseCase } from '../../application/use-cases/delete-project'
 import { listProjectsUseCase } from '../../application/use-cases/list-projects'
-import { ProjectsHttpGateway } from '../../infrastructure/http/projects-http-gateway'
+import { useProjectsHttpGateway } from '../hooks/useProjectsHttpGateway'
 import { ProjectsError } from '../../domain/project-errors'
 
 import { Badge } from '@/shared/ui/Badge'
@@ -16,8 +16,6 @@ import { Card } from '@/shared/ui/Card'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { Skeleton } from '@/shared/ui/Skeleton'
-
-const gateway = new ProjectsHttpGateway()
 
 type ProjectAction = 'archive' | 'delete'
 
@@ -170,6 +168,7 @@ function ProjectsListSkeleton() {
 }
 
 export function ProjectsListPage() {
+  const gateway = useProjectsHttpGateway()
   const isMountedRef = useRef(true)
   const [viewState, setViewState] = useState<ProjectsViewState>({ status: 'loading' })
   const [reloadToken, setReloadToken] = useState(0)
@@ -210,7 +209,7 @@ export function ProjectsListPage() {
     return () => {
       isActive = false
     }
-  }, [reloadToken])
+  }, [gateway, reloadToken])
 
   async function handleProjectAction(projectAction: ProjectActionState) {
     setActionError(null)

@@ -1,5 +1,60 @@
 # Frontend Implementation: Issue #60 Projects Slice
 
+## 2026-05-17 06:44 UTC - Task: Fix frontend architecture boundary before merging issue #60
+
+### Subagents used
+
+- `frontend-context-architect` (task-scoped architecture review request)
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-context-architecture`
+- `frontend-api-integration`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0005-use-jwt-access-tokens-and-http-only-refresh-cookies.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/contexts/identity-access/presentation/hooks/useAuth.tsx`
+- `frontend/src/contexts/projects/infrastructure/http/projects-http-gateway.ts`
+- `frontend/src/contexts/projects/presentation/hooks/useProjectsHttpGateway.ts`
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `frontend/src/contexts/projects/presentation/ui/ProjectCreateForm.tsx`
+- `frontend/src/contexts/projects/presentation/ui/ProjectDetailsPage.tsx`
+- `frontend/src/shared/auth/auth-session-client.ts`
+- `docs/tasks/issues-60/frontend-implementation.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Summary
+
+- Removed the shared auth wrapper that deep-imported IdentityAccess internals and moved the auth/session client ownership back into IdentityAccess presentation.
+- Added `refreshAccessToken()` to the public auth context so Projects can request token renewal through an explicit boundary instead of reading IdentityAccess infrastructure directly.
+- Converted Projects HTTP access to accept explicit token/refresh dependencies and created a `useProjectsHttpGateway()` composition hook for the Projects presentation layer.
+- Updated Projects list, create, and details screens to consume the gateway hook instead of constructing the HTTP adapter at module scope.
+- Preserved protected `/app/projects` behavior and the create-project redirect to `/app/projects/{projectId}`.
+
+### Verification
+
+- `npm run typecheck` in `frontend/`
+- `npm run lint` in `frontend/`
+- `npm run build` in `frontend/`
+- Targeted source sweep: no `shared/auth` or `contexts/identity-access/**/infrastructure` imports from `frontend/src/shared`, `frontend/src/contexts/projects`, or `frontend/src/app`
+- Targeted source sweep: no raw `fetch(` calls in `frontend/src/contexts/projects` or `frontend/src/app`
+
+### Risks / follow-up
+
+- Manual authenticated smoke testing is still a separate checklist item and was not part of this boundary-only fix.
+- The Projects gateway still depends on the auth presentation hook for its public token boundary; if the auth composition changes again, that hook should remain the only cross-context integration point.
+
 ## 2026-05-17 06:33 UTC - Task: Apply pre-merge fixes for Projects gateway, protected route decision, and create redirect
 
 ### Subagents used

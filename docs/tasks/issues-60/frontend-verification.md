@@ -1,5 +1,24 @@
 # Frontend Verification: Issue #60 Projects Slice
 
+## 2026-05-17 06:44 UTC - Task: Fix frontend architecture boundary before merging issue #60
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Targeted source sweep:
+  - `frontend/src/shared`, `frontend/src/contexts/projects`, `frontend/src/app`
+  - Result: No `shared/auth` or `contexts/identity-access/**/infrastructure` imports found
+- Targeted source sweep:
+  - `frontend/src/contexts/projects`, `frontend/src/app`
+  - Result: No raw `fetch(` calls found
+- Notes: The lint warning introduced during the gateway refactor was fixed by adding the new gateway dependency to the relevant `useEffect` dependency lists before the final lint/build pass.
+
 ## 2026-05-17 06:30 UTC - Task: Add a visible create-project action to the Projects listing page header and empty state
 
 - Command: `npm run typecheck`

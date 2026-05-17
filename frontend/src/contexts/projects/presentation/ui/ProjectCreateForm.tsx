@@ -11,9 +11,7 @@ import { Input } from '@/shared/ui/Input'
 
 import { createProjectUseCase } from '../../application/use-cases/create-project'
 import { ProjectsError } from '../../domain/project-errors'
-import { ProjectsHttpGateway } from '../../infrastructure/http/projects-http-gateway'
-
-const gateway = new ProjectsHttpGateway()
+import { useProjectsHttpGateway } from '../hooks/useProjectsHttpGateway'
 
 type CreateProjectFieldName = 'name' | 'iconKey'
 
@@ -64,6 +62,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export function ProjectCreateForm() {
+  const gateway = useProjectsHttpGateway()
   const router = useRouter()
   const isMountedRef = useRef(true)
   const [name, setName] = useState('')
