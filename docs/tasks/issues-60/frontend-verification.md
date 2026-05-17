@@ -1,0 +1,105 @@
+# Frontend Verification: Issue #60 Projects Slice
+
+## 2026-05-17 06:11 UTC - Task: Validate the slice with lint, typecheck, build, and manual authenticated smoke testing
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Browser smoke attempt: Chrome regular window
+- Result: Blocked
+- Notes: The browser dev-server log showed a hydration warning caused by browser-extension attributes on `<body>` (`__processed_*`, `bis_register`), not by Projects code. Root `suppressHydrationWarning` was added to `frontend/src/app/layout.tsx`, but authenticated navigation still did not settle into a stable `/app/projects` smoke path in this environment.
+- Browser smoke attempt: Chrome Incognito
+- Result: Blocked
+- Notes: Incognito removed the extension noise, but the sign-in flow still did not complete a stable authenticated navigation here. The provided test credentials were used.
+
+## 2026-05-17 05:56 UTC - Task: Update protected navigation so Projects is the first usable slice in the app shell
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Blocked
+- Notes: The environment does not have `npm` or `node` on `PATH`, so automated frontend verification could not be executed here. The sidebar/navigation change was still reviewed statically in `frontend/src/app/app/ProtectedWorkspaceShell.tsx`.
+
+## 2026-05-17 05:53 UTC - Task: Implement archive and delete listing actions with confirmation, error handling, and refresh
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
+
+## 2026-05-17 05:50 UTC - Task: Implement the project details use case and `/app/projects/[projectId]` page
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
+
+## 2026-05-17 05:47 UTC - Task: Implement the project creation use case, form, and `/app/projects/new` page
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
+
+## 2026-05-17 05:32 UTC - Task: Extract the protected `/app` workspace shell into a shared layout for all protected pages
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo script was run through `npm`.
+
+## 2026-05-17 05:36 UTC - Task: Create the `projects` frontend context with domain, application, and infrastructure boundaries
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
+
+## 2026-05-17 05:48 UTC - Task: Implement the Projects listing use case, gateway mapping, and `/app/projects` page
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run build`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
+
+## 2026-05-17 05:40 UTC - Task: Implement the Projects listing use case and HTTP gateway mapping for `GET /api/projects`
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: `pnpm` is not installed in this environment, so the repo scripts were run through `npm`.
