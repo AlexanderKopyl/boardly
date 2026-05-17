@@ -1,5 +1,23 @@
 # Frontend Verification: Issue #60 Projects Slice
 
+## 2026-05-17 06:51 UTC - Task: Remove root-level hydration suppression from the app layout
+
+### Verification target
+
+- Remove root-level `suppressHydrationWarning` from `frontend/src/app/layout.tsx`.
+- Keep the root layout as `<html lang="en">` with a plain `<body>`.
+
+### Evidence
+
+- `rg -n 'suppressHydrationWarning' frontend/src/app/layout.tsx` - no matches
+- `npm run typecheck` in `frontend/` - passed
+- `npm run lint` in `frontend/` - passed
+- `npm run build` in `frontend/` - passed
+
+### Notes
+
+- This is the final pre-merge review-comment fix; the broader manual smoke-validation checklist item remains open.
+
 ## 2026-05-17 06:44 UTC - Task: Fix frontend architecture boundary before merging issue #60
 
 - Command: `npm run typecheck`

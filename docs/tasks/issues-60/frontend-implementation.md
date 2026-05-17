@@ -1,5 +1,45 @@
 # Frontend Implementation: Issue #60 Projects Slice
 
+## 2026-05-17 06:51 UTC - Task: Remove root-level hydration suppression from the app layout
+
+### Subagents used
+
+- `task-verifier` (task-scoped final review check)
+
+### Skills used
+
+- `frontend-task-implementation`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/app/layout.tsx`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-implementation.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Summary
+
+- Removed `suppressHydrationWarning` from the root `<html>` and `<body>` elements in the app layout so the document root now renders as `<html lang="en">` and `<body>`.
+- Recorded the review comment fix in the task checklist as a completed item.
+
+### Verification
+
+- `rg -n 'suppressHydrationWarning' frontend/src/app/layout.tsx`
+- `npm run typecheck` in `frontend/`
+- `npm run lint` in `frontend/`
+- `npm run build` in `frontend/`
+
+### Risks / follow-up
+
+- The remaining unchecked checklist item is the broader manual smoke-validation task, which was intentionally left open.
+
 ## 2026-05-17 06:44 UTC - Task: Fix frontend architecture boundary before merging issue #60
 
 ### Subagents used
