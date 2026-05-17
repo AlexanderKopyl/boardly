@@ -26,7 +26,8 @@ function formatDate(value: string): string {
     return value
   }
 
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'UTC',
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date)

@@ -286,6 +286,94 @@
 
 - The next unchecked item is migrating the current baseline auth and shell screens to the new shared styling foundation.
 
+## 2026-05-17 10:40 EEST - Task: Migrate the current projects baseline screens to the new shared styling foundation where they already contain utility-class markup
+
+### Subagents used
+
+- `frontend-ui-composition` for a scoped review of the projects presentation boundary and the minimal migration path.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-style-system`
+- `frontend-ui-composition`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+- `docs/adr/0007-use-tailwind-css-with-css-variables-and-shadcn-radix-primitives.md`
+- `docs/tasks/issues-61/frontend-checklist.md`
+- `docs/tasks/issues-61/frontend-implementation.md`
+- `docs/tasks/issues-61/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `frontend/src/contexts/projects/presentation/ui/ProjectCreateForm.tsx`
+- `docs/tasks/issues-61/frontend-checklist.md`
+- `docs/tasks/issues-61/frontend-implementation.md`
+- `docs/tasks/issues-61/frontend-verification.md`
+
+### Summary
+
+- Removed the remaining projects-only legacy styling hooks by replacing the `ui-button` link shim with the shared `Button` primitive and a router-driven create-project action.
+- Replaced the `ui-form-stack` and `ui-form-submit` hooks in the project create form with plain Tailwind layout spacing and the shared submit button.
+- Left the project business behavior, routes, and backend-driven data flow untouched.
+
+### Verification
+
+- `npm run typecheck` in `frontend/` succeeded.
+- `npm run lint` in `frontend/` succeeded.
+- `npm run build` in `frontend/` succeeded.
+- Manual browser smoke test in Chrome:
+  - `/app/projects` rendered the migrated projects list with the shared create-project action and project cards.
+  - `/app/projects/new` rendered the migrated project create form with shared form spacing and submit button.
+  - `/app/projects/[projectId]` rendered the project details surface unchanged apart from the shared styling foundation already in place.
+
+### Risks / follow-up
+
+- The projects baseline no longer depends on the old `ui-*` contract, but the next checklist pass should still re-scan for any remaining styling drift in adjacent baseline screens.
+- The smoke test used the existing authenticated workspace session in Chrome, so any layout differences tied to other user states still need separate validation if those states are touched later.
+
+## 2026-05-17 10:55 EEST - Follow-up: Stabilize project date rendering to avoid hydration mismatches
+
+### Subagents used
+
+- None. This was a narrow follow-up fix on the already-implemented projects screens.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-style-system`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/tasks/issues-61/frontend-implementation.md`
+- `docs/tasks/issues-61/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `frontend/src/contexts/projects/presentation/ui/ProjectDetailsPage.tsx`
+
+### Summary
+
+- Replaced locale- and timezone-implicit `Intl.DateTimeFormat(undefined, ...)` calls with explicit `en-US` plus `UTC` formatting in the projects list and details screens.
+- Kept the rendered content deterministic between SSR and the first client render, which removes the hydration mismatch source without using `suppressHydrationWarning`.
+
+### Verification
+
+- `npm run typecheck` in `frontend/` succeeded.
+- `npm run build` in `frontend/` succeeded.
+
+### Risks / follow-up
+
+- If any other screen adds locale-sensitive formatting later, it should use the same deterministic approach or a deliberate client-only render strategy.
+
 ## 2026-05-17 - Task: Put the semantic CSS token baseline on a clean foundation in `frontend/src/app/globals.css` while keeping only true global/base rules there
 
 ### Subagents used

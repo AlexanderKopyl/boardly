@@ -93,3 +93,48 @@
 - Evidence:
   - Next.js compiled successfully after the Input primitive rebuild.
   - Static routes were generated successfully for the current app, auth, and projects surfaces.
+
+## 2026-05-17 10:40 EEST - Projects baseline migration
+
+- Command: `npm run typecheck`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - TypeScript completed successfully after replacing the remaining projects-only legacy styling hooks with shared primitives and plain Tailwind spacing.
+
+- Command: `npm run lint`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - ESLint completed without reporting errors after the projects baseline migration.
+
+- Command: `npm run build`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - Next.js `16.2.6` compiled successfully after the projects baseline migration.
+  - TypeScript finished successfully.
+  - Static routes were generated successfully for `/app/projects`, `/app/projects/new`, and `/app/projects/[projectId]`.
+
+- Manual browser smoke test
+- Scope: `localhost:3000`
+- Result: Passed
+- Evidence:
+  - `/app/projects` rendered the migrated list view with the shared `Button` create-project action and the existing project cards.
+  - `/app/projects/new` rendered the migrated create form with shared spacing, `FormField`, `Input`, and `Button` primitives.
+  - `/app/projects/[projectId]` rendered the project details surface with the shared styling foundation intact.
+
+## 2026-05-17 10:55 EEST - Hydration mismatch stabilization
+
+- Command: `npm run typecheck`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - TypeScript completed successfully after switching the projects date renderers to explicit `en-US` / `UTC` formatting.
+
+- Command: `npm run build`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - Next.js compiled successfully after the date-format stabilization.
+  - Static route generation completed successfully for the current frontend routes.

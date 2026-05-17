@@ -6,5 +6,5 @@
 - [x] Rebuild `frontend/src/shared/ui/Button.tsx` as a shadcn-style primitive with clear variants and loading/disabled behavior.
 - [x] Rebuild `frontend/src/shared/ui/Input.tsx` as a token-driven primitive with invalid/focus/disabled states.
 - [x] Migrate the current baseline auth and shell screens to the new shared styling foundation where they already depend on the old global CSS contract.
-- [ ] Migrate the current projects baseline screens to the new shared styling foundation where they already contain utility-class markup.
-- [ ] Verify the affected frontend surfaces with `build`, `lint`, `typecheck`, and a browser smoke test.
+- [x] Migrate the current projects baseline screens to the new shared styling foundation where they already contain utility-class markup.
+- [x] Verify the affected frontend surfaces with `build`, `lint`, `typecheck`, and a browser smoke test.
