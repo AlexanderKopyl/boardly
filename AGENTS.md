@@ -29,23 +29,48 @@ Use this order by default:
 1. Load durable project guidance: `AGENTS.md`, relevant ADRs, `.codex/config.toml`, relevant skills.
 2. Understand the task contract: goal, non-goals, constraints, and done criteria.
 3. Prefer diff-first and search-first discovery before opening full files.
-4. Read only the minimum task-relevant files.
-5. Plan before editing.
-6. Implement narrowly.
-7. Verify with the smallest relevant command first, then broader checks if needed.
-8. Summarize changed files, rationale, verification, and remaining risks.
+4. Build a minimal context pack when scope/files are unclear.
+5. Read only the minimum task-relevant files.
+6. Plan before editing.
+7. Implement narrowly.
+8. Verify with the smallest relevant command first, then broader checks if needed.
+9. Summarize changed files, rationale, verification, and remaining risks.
 
-Do not give the whole repository to the model mentally. Use durable guidance, narrow retrieval, and resumable task artifacts.
+Do not give the whole repository to the model mentally. Use durable guidance, narrow retrieval, context packs, and resumable task artifacts.
+
+## Context and tool-output discipline
+
+Treat context as a scarce engineering resource.
+
+Rules:
+
+- Prefer `git diff --name-only`, `git diff --stat`, `git grep`, `rg`, symbol search, and targeted file reads before opening full files.
+- Prefer diff-only and section-only reads for large files.
+- Do not paste full logs, full generated files, dependency installs, or broad command output into context.
+- Preserve exact error lines only when they affect the next decision.
+- Use `head`, `tail`, grep filters, line ranges, and summaries for large outputs.
+- Save durable findings into task artifacts instead of carrying raw tool output through the session.
+- Use `<task-folder>/context-pack.md` when the relevant file set is unclear.
+- Use `<task-folder>/context-budget.md` when context is large or likely wasteful.
+- Use `<task-folder>/compaction.md` when the session becomes long/noisy or needs handoff.
+
+Do not reduce context by hiding security, permission, source-of-truth, CQRS bus, frontend auth/session, ADR-0006, ADR-0007, or transaction-boundary risks.
 
 ## Task lifecycle
 
 For managed task work, use task artifacts:
 
 ```text
+<task-folder>/onboarding.md
+<task-folder>/context-pack.md
+<task-folder>/context-budget.md
 <task-folder>/planning.md
 <task-folder>/analysis.md
 <task-folder>/checklist.md
 <task-folder>/implementation.md
+<task-folder>/verification.md
+<task-folder>/agent-metrics.md
+<task-folder>/compaction.md
 ```
 
 Planning and analysis must save artifacts when a task folder is specified.
@@ -172,8 +197,9 @@ Provide or record:
 
 1. Current repository facts.
 2. Relevant ADRs/docs loaded.
-3. Relevant MemPalace memory only if used.
-4. Conflicts between memory and code/docs if any.
-5. Proposed implementation plan.
-6. Verification commands.
-7. Risks and rollback/follow-up notes.
+3. Relevant context pack and context-budget decisions if used.
+4. Relevant MemPalace memory only if used.
+5. Conflicts between memory and code/docs if any.
+6. Proposed implementation plan.
+7. Verification commands.
+8. Risks and rollback/follow-up notes.
