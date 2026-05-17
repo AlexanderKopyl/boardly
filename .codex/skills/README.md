@@ -37,16 +37,24 @@ docs/development/backend/boardly-symfony-developer-rules.md when API/auth/backen
 
 Skills do not replace accepted ADRs or developer rulebooks.
 
-## Task lifecycle skills
+## Context economy skills
 
 | Skill | Use for |
 | --- | --- |
 | `repo-onboarding` | deterministic narrow discovery, candidate files, durable guidance, diff/search-first reads |
+| `context-pack-builder` | build `<task-folder>/context-pack.md` with must-read, maybe-read, do-not-read, evidence, and loading order |
+| `context-budget-audit` | create `<task-folder>/context-budget.md`, estimate context pressure, decide full/section/diff/summarize/skip |
+| `context-compaction` | create resumable memo for long/noisy sessions and handoffs |
+| `agent-evaluation-metrics` | create `<task-folder>/agent-metrics.md` with opened/edited files, tools, verification, assumptions, unsupported claims |
+
+## Task lifecycle skills
+
+| Skill | Use for |
+| --- | --- |
 | `task-planning` | create `<task-folder>/planning.md` with scoped checkbox implementation plan |
 | `task-analysis` | create `<task-folder>/analysis.md` with architecture/security/test analysis |
 | `task-implementation` | execute checkbox plan task-by-task, select subagents per task, update checklist |
 | `verification-evidence` | record exact commands, actual results, not-run reasons, final verification status |
-| `context-compaction` | create resumable memo for long/noisy sessions and handoffs |
 
 ## Frontend lifecycle skills
 
@@ -91,6 +99,25 @@ Skills do not replace accepted ADRs or developer rulebooks.
 | `caveman-response` | short, direct, low-token answers when explicitly requested |
 | `graphify-knowledge-map` | compact knowledge graphs, dependency maps, architecture maps |
 
+## Context economy rules
+
+Use context artifacts to avoid broad, noisy context loading:
+
+```text
+repo-onboarding -> context-pack-builder -> context-budget-audit -> planning/analysis/implementation
+```
+
+Tool-output hygiene:
+
+- prefer `git diff --name-only`, `git diff --stat`, `git grep`, `rg`, symbol search, and targeted file reads;
+- prefer diff-only and section-only reads for large files;
+- do not paste full logs, full generated files, dependency installs, or broad command output;
+- preserve exact error lines only when they affect the next decision;
+- use `head`, `tail`, grep filters, line ranges, and summaries for large outputs;
+- save durable findings into task artifacts instead of carrying raw tool output through the session.
+
+Do not reduce context by hiding security, permission, source-of-truth, CQRS bus, frontend auth/session, ADR-0006, ADR-0007, or transaction-boundary risks.
+
 ## Hard backend controller rule
 
 Whenever a task creates, modifies, or reviews HTTP controllers, Commands, Queries, concrete handlers, or bus configuration, use `symfony-cqrs-bus-boundary`.
@@ -110,26 +137,30 @@ Direct calls like ($this->createProjectHandler)(...), $this->createProjectHandle
 Use the full lifecycle for managed backend/mixed task folders:
 
 ```text
-repo-onboarding -> task-planning -> task-analysis -> task-implementation -> verification-evidence
+repo-onboarding -> context-pack-builder -> context-budget-audit -> task-planning -> task-analysis -> task-implementation -> verification-evidence
 ```
 
 Use the frontend lifecycle for managed frontend task folders:
 
 ```text
-repo-onboarding -> frontend-task-planning -> frontend-task-analysis -> frontend-task-implementation -> verification-evidence
+repo-onboarding -> context-pack-builder -> context-budget-audit -> frontend-task-planning -> frontend-task-analysis -> frontend-task-implementation -> verification-evidence
 ```
 
 Add `context-compaction` when the session is long, noisy, or needs handoff/resume.
+Add `agent-evaluation-metrics` when workflow quality should be measured.
 
 Backend/mixed artifacts:
 
 ```text
 <task-folder>/onboarding.md
+<task-folder>/context-pack.md
+<task-folder>/context-budget.md
 <task-folder>/planning.md
 <task-folder>/analysis.md
 <task-folder>/checklist.md
 <task-folder>/implementation.md
 <task-folder>/verification.md
+<task-folder>/agent-metrics.md
 <task-folder>/compaction.md
 ```
 
@@ -137,11 +168,15 @@ Frontend artifacts:
 
 ```text
 <task-folder>/onboarding.md
+<task-folder>/context-pack.md
+<task-folder>/context-budget.md
 <task-folder>/frontend-planning.md
 <task-folder>/frontend-analysis.md
 <task-folder>/frontend-checklist.md
 <task-folder>/frontend-implementation.md
 <task-folder>/frontend-verification.md
+<task-folder>/verification.md
+<task-folder>/agent-metrics.md
 <task-folder>/compaction.md
 ```
 

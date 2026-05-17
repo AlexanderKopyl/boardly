@@ -149,11 +149,23 @@ path = "skills/repo-onboarding/SKILL.md"
 enabled = true
 
 [[skills.config]]
+path = "skills/context-pack-builder/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/context-budget-audit/SKILL.md"
+enabled = true
+
+[[skills.config]]
 path = "skills/context-compaction/SKILL.md"
 enabled = true
 
 [[skills.config]]
 path = "skills/verification-evidence/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/agent-evaluation-metrics/SKILL.md"
 enabled = true
 
 [permissions.boardly-safe.filesystem]
