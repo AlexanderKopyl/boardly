@@ -1,5 +1,53 @@
 # Frontend Implementation: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Visual polish pass: soften the shell tokens and constrain the projects surface
+
+### Subagents used
+
+- `frontend-ui-composition` for a focused shell/polish review before the final token pass.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `verification-evidence`
+- `frontend-ui-composition`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+- `docs/design/stitch/projects-list/screen.png`
+
+### Files changed
+
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `frontend/src/app/app/ProtectedWorkspaceShell.tsx`
+- `frontend/src/shared/ui/AppShell.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-implementation.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+
+### Summary
+
+- Softened the workspace shell and projects screen tokens to remove the wireframe feel.
+- Constrained the projects content width on large desktop layouts.
+- Made the sidebar, topbar, filter bar, rows, empty/error surfaces, and stats/tip cards read closer to the Stitch reference without changing behavior.
+- Forced the quick stats card and primary CTA back onto the navy token so the blue anchor is visually obvious again.
+
+### Verification
+
+- `npm run typecheck` in `frontend/` passed.
+- `npm run lint` in `frontend/` passed.
+- `npm run build` in `frontend/` passed.
+- Manual Chrome smoke on `/app/projects` in desktop, iPhone SE, and iPad Mini responsive modes passed without visible overflow or layout breakage.
+
+### Risks / follow-up
+
+- The screen now matches the reference much more closely, but the empty-state variant was not separately loaded during the smoke pass.
+- No backend, API, auth, or dependency behavior changed.
+
 ## 2026-05-17 - Correction pass: full-screen Stitch-style shell and Projects List runtime rewrite
 
 ### Subagents used

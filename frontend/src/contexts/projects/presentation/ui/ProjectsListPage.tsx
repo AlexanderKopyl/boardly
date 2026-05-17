@@ -156,7 +156,7 @@ function getActionErrorMessage(error: unknown): string {
 }
 
 function PlusIcon(): ReactNode {
-  return <span aria-hidden="true" className="text-xl leading-none">+</span>
+  return <span aria-hidden="true" className="text-[20px] leading-none">+</span>
 }
 
 function ChevronIcon(): ReactNode {
@@ -182,7 +182,7 @@ function FilterChip({
   readonly value: string
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-[14px] border border-border/70 bg-secondary-container px-3.5 py-2 shadow-sm">
+    <div className="flex items-center gap-2 rounded-[12px] border border-border/60 bg-primary/10 px-3 py-2 shadow-none">
       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
         {label}
       </span>
@@ -200,7 +200,7 @@ function CreateProjectAction({ onClick }: { readonly onClick: () => void }) {
       variant="primary"
       size="md"
       onClick={onClick}
-      className="h-11 rounded-[14px] px-5 text-sm font-semibold shadow-sm"
+      className="h-10 rounded-[12px] px-5 text-sm font-semibold shadow-sm !bg-[var(--navy-700)] !text-white hover:!bg-[var(--navy-800)]"
     >
       {PlusIcon()}
       New Project
@@ -226,13 +226,13 @@ function ProjectsListNotice({
       aria-label={title}
       className={
         tone === 'destructive'
-          ? 'rounded-[18px] border border-destructive/20 bg-destructive/5 px-5 py-6'
-          : 'rounded-[18px] border border-dashed border-border/70 bg-card px-5 py-6 shadow-sm'
+          ? 'rounded-[12px] border border-destructive/20 bg-destructive/5 px-5 py-6'
+          : 'rounded-[12px] border border-border/60 bg-card px-5 py-6 shadow-sm'
       }
     >
       <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-start gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-muted text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-[10px] border border-border/60 bg-muted text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {icon}
           </div>
 
@@ -251,7 +251,7 @@ function ProjectsListNotice({
 function ProjectsListSkeleton() {
   return (
     <section aria-label="Projects loading" className="space-y-6">
-      <div className="rounded-[18px] border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+      <div className="rounded-[12px] border border-border/60 bg-card p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <Skeleton className="h-10 w-48 rounded-[14px]" />
@@ -265,11 +265,11 @@ function ProjectsListSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <article
             key={`project-skeleton-${index}`}
-            className="rounded-[18px] border border-border/70 bg-card px-4 py-4 shadow-sm sm:px-5"
+            className="rounded-[12px] border border-border/60 bg-card px-4 py-4 shadow-sm sm:px-5"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 items-center gap-4">
-                <Skeleton className="size-12 shrink-0 rounded-xl" />
+                <Skeleton className="size-11 shrink-0 rounded-[10px]" />
                 <div className="min-w-0 space-y-2">
                   <Skeleton className="h-5 w-60 max-w-full" />
                   <div className="flex flex-wrap items-center gap-3">
@@ -294,7 +294,7 @@ function ProjectsListSkeleton() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
-        <div className="rounded-[18px] bg-primary p-6 text-primary-foreground shadow-sm">
+        <div className="rounded-[16px] bg-primary p-6 text-primary-foreground shadow-sm">
           <Skeleton className="h-3 w-28 rounded-full bg-white/25" />
           <Skeleton className="mt-3 h-8 w-52 rounded-md bg-white/20" />
           <div className="mt-8 grid grid-cols-3 gap-4">
@@ -313,7 +313,7 @@ function ProjectsListSkeleton() {
           </div>
         </div>
 
-        <div className="rounded-[18px] border border-border/70 bg-card p-6 shadow-sm">
+        <div className="rounded-[16px] border border-border/60 bg-card p-6 shadow-sm">
           <Skeleton className="h-3 w-32 rounded-full" />
           <Skeleton className="mt-3 h-6 w-40 rounded-md" />
           <Skeleton className="mt-4 h-16 w-full rounded-md" />
@@ -343,16 +343,16 @@ function ProjectRow({
   readonly onDelete: () => void
   readonly onConfirmAction: () => void
   readonly onCancelAction: () => void
-}) {
+  }) {
   const isProjectActionPending = pendingAction?.projectId === project.id
   const isSelectedActionPending = isProjectActionPending && pendingAction?.action === activeAction?.action
 
   return (
-    <article className="group rounded-[18px] border border-border/70 bg-card px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-primary/25 hover:bg-surface-container-lowest sm:px-5">
+    <article className="group rounded-[12px] border border-border/60 bg-card px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-primary/20 hover:bg-surface-container-lowest sm:px-5">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div className="flex min-w-0 items-center gap-4">
           <div
-            className={`flex size-12 shrink-0 items-center justify-center rounded-xl border text-[11px] font-semibold uppercase tracking-[0.22em] ${getIconTileClasses(
+            className={`flex size-11 shrink-0 items-center justify-center rounded-[10px] border text-[11px] font-semibold uppercase tracking-[0.22em] ${getIconTileClasses(
               project.status,
             )}`}
           >
@@ -362,12 +362,12 @@ function ProjectRow({
           <div className="min-w-0">
             <Link
               href={`/app/projects/${project.id}`}
-              className="block max-w-full truncate text-[15px] font-semibold tracking-tight text-foreground transition-colors hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:text-base"
+              className="block max-w-full truncate text-[16px] font-semibold tracking-tight text-foreground transition-colors hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {project.name}
             </Link>
 
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 {CalendarIcon()}
                 Created {formatCreatedAt(project.createdAt)}
@@ -378,13 +378,13 @@ function ProjectRow({
 
         <div className="flex min-w-0 flex-col items-start gap-3 lg:items-end">
           <div className="flex items-center gap-3">
-            <Badge variant={getStatusVariant(project.status)} className="rounded-full px-3 py-1.5">
+            <Badge variant={getStatusVariant(project.status)} className="rounded-full px-2.5 py-1 text-[10px] tracking-[0.18em]">
               {getStatusLabel(project.status)}
             </Badge>
 
             <Link
               href={`/app/projects/${project.id}`}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               View Details
               {ChevronIcon()}
@@ -397,7 +397,7 @@ function ProjectRow({
                 variant="outline"
                 size="sm"
                 disabled={rowActionDisabled}
-                className="h-8 rounded-md px-3 text-xs font-semibold"
+                className="h-8 rounded-[10px] border-border/60 px-3 text-xs font-semibold"
                 onClick={onArchive}
               >
                 Archive
@@ -408,7 +408,7 @@ function ProjectRow({
               variant="ghost"
               size="sm"
               disabled={rowActionDisabled}
-              className="h-8 rounded-md px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
+              className="h-8 rounded-[10px] px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
               onClick={onDelete}
             >
               Delete
@@ -418,7 +418,7 @@ function ProjectRow({
       </div>
 
       {activeAction !== null ? (
-        <div className="mt-4 rounded-[16px] border border-border/70 bg-muted/35 p-4">
+        <div className="mt-4 rounded-[12px] border border-border/60 bg-muted/35 p-4">
           <div className="space-y-1.5">
             <p className="text-sm font-semibold tracking-tight text-foreground">
               {getActionTitle(activeAction.action)}
@@ -454,7 +454,7 @@ function ProjectRow({
       ) : null}
 
       {actionError !== null && actionError.projectId === project.id ? (
-        <Alert variant="destructive" className="mt-4 rounded-[16px] border border-destructive/20 bg-destructive/5">
+        <Alert variant="destructive" className="mt-4 rounded-[12px] border border-destructive/15 bg-destructive/5">
           {actionError.action === 'archive' ? 'Archive project failed.' : 'Delete project failed.'}{' '}
           {actionError.message}
         </Alert>
@@ -474,9 +474,9 @@ function ProjectsSummary({
 }) {
   return (
     <section className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
-      <div className="rounded-[18px] bg-primary p-6 text-primary-foreground shadow-sm">
+      <div className="rounded-[16px] bg-[var(--navy-700)] p-6 text-white shadow-sm">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary-foreground/75">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">
             Quick Stats
           </p>
           <h3 className="text-[22px] font-medium tracking-tight">Portfolio Overview</h3>
@@ -484,19 +484,19 @@ function ProjectsSummary({
 
         <div className="mt-8 grid grid-cols-3 gap-4">
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
               Total Projects
             </span>
             <span className="mt-1 block text-[40px] font-extrabold leading-none">{totalCount}</span>
           </div>
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
               Active
             </span>
             <span className="mt-1 block text-[40px] font-extrabold leading-none">{activeCount}</span>
           </div>
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
               Archived
             </span>
             <span className="mt-1 block text-[40px] font-extrabold leading-none">{archivedCount}</span>
@@ -504,12 +504,12 @@ function ProjectsSummary({
         </div>
       </div>
 
-      <div className="rounded-[18px] border border-border/70 bg-card p-6 shadow-sm">
-        <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-            Workspace Tip
-          </p>
-          <h3 className="text-[22px] font-medium tracking-tight text-foreground">Efficient Archiving</h3>
+        <div className="rounded-[16px] border border-border/60 bg-card p-6 shadow-sm">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
+              Workspace Tip
+            </p>
+            <h3 className="text-[22px] font-medium tracking-tight text-foreground">Efficient Archiving</h3>
         </div>
         <p className="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
           Archiving projects keeps your list clean while preserving history for future audits.
@@ -613,7 +613,7 @@ export function ProjectsListPage() {
   const archivedProjectCount = readyProjects.filter((project) => project.status === 'archived').length
 
   return (
-    <div className="space-y-6 lg:space-y-8">
+    <div className="w-full max-w-[1240px] space-y-6 lg:space-y-8">
       <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -644,7 +644,7 @@ export function ProjectsListPage() {
       {viewState.status !== 'loading' ? (
         <section
           aria-label="Project filters"
-          className="flex flex-col gap-4 rounded-[18px] border border-border/70 bg-card px-4 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between sm:px-5"
+          className="flex flex-col gap-4 rounded-[12px] border border-border/60 bg-card px-4 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between sm:px-5"
         >
           <div className="flex flex-wrap items-center gap-2">
             <FilterChip label="Status:" value="All Projects" />

@@ -52,9 +52,9 @@ export function SidebarNav({
                     data-disabled="true"
                     data-current={item.current || undefined}
                     className={cn(
-                      'flex items-center gap-3 rounded-[18px] px-4 py-3 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-[16px] px-4 py-3 text-sm font-medium transition-colors',
                       item.current
-                        ? 'bg-white/10 text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                        ? 'bg-white/[0.12] text-[var(--sidebar-foreground)]'
                         : 'text-[var(--sidebar-muted)]',
                     )}
                   >
@@ -75,10 +75,10 @@ export function SidebarNav({
                     aria-current={item.current ? 'page' : undefined}
                     data-current={item.current || undefined}
                     className={cn(
-                      'flex items-center gap-3 rounded-[18px] px-4 py-3 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-[16px] px-4 py-3 text-sm font-medium transition-colors',
                       item.current
-                        ? 'bg-white/10 text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                        : 'text-[var(--sidebar-muted)] hover:bg-white/5 hover:text-[var(--sidebar-foreground)]',
+                        ? 'bg-white/[0.12] text-[var(--sidebar-foreground)]'
+                        : 'text-[var(--sidebar-muted)] hover:bg-white/[0.06] hover:text-[var(--sidebar-foreground)]',
                     )}
                   >
                     {item.icon ? <span className="shrink-0 text-[var(--sidebar-foreground)]">{item.icon}</span> : null}

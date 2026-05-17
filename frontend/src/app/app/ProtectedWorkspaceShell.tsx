@@ -92,7 +92,7 @@ function WorkspaceTopbar(): ReactElement {
             <SearchIcon />
           </span>
           <input
-            className="h-10 w-72 rounded-full border border-border/70 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/80 shadow-sm outline-none transition-colors focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+            className="h-10 w-72 rounded-full border border-border/60 bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/80 shadow-none outline-none transition-colors focus:border-primary/[0.35] focus:ring-2 focus:ring-primary/[0.15]"
             placeholder="Search projects..."
             type="search"
           />
@@ -101,7 +101,7 @@ function WorkspaceTopbar(): ReactElement {
         <button
           type="button"
           aria-label="Notifications"
-          className="inline-flex size-10 items-center justify-center rounded-full border border-border/70 bg-background text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
+          className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <BellIcon />
         </button>
@@ -109,12 +109,12 @@ function WorkspaceTopbar(): ReactElement {
         <button
           type="button"
           aria-label="Help"
-          className="inline-flex size-10 items-center justify-center rounded-full border border-border/70 bg-background text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
+          className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <HelpIcon />
         </button>
 
-        <div className="flex size-10 items-center justify-center rounded-full border border-border/70 bg-secondary-container text-sm font-semibold text-secondary-foreground shadow-sm">
+        <div className="flex size-9 items-center justify-center rounded-full border border-border/60 bg-card text-[11px] font-semibold tracking-[0.08em] text-secondary-foreground shadow-none">
           AK
         </div>
       </div>
@@ -148,7 +148,7 @@ function WorkspaceSidebar({ pathname }: { pathname: string }): ReactElement {
 
   return (
     <div className="flex h-full flex-col px-4 py-5">
-      <div className="flex items-start gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <div className="flex items-start gap-3 px-1 py-2">
         <div className="grid size-10 shrink-0 grid-cols-2 gap-1 rounded-xl bg-white p-2 text-[var(--sidebar)]">
           <span className="rounded-[2px] bg-current" />
           <span className="rounded-[2px] bg-current" />
@@ -170,7 +170,7 @@ function WorkspaceSidebar({ pathname }: { pathname: string }): ReactElement {
         <div className="mt-auto pt-6">
           <Link
             href="/app/projects/new"
-            className="inline-flex h-12 w-full items-center justify-center rounded-[18px] border border-white/10 bg-white/10 px-4 text-sm font-semibold text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[16px] bg-white/[0.12] px-4 text-sm font-semibold text-[var(--sidebar-foreground)] transition-colors hover:bg-white/[0.18] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             New Project
           </Link>

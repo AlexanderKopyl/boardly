@@ -1,5 +1,50 @@
 # Frontend Verification: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Final visual polish pass verification
+
+### Visual evidence
+
+- Current screen: live Chrome at `http://127.0.0.1:3000/app/projects`
+- Target screen: `docs/design/stitch/projects-list/screen.png`
+
+### Visual polish checklist
+
+- [x] Borders no longer read as black/heavy.
+- [x] Main content is constrained on wide desktop.
+- [x] Sidebar is closer to the Stitch target.
+- [x] Topbar is closer to the Stitch target.
+- [x] Filter bar is closer to the Stitch target.
+- [x] Project row density is closer to the Stitch target.
+- [x] Quick stats card reads as the blue Stitch-style block.
+- [x] Empty state is no longer wireframe-like.
+
+### Commands run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run typecheck` in `frontend/` | Passed | `tsc --noEmit` completed successfully after the final polish pass. |
+| `npm run lint` in `frontend/` | Passed | `eslint .` completed successfully after the final polish pass. |
+| `npm run build` in `frontend/` | Passed | `next build` completed successfully and produced the app routes. |
+
+### Manual checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| `/app/projects` desktop rendering | Passed | Verified in Chrome against the local dev server. |
+| Mobile viewport smoke | Passed | Verified in Chrome DevTools responsive emulation using `iPhone SE` with no visible horizontal overflow. |
+| Tablet viewport smoke | Passed | Verified in Chrome DevTools responsive emulation using `iPad Mini` with no visible horizontal overflow. |
+| Sidebar/topbar/filter/row polish | Passed | Borders, density, and width matched the target much more closely than before. |
+| Quick stats block | Passed | The stats card reads as the blue/navy anchor again. |
+
+### Remaining visual mismatches
+
+- No major visual mismatches were observed in the smoke pass.
+- The empty-state variant was restyled in code but was not separately loaded during the live browser pass.
+
+### Final verification status
+
+VERIFIED
+
 ## 2026-05-17 - CURRENT vs TARGET mismatch table from live Chrome and Stitch reference
 
 ### Visual evidence
