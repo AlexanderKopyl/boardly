@@ -52,10 +52,10 @@ export function SidebarNav({
                     data-disabled="true"
                     data-current={item.current || undefined}
                     className={cn(
-                      'flex items-center gap-3 rounded-[16px] border px-4 py-3 text-sm font-medium transition-colors',
+                      'flex items-center gap-4 rounded-lg px-4 py-2 text-sm font-bold transition-all duration-150',
                       item.current
-                        ? 'border-white/10 bg-white/[0.12] text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                        : 'border-transparent text-[var(--sidebar-muted)]',
+                        ? 'bg-white/10 text-white'
+                        : 'text-white/70 hover:bg-white/5 hover:text-white',
                     )}
                   >
                     {item.icon ? <span className="shrink-0 text-[var(--sidebar-foreground)]">{item.icon}</span> : null}
@@ -75,10 +75,10 @@ export function SidebarNav({
                     aria-current={item.current ? 'page' : undefined}
                     data-current={item.current || undefined}
                     className={cn(
-                      'flex items-center gap-3 rounded-[16px] border px-4 py-3 text-sm font-medium transition-colors',
+                      'flex items-center gap-4 rounded-lg px-4 py-2 text-sm font-bold transition-all duration-150',
                       item.current
-                        ? 'border-white/10 bg-white/[0.12] text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                        : 'border-transparent text-[var(--sidebar-muted)] hover:border-white/10 hover:bg-white/[0.06] hover:text-[var(--sidebar-foreground)]',
+                        ? 'bg-white/10 text-white'
+                        : 'text-white/70 hover:bg-white/5 hover:text-white',
                     )}
                   >
                     {item.icon ? <span className="shrink-0 text-[var(--sidebar-foreground)]">{item.icon}</span> : null}

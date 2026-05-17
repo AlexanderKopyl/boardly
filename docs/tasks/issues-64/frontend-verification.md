@@ -1,5 +1,85 @@
 # Frontend Verification: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Final geometry correction pass: layout widths and density
+
+### Visual evidence
+
+- Current screen: Latest Chrome screenshot at `http://localhost:3000/app/projects` via browser_subagent.
+- Target screen: `docs/design/stitch/projects-list/projects_list.png`
+
+### Visual geometry checklist
+
+- [x] Projects List max width constrained to `1040px` with `mx-auto` centering.
+- [x] Projects List Title font size and heading structure scaled down to match target.
+- [x] Filter bar height compressed (less padding, tightened gap to row list).
+- [x] Row cards geometry tightened: `h-11 w-11 rounded-md` icons, tight `p-3` vertical padding, compact row height `min-h-[72px]`.
+- [x] Heavy borders normalized to hairline `border-border`.
+- [x] Row radii reduced to `rounded-lg` (8px).
+- [x] Spacing between rows clamped to `8px`.
+- [x] Project row layout directly reflects Stitch layout (icon left, text center, status and details link perfectly aligned right).
+
+### Commands run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run typecheck` in `frontend/` | Passed | `tsc --noEmit` completed successfully without any newly introduced issues. |
+| `npm run lint` in `frontend/` | Passed | `eslint .` completed successfully. |
+| `npm run build` in `frontend/` | Passed | `next build` completed successfully. |
+
+### Manual checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| `/app/projects` desktop rendering | Passed | Verified with browser_subagent snapshot showing correct max-width bounds and condensed list density. |
+
+### Final verification status
+
+VERIFIED
+
+
+## 2026-05-17 - Final UI align using downloaded Stitch artifacts
+
+### Visual evidence
+
+- Current screen: Latest Chrome screenshot at `http://localhost:3000/app/projects` via browser_subagent.
+- Target screen: `docs/design/stitch/projects-list/projects_list.png`
+- Target HTML: `docs/design/stitch/projects-list/projects_list.html`
+
+### Visual polish checklist
+
+- [x] Copied and used `projects_list.html` and `projects_list.png` from `stitch_downloads/`.
+- [x] Sidebar width is 280px, background is `bg-primary`, matching the Target Stitch navy color exactly.
+- [x] Brand header updated to correctly match Stitch spacing, radii, and `Boardly` typography.
+- [x] Sidebar nav items updated from `rounded-2xl` to `rounded-lg` with exact Stitch padding and gap.
+- [x] Projects List max width constrained to `1280px` with `mx-auto` centering.
+- [x] Projects List Title font size and heading structure matches `32px` instead of `36/40px`.
+- [x] Row cards dense layout matching: `w-12 h-12 rounded-lg` icons, tight padding (`p-4`), correct `17px` bold fonts.
+- [x] Removed drop-shadow from row cards to mirror flat Stitch design with soft borders.
+- [x] Corrected Quick Stats panel layout to exactly 3 columns using accurate grid properties and font sizes.
+- [x] Removed unnecessary "12 PROJECTS" badge from the main title area since it wasn't in Stitch Target header.
+
+### Commands run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run typecheck` in `frontend/` | Passed | `tsc --noEmit` completed successfully, resolving unused variable warning. |
+| `npm run lint` in `frontend/` | Passed | `eslint .` completed successfully. |
+| `npm run build` in `frontend/` | Passed | `next build` completed successfully. |
+
+### Manual checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| `/app/projects` desktop rendering | Passed | Verified with browser_subagent logging in and accessing the list. |
+| Verify New Project Link | Passed | Link routes properly to `/app/projects/new`. |
+| View Details Link | Passed | Link routes to `/app/projects/[projectId]`. |
+| Archive / Delete Actions | Passed | Buttons show inline actions properly in the UI. |
+
+### Final verification status
+
+VERIFIED
+
+
 ## 2026-05-17 - Geometry correction pass: tighten shell offsets and row rhythm
 
 ### Visual evidence

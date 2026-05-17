@@ -1,5 +1,96 @@
 # Frontend Implementation: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Final geometry correction pass: layout widths and density
+
+### Subagents used
+
+- `browser_subagent` to visually check and confirm the layout matches `projects_list.png`.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+- `docs/design/stitch/projects-list/projects_list.html`
+- `docs/design/stitch/projects-list/projects_list.png`
+
+### Files changed
+
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+
+### Summary
+
+- **Constrained Content Width**: Reduced layout `max-w` to `1040px` centered inside the main area.
+- **Header Geometry**: Minimized top spacing (`space-y-6` and `mb-4`) and aligned the New Project button to perfectly fit the constrained right edge. Adjusted Title scale to tight `32px` with `weight 700` and subtitle to muted `14px`.
+- **Filter Bar**: Shrunk filter bar vertical height by decreasing padding to `px-4 py-2` and `gap-4`. Removed shadow and reduced margin to `mb-3` to tighten gap to the first row (12px gap).
+- **Row Cards**: Height compacted with `lg:min-h-[72px]`. Border radii sharpened to `rounded-lg`. Icon tile reduced to `44px` (`h-11 w-11 rounded-md`). Heavy borders reduced to subtle `border-border`.
+- **Row Layout Alignment**: Re-arranged inline row actions. Icon, name, and date correctly positioned in the left/middle; status badge and View Details aligned perfectly on the right. Archive/Delete affordances compacted into an inline hover block adjacent to View Details to preserve density.
+- **Summary Cards**: `mt-6` (24px gap) before stats cards applied to precisely mimic the target reference.
+
+### Verification
+
+- `npm run typecheck`, `npm run lint`, and `npm run build` executed successfully.
+- `browser_subagent` captured screen verified perfectly tight enterprise SaaS density on `/app/projects`.
+
+### Risks / follow-up
+
+- The layout is extremely dense, which matches the required enterprise Stitch aesthetic. If additional inline actions are needed per project, we must be careful with hover action space limits.
+
+
+## 2026-05-17 - Final UI align using downloaded Stitch artifacts
+
+### Subagents used
+
+- `browser_subagent` to visually check the UI mismatch and verify functionality.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `verification-evidence`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+- `docs/design/stitch/projects-list/projects_list.html`
+- `docs/design/stitch/projects-list/projects_list.png`
+
+### Files changed
+
+- `frontend/src/app/app/ProtectedWorkspaceShell.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+
+### Summary
+
+- Copied `stitch_downloads/projects_list.html` and `projects_list.png` to `docs/design/stitch/projects-list/`.
+- Treat these local downloaded artifacts as the single source of truth for the Projects List redesign.
+- Updated `ProtectedWorkspaceShell.tsx` and `SidebarNav.tsx` to match the exact padding, rounded corners, spacing, and brand block layout of the Stitch sidebar. Passed the `!bg-primary` custom class to `AppShell` so it renders in the correct navy color.
+- Rewrote the main Projects List structure in `ProjectsListPage.tsx` to align exactly with `projects_list.html`. Changes include:
+  - Constrained layout width (`1280px` max with `mx-auto`).
+  - Font size adjustments on page title and rows (e.g. `text-3xl`, `text-[17px] font-bold`).
+  - Added strict compact padding to project rows (`h-12 w-12` tiles instead of 52px).
+  - Adjusted row border colors and hover states to exactly match the target.
+  - Adjusted Quick Stats summary layout to the exact `grid-cols-3` layout without shadows.
+
+### Verification
+
+- `npm run typecheck` passed (fixed an unused variable warning).
+- `npm run lint` passed.
+- `npm run build` passed.
+- The `browser_subagent` logged in using `alexander.kopyl+boardly@example.com` / `Password123!` and manually navigated to `/app/projects`.
+
+### Risks / follow-up
+
+- Design alignment is complete and uses only existing CSS variables and generic UI components. No APIs or backend behavior changed.
+
+
 ## 2026-05-17 - Geometry correction pass: tighten desktop shell offsets and soften row chrome
 
 ### Subagents used

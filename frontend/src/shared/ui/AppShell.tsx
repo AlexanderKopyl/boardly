@@ -62,8 +62,8 @@ export function AppShell({
         ) : null}
         <main
           className={cn(
-            'min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8',
-            header ? 'lg:pt-16' : undefined,
+            'min-w-0 flex-1 px-4 pb-6 pt-20 sm:px-6 lg:px-8 lg:pb-8',
+            header ? 'lg:pt-24' : 'lg:pt-8',
             mainClassName,
           )}
         >

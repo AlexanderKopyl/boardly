@@ -12,7 +12,6 @@ import { ProjectsError } from '../../domain/project-errors'
 import { useProjectsHttpGateway } from '../hooks/useProjectsHttpGateway'
 
 import { Alert } from '@/shared/ui/Alert'
-import { Badge } from '@/shared/ui/Badge'
 import { Button } from '@/shared/ui/Button'
 import { Skeleton } from '@/shared/ui/Skeleton'
 
@@ -78,22 +77,6 @@ function getStatusLabel(status: string): string {
   return status
 }
 
-function getStatusVariant(status: string) {
-  if (status === 'active') {
-    return 'success' as const
-  }
-
-  if (status === 'archived') {
-    return 'warning' as const
-  }
-
-  if (status === 'deleted') {
-    return 'destructive' as const
-  }
-
-  return 'neutral' as const
-}
-
 function getIconTileClasses(status: string): string {
   if (status === 'active') {
     return 'border-primary/15 bg-primary/10 text-primary'
@@ -156,11 +139,20 @@ function getActionErrorMessage(error: unknown): string {
 }
 
 function PlusIcon(): ReactNode {
-  return <span aria-hidden="true" className="text-[20px] leading-none">+</span>
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
+  )
 }
 
 function ChevronIcon(): ReactNode {
-  return <span aria-hidden="true" className="text-base leading-none">›</span>
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4">
+      <path fill="currentColor" d="m9.25 18.75-.75-.75 6-6-6-6 .75-.75 6.75 6.75-6.75 6.75Z" />
+    </svg>
+  )
 }
 
 function CalendarIcon(): ReactNode {
@@ -182,14 +174,13 @@ function FilterChip({
   readonly value: string
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-[12px] border border-border/40 bg-primary/10 px-3 py-2 shadow-none">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
+    <div className="flex items-center gap-1 rounded-md border border-[#c5c5d5] bg-[#e8eeff] px-2 py-1">
+      <span className="text-[11px] font-bold uppercase tracking-wider text-[#5e656d]">
         {label}
       </span>
-      <span className="text-sm font-semibold text-foreground">{value}</span>
-      <span aria-hidden="true" className="text-secondary">
-        ▾
-      </span>
+      <select className="cursor-pointer border-none bg-transparent p-0 pr-6 text-sm font-bold text-[#141c2a] focus:ring-0">
+        <option>{value}</option>
+      </select>
     </div>
   )
 }
@@ -198,9 +189,8 @@ function CreateProjectAction({ onClick }: { readonly onClick: () => void }) {
   return (
     <Button
       variant="primary"
-      size="md"
       onClick={onClick}
-      className="h-10 rounded-[12px] px-5 text-sm font-semibold shadow-sm !bg-[var(--navy-700)] !text-white hover:!bg-[var(--navy-800)]"
+      className="flex h-[40px] items-center gap-2 rounded-lg bg-primary px-6 py-2 font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90 active:scale-95"
     >
       {PlusIcon()}
       New Project
@@ -226,11 +216,11 @@ function ProjectsListNotice({
       aria-label={title}
       className={
         tone === 'destructive'
-          ? 'rounded-[12px] border border-destructive/20 bg-destructive/5 px-5 py-6'
-          : 'rounded-[12px] border border-border/40 bg-card px-5 py-6 shadow-sm'
+          ? 'rounded-lg border border-border bg-destructive/5 px-4 py-4'
+          : 'rounded-lg border border-border bg-card px-4 py-4 shadow-sm'
       }
     >
-      <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-start gap-4">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-[10px] border border-border/40 bg-muted text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {icon}
@@ -251,25 +241,25 @@ function ProjectsListNotice({
 function ProjectsListSkeleton() {
   return (
     <section aria-label="Projects loading" className="space-y-6">
-      <div className="rounded-[12px] border border-border/40 bg-card p-4 shadow-sm sm:p-5">
+      <div className="rounded-xl border border-border/40 bg-card p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <Skeleton className="h-10 w-48 rounded-[14px]" />
             <Skeleton className="h-10 w-52 rounded-[14px]" />
           </div>
-          <Skeleton className="h-5 w-52 rounded-full lg:ml-auto" />
+          <Skeleton className="h-4 w-40 rounded-full lg:ml-auto" />
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {Array.from({ length: 4 }).map((_, index) => (
           <article
             key={`project-skeleton-${index}`}
-            className="rounded-[12px] border border-border/40 bg-card px-4 py-4 shadow-sm sm:px-5"
+            className="rounded-xl border border-border/40 bg-card p-4 shadow-sm sm:p-5"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex min-w-0 items-center gap-4">
-                <Skeleton className="size-11 shrink-0 rounded-[10px]" />
+              <div className="flex min-w-0 items-center gap-6">
+                <Skeleton className="size-12 shrink-0 rounded-lg" />
                 <div className="min-w-0 space-y-2">
                   <Skeleton className="h-5 w-60 max-w-full" />
                   <div className="flex flex-wrap items-center gap-3">
@@ -283,40 +273,36 @@ function ProjectsListSkeleton() {
                   <Skeleton className="h-7 w-20 rounded-full" />
                   <Skeleton className="h-5 w-24" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-8 w-24 rounded-md" />
-                  <Skeleton className="h-8 w-20 rounded-md" />
-                </div>
               </div>
             </div>
           </article>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
-        <div className="rounded-[16px] bg-primary p-6 text-primary-foreground shadow-sm">
+      <div className="grid gap-6 lg:grid-cols-[1.65fr_1fr]">
+        <div className="rounded-xl bg-primary p-6 text-primary-foreground shadow-sm">
           <Skeleton className="h-3 w-28 rounded-full bg-white/25" />
-          <Skeleton className="mt-3 h-8 w-52 rounded-md bg-white/20" />
-          <div className="mt-8 grid grid-cols-3 gap-4">
-            <div className="space-y-2">
+          <Skeleton className="mt-2 h-6 w-40 rounded-md bg-white/20" />
+          <div className="mt-6 grid grid-cols-3 gap-4">
+            <div className="space-y-1.5">
               <Skeleton className="h-3 w-20 rounded-full bg-white/20" />
-              <Skeleton className="h-10 w-16 rounded-md bg-white/20" />
+              <Skeleton className="h-8 w-12 rounded-md bg-white/20" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Skeleton className="h-3 w-20 rounded-full bg-white/20" />
-              <Skeleton className="h-10 w-16 rounded-md bg-white/20" />
+              <Skeleton className="h-8 w-12 rounded-md bg-white/20" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Skeleton className="h-3 w-20 rounded-full bg-white/20" />
-              <Skeleton className="h-10 w-16 rounded-md bg-white/20" />
+              <Skeleton className="h-8 w-12 rounded-md bg-white/20" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-[16px] border border-border/40 bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border/40 bg-card p-6 shadow-sm">
           <Skeleton className="h-3 w-32 rounded-full" />
-          <Skeleton className="mt-3 h-6 w-40 rounded-md" />
-          <Skeleton className="mt-4 h-16 w-full rounded-md" />
+          <Skeleton className="mt-2 h-6 w-40 rounded-md" />
+          <Skeleton className="mt-3 h-12 w-full rounded-md" />
         </div>
       </div>
     </section>
@@ -348,11 +334,11 @@ function ProjectRow({
   const isSelectedActionPending = isProjectActionPending && pendingAction?.action === activeAction?.action
 
   return (
-    <article className="group rounded-[12px] border border-border/40 bg-card px-4 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-primary/20 hover:bg-surface-container-lowest sm:px-5 lg:min-h-[88px] lg:px-5 lg:py-4">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div className="flex min-w-0 items-center gap-4">
+    <article className="group rounded-xl border border-[#c5c5d5] bg-white p-4 transition-all hover:border-[#1d389d] hover:bg-[#f0f3ff] lg:min-h-[84px]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-6">
           <div
-            className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[12px] border text-[11px] font-semibold uppercase tracking-[0.22em] ${getIconTileClasses(
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-none text-[13px] font-bold tracking-wider ${getIconTileClasses(
               project.status,
             )}`}
           >
@@ -362,7 +348,7 @@ function ProjectRow({
           <div className="min-w-0">
             <Link
               href={`/app/projects/${project.id}`}
-              className="block max-w-full truncate text-[16px] font-semibold tracking-tight text-foreground transition-colors hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="block max-w-full truncate text-[17px] font-bold text-foreground transition-colors hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {project.name}
             </Link>
@@ -376,31 +362,17 @@ function ProjectRow({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col items-start gap-3 lg:self-center lg:items-end">
-          <div className="flex items-center gap-3">
-            <Badge variant={getStatusVariant(project.status)} className="rounded-full border border-border/40 px-2.5 py-1 text-[10px] tracking-[0.18em]">
-              {getStatusLabel(project.status)}
-            </Badge>
-
-            <Link
-              href={`/app/projects/${project.id}`}
-              className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              View Details
-              {ChevronIcon()}
-            </Link>
-          </div>
-
+        <div className="flex min-w-0 items-center gap-4 lg:justify-end">
           <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             {project.status === 'active' ? (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={rowActionDisabled}
-              className="h-8 rounded-[10px] border-border/40 px-3 text-xs font-semibold"
-              onClick={onArchive}
-            >
-              Archive
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={rowActionDisabled}
+                className="h-8 rounded-md border-border/40 px-3 text-xs font-semibold"
+                onClick={onArchive}
+              >
+                Archive
               </Button>
             ) : null}
 
@@ -408,11 +380,25 @@ function ProjectRow({
               variant="ghost"
               size="sm"
               disabled={rowActionDisabled}
-              className="h-8 rounded-[10px] px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-muted-foreground hover:text-foreground"
               onClick={onDelete}
             >
               Delete
             </Button>
+          </div>
+
+          <div className="flex items-center gap-8">
+            <span className="rounded-full border border-green-200 bg-green-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-green-800">
+              {getStatusLabel(project.status)}
+            </span>
+
+            <Link
+              href={`/app/projects/${project.id}`}
+              className="group/link flex items-center gap-1 text-[13px] font-bold text-primary transition-all hover:underline"
+            >
+              View Details
+              {ChevronIcon()}
+            </Link>
           </div>
         </div>
       </div>
@@ -454,7 +440,7 @@ function ProjectRow({
       ) : null}
 
       {actionError !== null && actionError.projectId === project.id ? (
-        <Alert variant="destructive" className="mt-4 rounded-[12px] border border-destructive/15 bg-destructive/5">
+        <Alert variant="destructive" className="mt-4 rounded-lg border border-destructive/15 bg-destructive/5">
           {actionError.action === 'archive' ? 'Archive project failed.' : 'Delete project failed.'}{' '}
           {actionError.message}
         </Alert>
@@ -473,45 +459,45 @@ function ProjectsSummary({
   readonly archivedCount: number
 }) {
   return (
-    <section className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
-      <div className="rounded-[16px] bg-[var(--navy-700)] p-6 text-white shadow-sm">
+    <section className="mt-8 grid gap-6 lg:grid-cols-3">
+      <div className="rounded-xl bg-[#1d389d] p-6 text-white lg:col-span-2 flex flex-col justify-between min-h-[160px]">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/80">
             Quick Stats
           </p>
-          <h3 className="text-[22px] font-medium tracking-tight">Portfolio Overview</h3>
+          <h3 className="text-[22px] font-bold tracking-tight">Portfolio Overview</h3>
         </div>
 
-        <div className="mt-8 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-3 gap-4">
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-white/60">
               Total Projects
             </span>
-            <span className="mt-1 block text-[40px] font-extrabold leading-none">{totalCount}</span>
+            <span className="mt-1 block text-3xl font-extrabold leading-none tracking-tight">{totalCount}</span>
           </div>
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-white/60">
               Active
             </span>
-            <span className="mt-1 block text-[40px] font-extrabold leading-none">{activeCount}</span>
+            <span className="mt-1 block text-3xl font-extrabold leading-none tracking-tight">{activeCount}</span>
           </div>
           <div>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-white/60">
               Archived
             </span>
-            <span className="mt-1 block text-[40px] font-extrabold leading-none">{archivedCount}</span>
+            <span className="mt-1 block text-3xl font-extrabold leading-none tracking-tight">{archivedCount}</span>
           </div>
         </div>
       </div>
 
-        <div className="rounded-[16px] border border-border/40 bg-card p-6 shadow-sm">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-              Workspace Tip
-            </p>
-            <h3 className="text-[22px] font-medium tracking-tight text-foreground">Efficient Archiving</h3>
+      <div className="rounded-xl border border-[#c5c5d5] bg-[#f0f3ff] p-6 relative overflow-hidden group flex flex-col justify-between min-h-[160px]">
+        <div className="relative z-10 space-y-1">
+          <p className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-[#00207e]">
+            Workspace Tip
+          </p>
+          <h3 className="text-[17px] font-bold text-[#141c2a]">Efficient Archiving</h3>
         </div>
-        <p className="mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
+        <p className="mt-4 max-w-sm text-sm leading-7 text-[#585f67]">
           Archiving projects keeps your list clean while preserving history for future audits.
         </p>
       </div>
@@ -601,37 +587,23 @@ export function ProjectsListPage() {
     }
   }
 
-  const projectCount =
-    viewState.status === 'ready'
-      ? viewState.projects.length
-      : viewState.status === 'empty'
-        ? 0
-        : null
-  const showProjectCount = projectCount !== null
   const readyProjects = viewState.status === 'ready' ? viewState.projects : []
   const activeProjectCount = readyProjects.filter((project) => project.status === 'active').length
   const archivedProjectCount = readyProjects.filter((project) => project.status === 'archived').length
 
   return (
-    <div className="w-full max-w-[1240px] space-y-6 lg:space-y-8">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
-          <div className="space-y-2">
-            <h1 className="text-[36px] font-semibold tracking-tight text-foreground sm:text-[40px]">
-              Projects
-            </h1>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Manage and track your active workspace initiatives.
-            </p>
-          </div>
+    <div className="w-full">
+      <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-[#141c2a] sm:text-[32px]">
+            Projects
+          </h1>
+          <p className="max-w-2xl text-sm leading-6 text-[#585f67]">
+            Manage and track your active workspace initiatives.
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-          {showProjectCount ? (
-            <Badge variant="neutral" className="rounded-full px-3 py-1.5 text-[11px] font-semibold">
-              {projectCount} PROJECTS
-            </Badge>
-          ) : null}
+        <div className="flex flex-wrap items-center gap-3">
           <CreateProjectAction onClick={handleCreateProject} />
         </div>
       </section>
@@ -641,16 +613,15 @@ export function ProjectsListPage() {
       {viewState.status !== 'loading' ? (
         <section
           aria-label="Project filters"
-          className="flex flex-col gap-4 rounded-[12px] border border-border/40 bg-card px-4 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between sm:px-5"
+          className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#c5c5d5] bg-white p-4"
         >
           <div className="flex flex-wrap items-center gap-2">
             <FilterChip label="Status:" value="All Projects" />
             <FilterChip label="Scope:" value="Workspace" />
           </div>
 
-          <div className="text-sm text-muted-foreground">
-            Showing <strong className="font-semibold text-foreground">{projectCount ?? 0}</strong> active
-            projects
+          <div className="text-sm font-semibold text-[#585f67]">
+            Showing <strong className="text-[#141c2a]">{activeProjectCount}</strong> active projects
           </div>
         </section>
       ) : null}
@@ -687,7 +658,7 @@ export function ProjectsListPage() {
 
       {viewState.status === 'ready' ? (
         <>
-          <section aria-label="Project list" className="space-y-3">
+          <section aria-label="Project list" className="space-y-2">
             {viewState.projects.map((project) => {
               const actionState = activeAction?.projectId === project.id ? activeAction : null
               const rowActionDisabled = pendingAction !== null

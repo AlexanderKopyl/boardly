@@ -148,17 +148,17 @@ function WorkspaceSidebar({ pathname }: { pathname: string }): ReactElement {
 
   return (
     <div className="flex h-full flex-col px-6 py-5">
-      <div className="flex items-start gap-3 px-1 py-2">
-        <div className="grid size-10 shrink-0 grid-cols-2 gap-1 rounded-xl bg-white p-2 text-[var(--sidebar)]">
-          <span className="rounded-[2px] bg-current" />
-          <span className="rounded-[2px] bg-current" />
-          <span className="rounded-[2px] bg-current" />
-          <span className="rounded-[2px] bg-current" />
+      <div className="mb-8">
+        <div className="mb-1 flex items-center gap-2">
+          <div className="grid size-8 shrink-0 grid-cols-2 gap-[2px] rounded bg-white p-1.5 text-primary">
+            <span className="rounded-[1px] bg-current" />
+            <span className="rounded-[1px] bg-current" />
+            <span className="rounded-[1px] bg-current" />
+            <span className="rounded-[1px] bg-current" />
+          </div>
+          <h1 className="text-[17px] font-bold text-white">Boardly</h1>
         </div>
-        <div className="min-w-0">
-          <div className="text-lg font-semibold leading-none text-[var(--sidebar-foreground)]">Boardly</div>
-          <div className="mt-1 text-xs text-[var(--sidebar-muted)]">Management Hub</div>
-        </div>
+        <p className="px-1 text-xs text-white/50">Management Hub</p>
       </div>
 
       <div className="mt-6 flex min-h-0 flex-1 flex-col">
@@ -170,7 +170,7 @@ function WorkspaceSidebar({ pathname }: { pathname: string }): ReactElement {
         <div className="mt-auto pt-6">
           <Link
             href="/app/projects/new"
-            className="inline-flex h-12 w-full items-center justify-center rounded-[16px] bg-white/[0.12] px-4 text-sm font-semibold text-[var(--sidebar-foreground)] transition-colors hover:bg-white/[0.18] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-white/10 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
           >
             New Project
           </Link>
@@ -185,7 +185,7 @@ export function ProtectedWorkspaceShell({ children }: { children: ReactNode }): 
 
   return (
     <ProtectedRoute>
-      <AppShell sidebar={<WorkspaceSidebar pathname={pathname} />} header={<WorkspaceTopbar />}>
+      <AppShell sidebar={<WorkspaceSidebar pathname={pathname} />} header={<WorkspaceTopbar />} sidebarClassName="!bg-primary !text-white !border-none">
         {children}
       </AppShell>
     </ProtectedRoute>
