@@ -113,11 +113,15 @@ path = "skills/frontend-ui-composition/SKILL.md"
 enabled = true
 
 [[skills.config]]
-path = "skills/frontend-review-checklist/SKILL.md"
+path = "skills/frontend-style-system/SKILL.md"
 enabled = true
 
 [[skills.config]]
-path = "skills/frontend-style-system/SKILL.md"
+path = "skills/frontend-e2e-playwright/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "skills/frontend-review-checklist/SKILL.md"
 enabled = true
 
 [[skills.config]]
