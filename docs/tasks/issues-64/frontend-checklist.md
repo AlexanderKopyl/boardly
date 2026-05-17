@@ -1,8 +1,6 @@
-# Issue 64 Checklist
+# Frontend Implementation Checklist: Issue 64 - Redesign Projects List Using Stitch Reference
 
-- [x] Translate the Stitch Projects List reference into a Boardly-specific layout map for the projects screen.
-- [ ] Recompose `ProjectsListPage` to match the reference hierarchy while preserving current project behavior.
-- [ ] Restyle loading, empty, error, and ready states without changing their data flow or copy semantics.
-- [ ] Preserve create/detail navigation and archive/delete confirmation behavior, including loading guards and inline action errors.
-- [ ] Make only minimal generic shared-primitive adjustments if they are required by more than the Projects screen.
-- [ ] Verify responsive behavior, keyboard accessibility, and manual smoke coverage for the redesigned `/app/projects` flow.
+- [ ] Recompose `ProjectsListPage` into a dense, responsive list surface that uses only the existing project list fields.
+- [ ] Preserve create/detail navigation plus archive/delete confirmation, pending, and inline error behavior in the redesigned row layout.
+- [ ] Restyle loading, empty, and error states so they remain truthful and fit the new page density without introducing unavailable Stitch features.
+- [ ] Verify typecheck, lint, build, and manual smoke coverage for `/app/projects` across mobile, tablet, and desktop widths.
