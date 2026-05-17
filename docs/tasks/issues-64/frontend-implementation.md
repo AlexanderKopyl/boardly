@@ -1,5 +1,55 @@
 # Frontend Implementation: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - Correction pass: full-screen Stitch-style shell and Projects List runtime rewrite
+
+### Subagents used
+
+- `frontend-ui-composition` for a narrow shell/page composition sanity check before the runtime rewrite.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `verification-evidence`
+- `frontend-ui-composition`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+- `docs/design/stitch/projects-list/DESIGN.md`
+- `docs/design/stitch/projects-list/code.html`
+- `docs/design/stitch/projects-list/screen.png`
+
+### Files changed
+
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `frontend/src/app/app/ProtectedWorkspaceShell.tsx`
+- `frontend/src/shared/ui/AppShell.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `docs/tasks/issues-64/frontend-checklist.md`
+- `docs/tasks/issues-64/frontend-implementation.md`
+- `docs/tasks/issues-64/frontend-verification.md`
+
+### Summary
+
+- Reworked the protected workspace shell so the visible app screen now includes the fixed navy sidebar, Boardly brand block, active Projects nav item, Workspace Settings nav item, bottom New Project CTA, and a top utility bar with breadcrumb/search/avatar chrome.
+- Rebuilt the Projects List page into a denser Stitch-style surface with a stronger page header, count badge, filter/count bar, compact bordered row cards, status pills, and lower summary/tip cards.
+- Kept all flows on the existing data contract: `id`, `name`, `iconKey`, `status`, and `createdAt`.
+- Preserved create/detail navigation plus row-local archive/delete confirmation, cancel, and submit behavior.
+
+### Verification
+
+- `npm run typecheck` in `frontend/` passed.
+- `npm run lint` in `frontend/` passed.
+- `npm run build` in `frontend/` passed.
+- Live browser smoke in Chrome against the production server on `http://localhost:3001/app/projects` passed for create navigation, detail navigation, archive confirmation/cancel, delete confirmation/cancel, and delete submit.
+
+### Risks / follow-up
+
+- The projects row icon tile still uses an abbreviation derived from `iconKey` rather than a true pictographic icon.
+- Responsive mobile/tablet smoke was not re-run after the final correction pass, so that remains an open verification item.
+
 ## 2026-05-17 - Correction pass: tighten the runtime Projects List page to the Stitch reference
 
 ### Subagents used

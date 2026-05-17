@@ -1,5 +1,75 @@
 # Frontend Verification: Issue 64 - Redesign Projects List Using Stitch Reference
 
+## 2026-05-17 - CURRENT vs TARGET mismatch table from live Chrome and Stitch reference
+
+### Visual evidence
+
+- Current screen: live Chrome at `http://localhost:3000/app/projects`
+- Target screen: `docs/design/stitch/projects-list/screen.png`
+
+### Mismatch table
+
+| Area | Current | Target |
+| --- | --- | --- |
+| Workspace shell | Dark sidebar exists, but the overall shell still reads like a generic app layout and does not match the full Stitch composition. | Fixed navy left sidebar integrated into the full screen composition with a clear workspace shell. |
+| Sidebar brand block | Boardly branding is present, but the brand block spacing, hierarchy, and active nav styling are looser than the reference. | Strong brand block with compact spacing, bold title, muted subtitle, and clear active Projects item. |
+| Sidebar nav | Projects is active, but Workspace Settings is missing and the bottom CTA/sign-out region does not match the reference structure. | Projects active, Workspace Settings visible, and a pinned bottom New Project button. |
+| Topbar | No visible breadcrumb/search/icon strip like the Stitch reference. | Breadcrumb-style topbar with search field and icon/profile cluster. |
+| Page header | Title/subtitle/button are present, but the spacing and hierarchy are too minimal and not aligned to the target rhythm. | Large Projects title, muted subtitle, and right-aligned primary New Project action with stronger visual hierarchy. |
+| Filter/count bar | Missing entirely. | White bordered filter/count surface directly under the header. |
+| Project rows | Only one row is shown and it looks like a generic bordered item rather than a Stitch-style compact card row. | Dense white bordered rows with left icon tile, name, metadata, status badge, and right-side action area. |
+| Loading state | Skeletons are not visibly matched to the final row geometry. | Skeleton rows aligned to the final compact row structure. |
+| Empty/error states | Generic notice surfaces do not share the same row/list visual system. | Empty and error states use the same visual language as the list. |
+
+### Current correction gate
+
+- The current implementation is still closer to the old minimal layout than to `screen.png`.
+- The remaining work must include shell-level and page-level composition changes before any checklist item can be marked done.
+
+## 2026-05-17 - Correction pass verification after runtime rewrite
+
+### Commands run
+
+| Command | Result | Notes |
+| --- | --- | --- |
+| `npm run typecheck` in `frontend/` | Passed | `tsc --noEmit` completed successfully after the shell/page rewrite. |
+| `npm run lint` in `frontend/` | Passed | `eslint .` completed successfully. |
+| `npm run build` in `frontend/` | Passed | `next build` completed successfully and produced the app routes. |
+
+### Manual checks
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| `/app/projects` browser rendering | Passed | Verified in Chrome against the live production server on `http://localhost:3001/app/projects`. |
+| Create navigation | Passed | `New Project` in the header navigated to `/app/projects/new`. |
+| Detail navigation | Passed | Clicking the row `View Details` action navigated to `/app/projects/[projectId]`. |
+| Archive/delete confirmation and cancel | Passed | Archive opened a nested inline confirmation and cancel returned to the row; delete opened the same nested confirmation and submit removed the row. |
+| Responsive mobile/tablet/desktop check | Partially verified | Desktop browser smoke was completed; mobile/tablet were not re-run after the final correction pass. |
+
+### Browser evidence
+
+- Manual visual evidence: live Chrome on `http://localhost:3001/app/projects` with the production server started from `frontend/`.
+- Supporting route evidence: `/app/projects/new` and `/app/projects/[projectId]` were both exercised from the rewritten list.
+- No screenshot file path was captured; the verification was recorded directly from the live browser render.
+
+### Remaining visual mismatches
+
+- The project icon tile still renders as a two-letter glyph derived from `iconKey` instead of a pictographic icon.
+- The browser chrome in Chrome still shows the usual extension/toolbar affordances outside the app canvas; they are not part of the Boardly screen itself.
+
+### Unchecked checklist items
+
+- Responsive mobile/tablet/desktop check. The final correction pass was only re-smoked in the desktop browser.
+
+### Rollback commands
+
+- `git restore frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx frontend/src/app/app/ProtectedWorkspaceShell.tsx frontend/src/shared/ui/AppShell.tsx frontend/src/shared/ui/SidebarNav.tsx docs/tasks/issues-64/frontend-verification.md docs/tasks/issues-64/frontend-implementation.md docs/tasks/issues-64/frontend-checklist.md`
+- `git restore --source=HEAD~1 -- frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx` is not required here; a normal restore is sufficient if you need to back out only the runtime change.
+
+### Final verification status
+
+PARTIALLY_VERIFIED
+
 ## 2026-05-17 - Correction pass: tighten the runtime Projects List page to the Stitch reference
 
 ### Commands run

@@ -27,7 +27,7 @@ export function AppShell({
   return (
     <div
       className={cn(
-        'min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]',
+        'min-h-screen overflow-x-hidden bg-surface text-foreground',
         className,
       )}
       {...props}
@@ -35,7 +35,7 @@ export function AppShell({
       {sidebar ? (
         <aside
           className={cn(
-            'border-b border-border/70 bg-[var(--sidebar)] text-[var(--sidebar-foreground)] lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:overflow-y-auto',
+            'bg-[var(--sidebar)] text-[var(--sidebar-foreground)] lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-[280px] lg:border-r lg:border-[color:var(--sidebar-border)]',
             sidebarClassName,
           )}
         >
@@ -43,13 +43,30 @@ export function AppShell({
         </aside>
       ) : null}
 
-      <div className={cn('flex min-h-screen min-w-0 flex-col', contentClassName)}>
+      <div
+        className={cn(
+          'flex min-h-screen min-w-0 flex-col',
+          sidebar ? 'lg:pl-[280px]' : undefined,
+          contentClassName,
+        )}
+      >
         {header ? (
-          <div className={cn('border-b border-border/70 bg-background/95 backdrop-blur', headerClassName)}>
+          <div
+            className={cn(
+              'border-b border-border/70 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 lg:fixed lg:inset-x-0 lg:left-[280px] lg:top-0 lg:z-20',
+              headerClassName,
+            )}
+          >
             {header}
           </div>
         ) : null}
-        <main className={cn('min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8', mainClassName)}>
+        <main
+          className={cn(
+            'min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8',
+            header ? 'lg:pt-16' : undefined,
+            mainClassName,
+          )}
+        >
           {children}
         </main>
       </div>

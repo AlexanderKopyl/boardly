@@ -35,15 +35,15 @@ export function SidebarNav({
   const groups = sections ?? (items ? [{ items }] : [])
 
   return (
-    <nav aria-label={label} className={cn('space-y-5', className)} {...props}>
+    <nav aria-label={label} className={cn('space-y-4', className)} {...props}>
       {groups.map((group, groupIndex) => (
         <div key={`${group.label ?? 'group'}-${groupIndex}`} className="space-y-2">
           {group.label ? (
-            <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--sidebar-muted)]">
               {group.label}
             </p>
           ) : null}
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {group.items.map((item, index) => (
               <li key={`${item.href}-${index}`}>
                 {item.disabled ? (
@@ -52,14 +52,13 @@ export function SidebarNav({
                     data-disabled="true"
                     data-current={item.current || undefined}
                     className={cn(
-                      'flex items-start gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-[var(--sidebar-foreground)] transition-colors',
-                      item.current && 'bg-[var(--sidebar-accent)]',
-                      !item.current && 'text-[var(--sidebar-muted)]',
+                      'flex items-center gap-3 rounded-[18px] px-4 py-3 text-sm font-medium transition-colors',
+                      item.current
+                        ? 'bg-white/10 text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                        : 'text-[var(--sidebar-muted)]',
                     )}
                   >
-                    {item.icon ? (
-                      <span className="mt-0.5 text-[var(--sidebar-muted)]">{item.icon}</span>
-                    ) : null}
+                    {item.icon ? <span className="shrink-0 text-[var(--sidebar-foreground)]">{item.icon}</span> : null}
                     <span className="min-w-0 flex-1">
                       <span className="block">{item.label}</span>
                       {item.description ? (
@@ -76,15 +75,13 @@ export function SidebarNav({
                     aria-current={item.current ? 'page' : undefined}
                     data-current={item.current || undefined}
                     className={cn(
-                      'flex items-start gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-[18px] px-4 py-3 text-sm font-medium transition-colors',
                       item.current
-                        ? 'bg-[var(--sidebar-accent)] text-[var(--sidebar-foreground)]'
-                        : 'text-[var(--sidebar-muted)] hover:bg-[var(--sidebar-accent)] hover:text-[var(--sidebar-foreground)]',
+                        ? 'bg-white/10 text-[var(--sidebar-foreground)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                        : 'text-[var(--sidebar-muted)] hover:bg-white/5 hover:text-[var(--sidebar-foreground)]',
                     )}
                   >
-                    {item.icon ? (
-                      <span className="mt-0.5 text-[var(--sidebar-muted)]">{item.icon}</span>
-                    ) : null}
+                    {item.icon ? <span className="shrink-0 text-[var(--sidebar-foreground)]">{item.icon}</span> : null}
                     <span className="min-w-0 flex-1">
                       <span className="block">{item.label}</span>
                       {item.description ? (
