@@ -6,4 +6,5 @@
 - [x] Implement archive and delete listing actions with confirmation, error handling, and refresh.
 - [x] Update protected navigation so Projects is the first usable slice in the app shell.
 - [x] Make auth bootstrap idempotent so protected routes do not double-refresh in StrictMode/remounts.
+- [x] Add a visible create-project action to the Projects listing page header and empty state.
 - [ ] Validate the slice with lint, typecheck, build, and manual authenticated smoke testing.

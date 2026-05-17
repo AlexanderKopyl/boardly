@@ -452,3 +452,27 @@
 
 - The gateway currently only implements the list path; detail and mutation methods remain stubbed for later slices.
 - The gateway is token-aware via constructor injection, so the future presentation slice still needs to pass the current access token when wiring it up.
+
+## 2026-05-17 06:30 UTC - Task: Add a visible create-project action to the Projects listing page header and empty state
+
+### Files changed
+
+- `frontend/src/contexts/projects/presentation/ui/ProjectsListPage.tsx`
+- `docs/tasks/issues-60/frontend-checklist.md`
+- `docs/tasks/issues-60/frontend-implementation.md`
+- `docs/tasks/issues-60/frontend-verification.md`
+
+### Summary
+
+- Added a primary `Create project` link to the Projects page header so it is available in both empty and non-empty list states.
+- Reused the same link in the empty-state actions area so the empty list has an obvious next step.
+- Styled the link with the existing `ui-button` classes instead of introducing a new shared primitive.
+
+### Verification
+
+- `npm run typecheck` in `frontend/`
+- `npm run lint` in `frontend/`
+
+### Risks / follow-up
+
+- The link is styled locally in the page component because the shared `Button` primitive is button-only; if more link-buttons appear later, a shared `ButtonLink` primitive may be worth adding.

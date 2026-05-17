@@ -137,6 +137,19 @@ function getActionErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'We could not update the project right now.'
 }
 
+function CreateProjectLink() {
+  return (
+    <Link
+      href="/app/projects/new"
+      className="ui-button"
+      data-variant="primary"
+      data-size="sm"
+    >
+      Create project
+    </Link>
+  )
+}
+
 function ProjectsListSkeleton() {
   return (
     <div className="space-y-4">
@@ -233,11 +246,14 @@ export function ProjectsListPage() {
   }
 
   const headerActions =
-    viewState.status === 'ready' ? (
-      <Badge variant="neutral">{viewState.projects.length} projects</Badge>
-    ) : (
-      <Badge variant="neutral">Workspace projects</Badge>
-    )
+    <div className="flex flex-wrap items-center gap-3">
+      <CreateProjectLink />
+      {viewState.status === 'ready' ? (
+        <Badge variant="neutral">{viewState.projects.length} projects</Badge>
+      ) : (
+        <Badge variant="neutral">Workspace projects</Badge>
+      )}
+    </div>
 
   return (
     <div className="space-y-8">
@@ -272,6 +288,7 @@ export function ProjectsListPage() {
         <EmptyState
           title="No projects yet"
           description="This workspace does not have any projects yet."
+          actions={<CreateProjectLink />}
         />
       ) : null}
 

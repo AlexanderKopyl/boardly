@@ -1,5 +1,15 @@
 # Frontend Verification: Issue #60 Projects Slice
 
+## 2026-05-17 06:30 UTC - Task: Add a visible create-project action to the Projects listing page header and empty state
+
+- Command: `npm run typecheck`
+- Working directory: `frontend/`
+- Result: Passed
+- Command: `npm run lint`
+- Working directory: `frontend/`
+- Result: Passed
+- Notes: Verified the Projects listing page compiles cleanly after adding the header and empty-state `Create project` link.
+
 ## 2026-05-17 06:21 UTC - Task: Make auth bootstrap idempotent so protected routes do not double-refresh in StrictMode/remounts
 
 - Command: `npm run typecheck`
