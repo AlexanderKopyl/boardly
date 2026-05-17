@@ -89,6 +89,7 @@ Do not reduce context by hiding security, permission, source-of-truth, CQRS bus,
 | Frontend auth, memory-only access token, HttpOnly refresh cookie, protected routes | `frontend-auth-session` |
 | Next.js pages, providers, React components, hooks, forms, guards | `frontend-ui-composition` |
 | Frontend Tailwind/CSS variables/shadcn/Radix/shared primitives | `frontend-style-system` |
+| Frontend E2E/browser smoke tests, Playwright, auth flows, protected routes, critical UI flows | `frontend-e2e-playwright` |
 | Frontend ADR-0006/0007 review, auth safety, UI/API boundary review | `frontend-review-checklist` |
 
 ## Hard backend controller rule
@@ -103,6 +104,22 @@ Hard rule:
 - Concrete command handlers must be registered on `command.bus`.
 - Concrete query handlers must be registered on `query.bus`.
 - Direct controller calls like `($this->createProjectHandler)(...)`, `$this->createProjectHandler->__invoke(...)`, or `$this->createProjectHandler->handle(...)` are architecture violations.
+
+## Frontend E2E rule
+
+Use `frontend-e2e-playwright` for browser-level coverage when the task touches:
+
+- login/register/logout smoke flows;
+- refresh-session/bootstrap behavior;
+- protected route guest/authenticated/loading states;
+- retry-on-401 browser behavior;
+- cookie-dependent requests and credentials behavior;
+- critical navigation/form flows;
+- accessibility-sensitive UI primitives where focus/keyboard behavior matters.
+
+Do not use Playwright for every component, pure use case, DTO mapper, or isolated rendering detail. Prefer unit/component tests for those.
+
+Do not add Playwright dependencies or browser installation steps without explicit implementation scope and approval for dependency changes.
 
 ## Task lifecycle skills
 
@@ -195,8 +212,9 @@ If several frontend skills apply, start with ADR-0006 boundaries, then add speci
 3. `frontend-auth-session` or `frontend-api-integration`
 4. `frontend-ui-composition`
 5. `frontend-style-system` when UI/styling/shared primitives are involved
-6. `frontend-review-checklist`
-7. `testing-strategy`
+6. `frontend-e2e-playwright` when browser-level flow coverage is needed
+7. `frontend-review-checklist`
+8. `testing-strategy`
 
 Final output modifiers:
 
@@ -234,6 +252,7 @@ Do not use MemPalace for simple repo discovery such as class locations, routes, 
 - Frontend context domain models are not backend aggregates.
 - Frontend access token must be memory-only.
 - Frontend refresh token must be HttpOnly and unreadable by JavaScript.
+- Playwright is for critical browser-level flows, not every component.
 - Tailwind CSS is the default frontend styling system.
 - CSS variables own theme-level semantic design tokens.
 - Shared UI primitives must remain generic and context-free.
