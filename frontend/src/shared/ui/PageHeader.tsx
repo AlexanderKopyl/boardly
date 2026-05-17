@@ -30,21 +30,41 @@ export function PageHeader({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       data-compact={compact || undefined}
-      className={cn('ui-page-header', className)}
+      className={cn(
+        'flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
+        compact && 'gap-3',
+        className,
+      )}
       {...props}
     >
-      <div className="ui-page-header__content">
-        {eyebrow ? <p className="ui-page-header__eyebrow">{eyebrow}</p> : null}
-        <h1 className="ui-page-header__title" id={titleId}>
+      <div className="space-y-2">
+        {eyebrow ? (
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1
+          className={cn(
+            'text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl',
+            compact && 'text-xl sm:text-2xl',
+          )}
+          id={titleId}
+        >
           {title}
         </h1>
         {description ? (
-          <p className="ui-page-header__description" id={descriptionId}>
+          <p
+            className={cn(
+              'max-w-3xl text-sm leading-6 text-muted-foreground',
+              compact && 'max-w-2xl text-xs sm:text-sm',
+            )}
+            id={descriptionId}
+          >
             {description}
           </p>
         ) : null}
       </div>
-      {actions ? <div className="ui-page-header__actions">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </header>
   )
 }

@@ -38,8 +38,8 @@ export function FormField({
   const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined
 
   return (
-    <div className={cn('ui-form-field', className)} data-invalid={invalid || undefined}>
-      <label className="ui-form-field__label" htmlFor={inputId}>
+    <div className={cn('grid gap-2', className)} data-invalid={invalid || undefined}>
+      <label className="text-sm font-medium leading-none text-foreground" htmlFor={inputId}>
         {label}
         {required ? <span aria-hidden="true"> *</span> : null}
       </label>
@@ -54,13 +54,13 @@ export function FormField({
       })}
 
       {description ? (
-        <p className="ui-form-field__description" id={descriptionId}>
+        <p className="text-xs leading-5 text-muted-foreground" id={descriptionId}>
           {description}
         </p>
       ) : null}
 
       {error ? (
-        <p className="ui-form-field__error" id={errorId} role="alert">
+        <p className="text-xs font-medium leading-5 text-destructive" id={errorId} role="alert">
           {error}
         </p>
       ) : null}

@@ -1,5 +1,36 @@
 # Frontend Verification: Issue 61
 
+## 2026-05-17 - Auth and shell baseline migration
+
+- Command: `npm run typecheck`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - TypeScript completed successfully after migrating the auth and shell baseline off the old global CSS contract.
+
+- Command: `npm run build`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - Next.js compiled successfully after the auth/shell styling migration.
+  - Static routes were generated successfully, including `/login`, `/register`, `/pending-approval`, `/auth/session-loading`, and `/app/dashboard`.
+
+- Command: `npm run lint`
+- Scope: `frontend/`
+- Result: Passed
+- Evidence:
+  - ESLint completed without reporting errors after the styling migration.
+
+- Manual browser smoke test
+- Scope: `localhost:3000`
+- Result: Passed
+- Evidence:
+  - `/login` showed the new auth hero and form card.
+  - `/register` showed the new access-request hero and form card.
+  - `/pending-approval` showed the centered empty state.
+  - `/auth/session-loading` showed the centered loading card.
+  - `/app/dashboard` showed the migrated shell sidebar and dashboard content.
+
 ## 2026-05-17 - Tailwind/PostCSS wiring
 
 - Command: `npm run build`

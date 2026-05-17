@@ -27,22 +27,22 @@ export function EmptyState({
     <section
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className={cn('ui-empty-state', className)}
+      className={cn('mx-auto w-full max-w-xl', className)}
       {...props}
     >
-      <div className="ui-empty-state__panel">
-        {icon ? <div className="ui-empty-state__icon">{icon}</div> : null}
-        <div className="ui-empty-state__content">
-          <h2 className="ui-empty-state__title" id={titleId}>
+      <div className="rounded-3xl border border-border/70 bg-card px-6 py-7 text-center shadow-sm sm:px-8 sm:py-9">
+        {icon ? <div className="mb-4 flex justify-center">{icon}</div> : null}
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground" id={titleId}>
             {title}
           </h2>
           {description ? (
-            <p className="ui-empty-state__description" id={descriptionId}>
+            <p className="text-sm leading-6 text-muted-foreground" id={descriptionId}>
               {description}
             </p>
           ) : null}
         </div>
-        {actions ? <div className="ui-empty-state__actions">{actions}</div> : null}
+        {actions ? <div className="mt-6 flex flex-wrap justify-center gap-3">{actions}</div> : null}
       </div>
     </section>
   )

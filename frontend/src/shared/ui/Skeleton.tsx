@@ -8,10 +8,6 @@ export type SkeletonProps = HTMLAttributes<HTMLDivElement> & {
 
 export function Skeleton({ className, ...props }: SkeletonProps): ReactElement {
   return (
-    <div
-      aria-hidden="true"
-      className={cn('ui-skeleton', className)}
-      {...props}
-    />
+    <div aria-hidden="true" className={cn('animate-pulse rounded-md bg-muted/80', className)} {...props} />
   )
 }

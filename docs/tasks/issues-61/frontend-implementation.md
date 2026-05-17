@@ -1,5 +1,78 @@
 # Frontend Implementation: Issue 61
 
+## 2026-05-17 - Task: Migrate the current baseline auth and shell screens to the new shared styling foundation where they already depend on the old global CSS contract
+
+### Subagents used
+
+- `frontend-ui-composition` for a scoped review of the auth and shell surface boundary.
+
+### Skills used
+
+- `frontend-task-implementation`
+- `frontend-style-system`
+- `frontend-ui-composition`
+
+### Guidance loaded
+
+- `AGENTS.md`
+- `docs/development/frontend/boardly-frontend-developer-rules.md`
+- `docs/adr/0006-use-frontend-context-based-hexagonal-architecture.md`
+- `docs/adr/0007-use-tailwind-css-with-css-variables-and-shadcn-radix-primitives.md`
+- `docs/tasks/issues-61/frontend-checklist.md`
+- `docs/tasks/issues-61/frontend-implementation.md`
+- `docs/tasks/issues-61/frontend-verification.md`
+
+### Files changed
+
+- `frontend/src/app/layout.tsx`
+- `frontend/src/app/app/ProtectedWorkspaceShell.tsx`
+- `frontend/src/app/app/dashboard/page.tsx`
+- `frontend/src/app/login/page.tsx`
+- `frontend/src/app/pending-approval/page.tsx`
+- `frontend/src/app/register/page.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/LoginForm.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/LogoutButton.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/RegisterForm.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/SessionLoadingState.tsx`
+- `frontend/src/contexts/identity-access/presentation/ui/SidebarAccountCard.tsx`
+- `frontend/src/shared/ui/Alert.tsx`
+- `frontend/src/shared/ui/AppShell.tsx`
+- `frontend/src/shared/ui/Badge.tsx`
+- `frontend/src/shared/ui/Card.tsx`
+- `frontend/src/shared/ui/EmptyState.tsx`
+- `frontend/src/shared/ui/FormField.tsx`
+- `frontend/src/shared/ui/PageHeader.tsx`
+- `frontend/src/shared/ui/PasswordInput.tsx`
+- `frontend/src/shared/ui/SidebarNav.tsx`
+- `frontend/src/shared/ui/Skeleton.tsx`
+- `docs/tasks/issues-61/frontend-checklist.md`
+- `docs/tasks/issues-61/frontend-verification.md`
+
+### Summary
+
+- Replaced the remaining auth and shell baseline selectors with Tailwind-driven shared component styling.
+- Rebuilt the auth landing pages, pending-approval page, session-loading state, and protected dashboard shell to use the new shared primitives and token-based layout rules.
+- Migrated the protected workspace chrome (`AppShell`, sidebar nav, account card, logout button) off the removed `.ui-*` contract.
+- Kept auth behavior untouched; the changes are presentation-only.
+
+### Verification
+
+- `npm run typecheck` in `frontend/` succeeded.
+- `npm run build` in `frontend/` succeeded.
+- `npm run lint` in `frontend/` succeeded.
+- Manual browser smoke test in Chrome:
+  - `/login` rendered the new two-column auth layout and shared form primitives.
+  - `/register` rendered the new two-column auth layout and shared form primitives.
+  - `/pending-approval` rendered the token-driven empty state.
+  - `/auth/session-loading` rendered the centered loading card.
+  - `/app/dashboard` rendered the migrated shell sidebar, header, metric cards, and content panels.
+
+### Risks / follow-up
+
+- The dashboard shell is now on the new foundation, but the dedicated projects surfaces still use the next checklist item and remain to be migrated.
+- The session-loading skeletons are intentionally understated; if they need stronger visual presence, that should be adjusted in a later polish pass, not in auth behavior.
+- The browser smoke test previously emitted hydration mismatch warnings from installed Chrome extensions; the app code no longer suppresses them, so any remaining warning needs to be reproduced in a clean browser session to determine whether it is app-owned or extension-driven.
+
 ## 2026-05-17 - Task: Wire Tailwind CSS into the `frontend/` workspace and confirm the app can compile utility classes
 
 ### Subagents used
